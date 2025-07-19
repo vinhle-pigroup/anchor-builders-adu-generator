@@ -10,23 +10,36 @@ export interface ClientInfo {
 }
 
 export interface ProjectInfo {
-  lotSize: string;
-  aduType: 'studio' | 'one-bedroom' | 'two-bedroom' | 'custom';
+  // Basic ADU Details - matching Excel form
+  aduType: 'detached' | 'attached';
   squareFootage: number;
-  foundationType: 'slab' | 'crawl-space' | 'basement';
-  sitework: 'minimal' | 'moderate' | 'extensive';
-  finishLevel: 'basic' | 'standard' | 'premium' | 'luxury';
+  bedrooms: number;
+  bathrooms: number;
+  
+  // Features - matching Excel form
+  appliancesIncluded: boolean;
+  hvacType: 'central-ac';
+  finishLevel: 'standard'; // Only standard in real system
+  
+  // Utilities - simplified to separate/shared
   utilities: {
-    electric: boolean;
-    plumbing: boolean;
-    gas: boolean;
-    cableInternet: boolean;
+    waterMeter: 'shared' | 'separate';
+    gasMeter: 'shared' | 'separate';
+    electricMeter: 'separate'; // Always separate
   };
-  selectedAddOns: string[];
-  needsPermits: boolean;
+  
+  // Connections
+  sewerConnection: 'existing-lateral';
+  
+  // Services
   needsDesign: boolean;
-  needsManagement: boolean;
-  timeline: 'rush' | 'standard' | 'flexible';
+  
+  // Optional features
+  solarDesign: boolean;
+  femaIncluded: boolean;
+  
+  // Add-ons
+  selectedAddOns: string[];
 }
 
 export interface PricingItem {

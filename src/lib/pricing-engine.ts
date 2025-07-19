@@ -1,48 +1,40 @@
 import {
-  aduPricingTiers,
-  foundationPricing,
-  siteworkPricing,
-  utilityPricing,
-  finishPricing,
-  addOnPricing,
-  professionalServices,
-  regionalMultipliers,
-  timelineMultipliers,
-  type PricingTier,
-  type FoundationPricing,
-  type SiteworkPricing,
-  type FinishPricing,
+  aduTypePricing,
+  designServices,
+  utilityOptions,
+  addOnOptions,
+  businessSettings,
+  type AduTypePricing,
+  type UtilityOption,
+  type AddOnOption,
 } from '../data/pricing-config';
 
 export interface PricingInputs {
   // Basic Project Info
   squareFootage: number;
-  aduType: 'studio' | 'one-bedroom' | 'two-bedroom' | 'custom';
+  aduType: 'detached' | 'attached';
+  bedrooms: number;
+  bathrooms: number;
 
-  // Construction Details
-  foundationType: 'slab' | 'crawl-space' | 'basement';
-  sitework: 'minimal' | 'moderate' | 'extensive';
-  finishLevel: 'basic' | 'standard' | 'premium' | 'luxury';
-
-  // Utilities
+  // Utilities - Simplified to separate/shared
   utilities: {
-    electric: boolean;
-    plumbing: boolean;
-    gas: boolean;
-    cableInternet: boolean;
+    waterMeter: 'shared' | 'separate';
+    gasMeter: 'shared' | 'separate';
+    electricMeter: 'separate'; // Always separate
   };
+
+  // Services
+  needsDesign: boolean;
+  appliancesIncluded: boolean;
+  hvacType: 'central-ac';
 
   // Add-ons (array of add-on names)
   selectedAddOns: string[];
 
-  // Services
-  needsPermits: boolean;
-  needsDesign: boolean;
-  needsManagement: boolean;
-
-  // Location and Timeline
-  zipCode?: string;
-  timeline: 'rush' | 'standard' | 'flexible';
+  // Connection types
+  sewerConnection: 'existing-lateral';
+  solarDesign: boolean;
+  femaIncluded: boolean;
 }
 
 export interface PricingLineItem {
@@ -57,13 +49,9 @@ export interface PricingLineItem {
 export interface PricingBreakdown {
   lineItems: PricingLineItem[];
   subtotal: number;
-  regionalMultiplier: number;
-  timelineMultiplier: number;
-  adjustedSubtotal: number;
-  managementFee: number;
-  totalBeforeTax: number;
-  taxRate: number;
-  taxAmount: number;
+  markupPercentage: number;
+  markupAmount: number;
+  totalBeforeMarkup: number;
   grandTotal: number;
   pricePerSqFt: number;
 }
@@ -72,175 +60,119 @@ export class AnchorPricingEngine {
   calculateProposal(inputs: PricingInputs): PricingBreakdown {
     const lineItems: PricingLineItem[] = [];
 
-    // 1. Base Construction Cost
-    const baseCost = this.calculateBaseCost(inputs, lineItems);
+    // 1. Base ADU Construction Cost ($/sqft model)
+    this.calculateBaseConstructionCost(inputs, lineItems);
 
-    // 2. Foundation Cost
-    this.calculateFoundationCost(inputs, lineItems);
-
-    // 3. Sitework Cost
-    this.calculateSiteworkCost(inputs, lineItems);
-
-    // 4. Utilities Cost
-    this.calculateUtilitiesCost(inputs, lineItems);
-
-    // 5. Finish Level Cost
-    this.calculateFinishCost(inputs, lineItems);
-
-    // 6. Add-ons Cost
-    this.calculateAddOnsCost(inputs, lineItems);
-
-    // 7. Professional Services
-    this.calculateProfessionalServices(inputs, lineItems);
-
-    // Calculate totals
-    const subtotal = lineItems.reduce((sum, item) => sum + item.totalPrice, 0);
-
-    // Regional and timeline multipliers
-    const regionalMultiplier = this.getRegionalMultiplier(inputs.zipCode);
-    const timelineMultiplier = timelineMultipliers[inputs.timeline];
-
-    const adjustedSubtotal = subtotal * regionalMultiplier * timelineMultiplier;
-
-    // Management fee (if selected)
-    const managementFee = inputs.needsManagement
-      ? adjustedSubtotal * professionalServices.management.percentage
-      : 0;
-
-    if (managementFee > 0) {
-      lineItems.push({
-        category: 'Professional Services',
-        description: 'Project management and coordination',
-        quantity: 1,
-        unitPrice: managementFee,
-        totalPrice: managementFee,
-        isOptional: true,
-      });
+    // 2. Design Services (if selected)
+    if (inputs.needsDesign) {
+      this.calculateDesignServices(lineItems);
     }
 
-    const totalBeforeTax = adjustedSubtotal + managementFee;
+    // 3. Utility Connections
+    this.calculateUtilityConnections(inputs, lineItems);
 
-    // Tax calculation (assuming 8.5% average)
-    const taxRate = 0.085;
-    const taxAmount = totalBeforeTax * taxRate;
-    const grandTotal = totalBeforeTax + taxAmount;
+    // 4. Add-ons 
+    this.calculateAddOns(inputs, lineItems);
+
+    // Calculate subtotal
+    const subtotal = lineItems.reduce((sum, item) => sum + item.totalPrice, 0);
+
+    // Apply 15% markup
+    const markupPercentage = businessSettings.standardMarkup;
+    const markupAmount = subtotal * markupPercentage;
+    const grandTotal = subtotal + markupAmount;
 
     return {
       lineItems,
       subtotal,
-      regionalMultiplier,
-      timelineMultiplier,
-      adjustedSubtotal,
-      managementFee,
-      totalBeforeTax,
-      taxRate,
-      taxAmount,
+      markupPercentage,
+      markupAmount,
+      totalBeforeMarkup: subtotal,
       grandTotal,
       pricePerSqFt: grandTotal / inputs.squareFootage,
     };
   }
 
-  private calculateBaseCost(inputs: PricingInputs, lineItems: PricingLineItem[]): number {
-    const tier = this.getAduTier(inputs.squareFootage, inputs.aduType);
+  private calculateBaseConstructionCost(inputs: PricingInputs, lineItems: PricingLineItem[]) {
+    // Get price per sqft based on ADU type
+    const aduType = aduTypePricing.find(type => type.type === inputs.aduType);
+    if (!aduType) return;
 
-    if (!tier) {
-      // Custom pricing calculation
-      const customPrice = inputs.squareFootage * 250; // Base custom rate
-      lineItems.push({
-        category: 'Base Construction',
-        description: `Custom ADU (${inputs.squareFootage} sq ft)`,
-        quantity: inputs.squareFootage,
-        unitPrice: 250,
-        totalPrice: customPrice,
-        isOptional: false,
-      });
-      return customPrice;
-    }
-
-    const basePrice = tier.basePrice + inputs.squareFootage * tier.pricePerSqFt;
+    const baseConstructionCost = inputs.squareFootage * aduType.pricePerSqFt;
 
     lineItems.push({
       category: 'Base Construction',
-      description: `${tier.name} (${inputs.squareFootage} sq ft)`,
+      description: `${aduType.name} (${inputs.squareFootage} sq ft @ $${aduType.pricePerSqFt}/sq ft)`,
       quantity: inputs.squareFootage,
-      unitPrice: tier.pricePerSqFt,
-      totalPrice: basePrice,
-      isOptional: false,
-    });
-
-    return basePrice;
-  }
-
-  private calculateFoundationCost(inputs: PricingInputs, lineItems: PricingLineItem[]) {
-    const foundation = foundationPricing.find(f => f.type === inputs.foundationType);
-    if (!foundation) return;
-
-    const foundationCost = foundation.basePrice + inputs.squareFootage * foundation.pricePerSqFt;
-
-    lineItems.push({
-      category: 'Foundation',
-      description: foundation.description,
-      quantity: inputs.squareFootage,
-      unitPrice: foundation.pricePerSqFt,
-      totalPrice: foundationCost,
+      unitPrice: aduType.pricePerSqFt,
+      totalPrice: baseConstructionCost,
       isOptional: false,
     });
   }
 
-  private calculateSiteworkCost(inputs: PricingInputs, lineItems: PricingLineItem[]) {
-    const sitework = siteworkPricing.find(s => s.level === inputs.sitework);
-    if (!sitework) return;
-
+  private calculateDesignServices(lineItems: PricingLineItem[]) {
     lineItems.push({
-      category: 'Sitework',
-      description: sitework.description,
+      category: 'Design Services',
+      description: designServices.description,
       quantity: 1,
-      unitPrice: sitework.basePrice,
-      totalPrice: sitework.basePrice,
-      isOptional: false,
+      unitPrice: designServices.planningDesign,
+      totalPrice: designServices.planningDesign,
+      isOptional: true,
     });
   }
 
-  private calculateUtilitiesCost(inputs: PricingInputs, lineItems: PricingLineItem[]) {
-    utilityPricing.forEach(utility => {
-      const isSelected = inputs.utilities[utility.type as keyof typeof inputs.utilities];
-
-      if (isSelected || utility.required) {
+  private calculateUtilityConnections(inputs: PricingInputs, lineItems: PricingLineItem[]) {
+    // Water Meter
+    if (inputs.utilities.waterMeter === 'separate') {
+      const waterUtility = utilityOptions.find(u => u.name === 'Water Meter');
+      if (waterUtility) {
         lineItems.push({
           category: 'Utilities',
-          description: utility.description,
+          description: 'Separate Water Meter Connection',
           quantity: 1,
-          unitPrice: utility.price,
-          totalPrice: utility.price,
-          isOptional: !utility.required,
+          unitPrice: waterUtility.separatePrice,
+          totalPrice: waterUtility.separatePrice,
+          isOptional: false,
         });
       }
-    });
+    }
+
+    // Gas Meter
+    if (inputs.utilities.gasMeter === 'separate') {
+      const gasUtility = utilityOptions.find(u => u.name === 'Gas Meter');
+      if (gasUtility) {
+        lineItems.push({
+          category: 'Utilities',
+          description: 'Separate Gas Meter Connection',
+          quantity: 1,
+          unitPrice: gasUtility.separatePrice,
+          totalPrice: gasUtility.separatePrice,
+          isOptional: false,
+        });
+      }
+    }
+
+    // Electric Meter (always separate)
+    const electricUtility = utilityOptions.find(u => u.name === 'Electric Meter');
+    if (electricUtility) {
+      lineItems.push({
+        category: 'Utilities',
+        description: 'Separate Electric Meter Connection',
+        quantity: 1,
+        unitPrice: electricUtility.separatePrice,
+        totalPrice: electricUtility.separatePrice,
+        isOptional: false,
+      });
+    }
   }
 
-  private calculateFinishCost(inputs: PricingInputs, lineItems: PricingLineItem[]) {
-    const finish = finishPricing.find(f => f.level === inputs.finishLevel);
-    if (!finish) return;
-
-    const finishCost = inputs.squareFootage * finish.pricePerSqFt;
-
-    lineItems.push({
-      category: 'Finishes',
-      description: finish.description,
-      quantity: inputs.squareFootage,
-      unitPrice: finish.pricePerSqFt,
-      totalPrice: finishCost,
-      isOptional: false,
-    });
-  }
-
-  private calculateAddOnsCost(inputs: PricingInputs, lineItems: PricingLineItem[]) {
+  private calculateAddOns(inputs: PricingInputs, lineItems: PricingLineItem[]) {
     inputs.selectedAddOns.forEach(addOnName => {
-      const addOn = addOnPricing.find(a => a.name === addOnName);
+      const addOn = addOnOptions.find(a => a.name === addOnName);
       if (!addOn) return;
 
       lineItems.push({
-        category: this.formatCategoryName(addOn.category),
+        category: 'Add-Ons',
         description: addOn.description,
         quantity: 1,
         unitPrice: addOn.price,
@@ -250,85 +182,20 @@ export class AnchorPricingEngine {
     });
   }
 
-  private calculateProfessionalServices(inputs: PricingInputs, lineItems: PricingLineItem[]) {
-    // Permits
-    if (inputs.needsPermits) {
-      const permitCost = professionalServices.permits.base;
-      lineItems.push({
-        category: 'Professional Services',
-        description: professionalServices.permits.description,
-        quantity: 1,
-        unitPrice: permitCost,
-        totalPrice: permitCost,
-        isOptional: true,
-      });
-    }
-
-    // Design
-    if (inputs.needsDesign) {
-      const designCost =
-        professionalServices.design.base +
-        inputs.squareFootage * professionalServices.design.pricePerSqFt;
-      lineItems.push({
-        category: 'Professional Services',
-        description: professionalServices.design.description,
-        quantity: inputs.squareFootage,
-        unitPrice: professionalServices.design.pricePerSqFt,
-        totalPrice: designCost,
-        isOptional: true,
-      });
-    }
+  // Helper methods for form components
+  getAduTypeOptions() {
+    return aduTypePricing;
   }
 
-  private getAduTier(squareFootage: number, aduType: string): PricingTier | null {
-    if (aduType === 'custom') return null;
-
-    return (
-      aduPricingTiers.find(
-        tier => squareFootage >= tier.minSqFt && squareFootage <= tier.maxSqFt
-      ) || null
-    );
+  getUtilityOptions() {
+    return utilityOptions;
   }
 
-  private getRegionalMultiplier(zipCode?: string): number {
-    if (!zipCode) return regionalMultipliers.default;
-
-    return (
-      regionalMultipliers[zipCode as keyof typeof regionalMultipliers] ||
-      regionalMultipliers.default
-    );
+  getAddOnOptions() {
+    return addOnOptions;
   }
 
-  private formatCategoryName(category: string): string {
-    return category.charAt(0).toUpperCase() + category.slice(1).replace('-', ' ');
-  }
-
-  // Helper method to get available add-ons by category
-  getAddOnsByCategory(): Record<string, typeof addOnPricing> {
-    const categories: Record<string, typeof addOnPricing> = {};
-
-    addOnPricing.forEach(addOn => {
-      if (!categories[addOn.category]) {
-        categories[addOn.category] = [];
-      }
-      categories[addOn.category].push(addOn);
-    });
-
-    return categories;
-  }
-
-  // Helper method to get finish level options
-  getFinishLevelOptions() {
-    return finishPricing;
-  }
-
-  // Helper method to get foundation options
-  getFoundationOptions() {
-    return foundationPricing;
-  }
-
-  // Helper method to get sitework options
-  getSiteworkOptions() {
-    return siteworkPricing;
+  getDesignServices() {
+    return designServices;
   }
 }
