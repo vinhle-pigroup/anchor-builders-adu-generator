@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Building2, FileText, Calculator, Users } from 'lucide-react';
+import { Building2, FileText, Calculator, Users, Download } from 'lucide-react';
 import type { AnchorProposalFormData, ClientInfo, ProjectInfo } from './types/proposal';
 import { ProjectDetailsForm } from './components/ProjectDetailsForm';
 import { AnchorPricingEngine } from './lib/pricing-engine';
+import { AnchorPDFGenerator } from './lib/pdf-generator';
 
 function App() {
   const [currentStep, setCurrentStep] = useState<'welcome' | 'client' | 'project' | 'review'>(
@@ -54,6 +55,26 @@ function App() {
       ...prev,
       project: { ...prev.project, ...updates },
     }));
+  };
+
+  const generatePDF = () => {
+    try {
+      const pdfGenerator = new AnchorPDFGenerator();
+      const pdfBlob = pdfGenerator.generateProposal(formData);
+      
+      // Create download link
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Anchor-Builders-ADU-Proposal-${formData.client.lastName}-${Date.now()}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      alert('Error generating PDF. Please try again.');
+    }
   };
 
   if (currentStep === 'welcome') {
@@ -248,10 +269,11 @@ function App() {
 
                   <div>
                     <h3 className='font-semibold text-slate-700 mb-2'>Project Details</h3>
-                    <p className='text-slate-600'>Type: {formData.project.aduType}</p>
+                    <p className='text-slate-600'>Type: {formData.project.aduType === 'detached' ? 'Detached (1 Story)' : 'Attached ADU'}</p>
                     <p className='text-slate-600'>Size: {formData.project.squareFootage} sq ft</p>
-                    <p className='text-slate-600'>Foundation: {formData.project.foundationType}</p>
-                    <p className='text-slate-600'>Sitework: {formData.project.sitework}</p>
+                    <p className='text-slate-600'>Bedrooms: {formData.project.bedrooms}</p>
+                    <p className='text-slate-600'>Bathrooms: {formData.project.bathrooms}</p>
+                    <p className='text-slate-600'>Design Services: {formData.project.needsDesign ? 'Included' : 'Not Included'}</p>
                   </div>
                 </div>
 
@@ -260,9 +282,11 @@ function App() {
                     Edit Project
                   </button>
                   <button
-                    onClick={() => alert('PDF generation coming soon!')}
-                    className='btn-primary'
+                    onClick={generatePDF}
+                    className='btn-primary flex items-center gap-2'
+                    disabled={!formData.client.firstName || !formData.client.lastName}
                   >
+                    <Download className='w-4 h-4' />
                     Generate PDF Proposal
                   </button>
                 </div>
