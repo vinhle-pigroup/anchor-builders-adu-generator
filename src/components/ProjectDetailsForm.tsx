@@ -17,10 +17,8 @@ export function ProjectDetailsForm({
   onNext,
 }: ProjectDetailsFormProps) {
   const pricingEngine = new AnchorPricingEngine();
-  const addOnsByCategory = pricingEngine.getAddOnsByCategory();
-  const finishOptions = pricingEngine.getFinishLevelOptions();
-  const foundationOptions = pricingEngine.getFoundationOptions();
-  const siteworkOptions = pricingEngine.getSiteworkOptions();
+  const aduTypeOptions = pricingEngine.getAduTypeOptions();
+  const addOnOptions = pricingEngine.getAddOnOptions();
 
   const toggleAddOn = (addOnName: string) => {
     const currentAddOns = formData.selectedAddOns || [];
@@ -37,7 +35,7 @@ export function ProjectDetailsForm({
     }
   };
 
-  const updateUtility = (utilityType: keyof ProjectInfo['utilities'], value: boolean) => {
+  const updateUtility = (utilityType: keyof ProjectInfo['utilities'], value: 'shared' | 'separate') => {
     updateProjectData({
       utilities: {
         ...formData.utilities,
@@ -64,11 +62,11 @@ export function ProjectDetailsForm({
           <div className='grid lg:grid-cols-3 gap-6'>
             {/* Main Form */}
             <div className='lg:col-span-2 space-y-6'>
-              {/* Basic Project Info */}
+              {/* Basic Project Info - Matching Excel */}
               <div className='bg-white rounded-lg shadow-sm p-6'>
                 <div className='flex items-center mb-6'>
                   <Building2 className='w-6 h-6 text-anchor-500 mr-2' />
-                  <h2 className='text-xl font-semibold text-slate-800'>Basic Specifications</h2>
+                  <h2 className='text-xl font-semibold text-slate-800'>ADU Details</h2>
                 </div>
 
                 <div className='grid md:grid-cols-2 gap-6'>
@@ -79,15 +77,16 @@ export function ProjectDetailsForm({
                       value={formData.aduType}
                       onChange={e => updateProjectData({ aduType: e.target.value as any })}
                     >
-                      <option value='studio'>Studio (400-600 sq ft)</option>
-                      <option value='one-bedroom'>One Bedroom (600-800 sq ft)</option>
-                      <option value='two-bedroom'>Two Bedroom (800-1200 sq ft)</option>
-                      <option value='custom'>Custom Design</option>
+                      {aduTypeOptions.map(option => (
+                        <option key={option.type} value={option.type}>
+                          {option.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className='form-label'>Square Footage *</label>
+                    <label className='form-label'>Living Area (sq ft) *</label>
                     <input
                       type='number'
                       className='form-input'
@@ -97,148 +96,154 @@ export function ProjectDetailsForm({
                       }
                       min='300'
                       max='1200'
+                      placeholder='800'
                     />
                   </div>
 
                   <div>
-                    <label className='form-label'>Foundation Type</label>
+                    <label className='form-label'>Bedrooms</label>
                     <select
                       className='form-input'
-                      value={formData.foundationType}
-                      onChange={e => updateProjectData({ foundationType: e.target.value as any })}
+                      value={formData.bedrooms}
+                      onChange={e => updateProjectData({ bedrooms: parseInt(e.target.value) })}
                     >
-                      {foundationOptions.map(option => (
-                        <option key={option.type} value={option.type}>
-                          {option.description}
-                        </option>
-                      ))}
+                      <option value={1}>1</option>
+                      <option value={2}>2</option>
+                      <option value={3}>3</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className='form-label'>Sitework Requirements</label>
+                    <label className='form-label'>Bathrooms</label>
                     <select
                       className='form-input'
-                      value={formData.sitework}
-                      onChange={e => updateProjectData({ sitework: e.target.value as any })}
+                      value={formData.bathrooms}
+                      onChange={e => updateProjectData({ bathrooms: parseInt(e.target.value) })}
                     >
-                      {siteworkOptions.map(option => (
-                        <option key={option.level} value={option.level}>
-                          {option.description}
-                        </option>
-                      ))}
+                      <option value={1}>1</option>
+                      <option value={2}>2</option>
                     </select>
                   </div>
                 </div>
               </div>
 
-              {/* Finish Level */}
+              {/* Features - Matching Excel */}
               <div className='bg-white rounded-lg shadow-sm p-6'>
                 <div className='flex items-center mb-6'>
                   <Palette className='w-6 h-6 text-anchor-500 mr-2' />
-                  <h2 className='text-xl font-semibold text-slate-800'>Finish Level</h2>
-                </div>
-
-                <div className='grid md:grid-cols-2 gap-4'>
-                  {finishOptions.map(finish => (
-                    <div
-                      key={finish.level}
-                      onClick={() => updateProjectData({ finishLevel: finish.level as any })}
-                      className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                        formData.finishLevel === finish.level
-                          ? 'border-anchor-500 bg-anchor-50'
-                          : 'border-slate-200 hover:border-anchor-300'
-                      }`}
-                    >
-                      <h3 className='font-semibold text-slate-800 capitalize mb-1'>
-                        {finish.level}
-                      </h3>
-                      <p className='text-sm text-slate-600 mb-2'>{finish.description}</p>
-                      <p className='text-lg font-bold text-anchor-600'>
-                        +${finish.pricePerSqFt}/sq ft
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Utilities */}
-              <div className='bg-white rounded-lg shadow-sm p-6'>
-                <div className='flex items-center mb-6'>
-                  <Wrench className='w-6 h-6 text-anchor-500 mr-2' />
-                  <h2 className='text-xl font-semibold text-slate-800'>Utilities & Services</h2>
-                </div>
-
-                <div className='grid md:grid-cols-2 gap-4'>
-                  <div className='space-y-3'>
-                    <label className='flex items-center'>
-                      <input
-                        type='checkbox'
-                        checked={formData.utilities.electric}
-                        onChange={e => updateUtility('electric', e.target.checked)}
-                        className='mr-2 w-4 h-4 text-anchor-600'
-                        disabled
-                      />
-                      <span className='text-sm'>Electrical Service (Required)</span>
-                    </label>
-
-                    <label className='flex items-center'>
-                      <input
-                        type='checkbox'
-                        checked={formData.utilities.plumbing}
-                        onChange={e => updateUtility('plumbing', e.target.checked)}
-                        className='mr-2 w-4 h-4 text-anchor-600'
-                        disabled
-                      />
-                      <span className='text-sm'>Plumbing (Required)</span>
-                    </label>
-                  </div>
-
-                  <div className='space-y-3'>
-                    <label className='flex items-center'>
-                      <input
-                        type='checkbox'
-                        checked={formData.utilities.gas}
-                        onChange={e => updateUtility('gas', e.target.checked)}
-                        className='mr-2 w-4 h-4 text-anchor-600'
-                      />
-                      <span className='text-sm'>Natural Gas Line</span>
-                    </label>
-
-                    <label className='flex items-center'>
-                      <input
-                        type='checkbox'
-                        checked={formData.utilities.cableInternet}
-                        onChange={e => updateUtility('cableInternet', e.target.checked)}
-                        className='mr-2 w-4 h-4 text-anchor-600'
-                      />
-                      <span className='text-sm'>Cable/Internet Service</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Professional Services */}
-              <div className='bg-white rounded-lg shadow-sm p-6'>
-                <div className='flex items-center mb-6'>
-                  <Clock className='w-6 h-6 text-anchor-500 mr-2' />
-                  <h2 className='text-xl font-semibold text-slate-800'>
-                    Professional Services & Timeline
-                  </h2>
+                  <h2 className='text-xl font-semibold text-slate-800'>Features & Appliances</h2>
                 </div>
 
                 <div className='grid md:grid-cols-2 gap-6'>
-                  <div className='space-y-3'>
+                  <div>
                     <label className='flex items-center'>
                       <input
                         type='checkbox'
-                        checked={formData.needsPermits}
-                        onChange={e => updateProjectData({ needsPermits: e.target.checked })}
+                        checked={formData.appliancesIncluded}
+                        onChange={e => updateProjectData({ appliancesIncluded: e.target.checked })}
                         className='mr-2 w-4 h-4 text-anchor-600'
                       />
-                      <span className='text-sm'>Building Permits & Plan Review</span>
+                      <span className='text-sm'>Appliances Included</span>
                     </label>
+                  </div>
 
+                  <div>
+                    <label className='form-label'>HVAC System</label>
+                    <select
+                      className='form-input'
+                      value={formData.hvacType}
+                      onChange={e => updateProjectData({ hvacType: e.target.value as any })}
+                    >
+                      <option value='central-ac'>Central AC</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className='form-label'>Finish Level</label>
+                    <select
+                      className='form-input'
+                      value={formData.finishLevel}
+                      disabled
+                    >
+                      <option value='standard'>Standard</option>
+                    </select>
+                    <p className='text-xs text-slate-500 mt-1'>Standard finish included in base price</p>
+                  </div>
+
+                  <div>
+                    <label className='form-label'>Sewer Connection</label>
+                    <select
+                      className='form-input'
+                      value={formData.sewerConnection}
+                      disabled
+                    >
+                      <option value='existing-lateral'>Existing Lateral</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Utilities - Matching Excel Shared/Separate */}
+              <div className='bg-white rounded-lg shadow-sm p-6'>
+                <div className='flex items-center mb-6'>
+                  <Wrench className='w-6 h-6 text-anchor-500 mr-2' />
+                  <h2 className='text-xl font-semibold text-slate-800'>Utility Connections</h2>
+                </div>
+
+                <div className='grid md:grid-cols-3 gap-6'>
+                  <div>
+                    <label className='form-label'>Water Meter</label>
+                    <select
+                      className='form-input'
+                      value={formData.utilities.waterMeter}
+                      onChange={e => updateUtility('waterMeter', e.target.value as any)}
+                    >
+                      <option value='shared'>Shared</option>
+                      <option value='separate'>Separate</option>
+                    </select>
+                    <p className='text-xs text-slate-500 mt-1'>
+                      {formData.utilities.waterMeter === 'separate' ? '+$1,000' : 'No cost'}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className='form-label'>Gas Meter</label>
+                    <select
+                      className='form-input'
+                      value={formData.utilities.gasMeter}
+                      onChange={e => updateUtility('gasMeter', e.target.value as any)}
+                    >
+                      <option value='shared'>Shared</option>
+                      <option value='separate'>Separate</option>
+                    </select>
+                    <p className='text-xs text-slate-500 mt-1'>
+                      {formData.utilities.gasMeter === 'separate' ? '+$1,500' : 'No cost'}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className='form-label'>Electric Meter</label>
+                    <select
+                      className='form-input'
+                      value={formData.utilities.electricMeter}
+                      disabled
+                    >
+                      <option value='separate'>Separate</option>
+                    </select>
+                    <p className='text-xs text-slate-500 mt-1'>+$2,000 (Required)</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Design Services & Optional Features */}
+              <div className='bg-white rounded-lg shadow-sm p-6'>
+                <div className='flex items-center mb-6'>
+                  <Clock className='w-6 h-6 text-anchor-500 mr-2' />
+                  <h2 className='text-xl font-semibold text-slate-800'>Design Services & Options</h2>
+                </div>
+
+                <div className='grid md:grid-cols-2 gap-6'>
+                  <div className='space-y-4'>
                     <label className='flex items-center'>
                       <input
                         type='checkbox'
@@ -246,75 +251,68 @@ export function ProjectDetailsForm({
                         onChange={e => updateProjectData({ needsDesign: e.target.checked })}
                         className='mr-2 w-4 h-4 text-anchor-600'
                       />
-                      <span className='text-sm'>Architectural Design</span>
+                      <span className='text-sm'>Planning/Design Scope: Full Design</span>
+                    </label>
+                    <p className='text-xs text-slate-500 ml-6'>
+                      ADU Plan Design, Structural Engineering, MEP Design, Zoning & Site Planning (+$8,500)
+                    </p>
+
+                    <label className='flex items-center'>
+                      <input
+                        type='checkbox'
+                        checked={formData.solarDesign}
+                        onChange={e => updateProjectData({ solarDesign: e.target.checked })}
+                        className='mr-2 w-4 h-4 text-anchor-600'
+                      />
+                      <span className='text-sm'>Solar Design Included</span>
                     </label>
 
                     <label className='flex items-center'>
                       <input
                         type='checkbox'
-                        checked={formData.needsManagement}
-                        onChange={e => updateProjectData({ needsManagement: e.target.checked })}
+                        checked={formData.femaIncluded}
+                        onChange={e => updateProjectData({ femaIncluded: e.target.checked })}
                         className='mr-2 w-4 h-4 text-anchor-600'
                       />
-                      <span className='text-sm'>Project Management</span>
+                      <span className='text-sm'>FEMA Included</span>
                     </label>
-                  </div>
-
-                  <div>
-                    <label className='form-label'>Project Timeline</label>
-                    <select
-                      className='form-input'
-                      value={formData.timeline}
-                      onChange={e => updateProjectData({ timeline: e.target.value as any })}
-                    >
-                      <option value='rush'>Rush (4-5 months) - 25% surcharge</option>
-                      <option value='standard'>Standard (6-8 months)</option>
-                      <option value='flexible'>Flexible (10+ months) - 5% discount</option>
-                    </select>
                   </div>
                 </div>
               </div>
 
-              {/* Add-Ons */}
+              {/* Add-Ons - Simplified Options */}
               <div className='bg-white rounded-lg shadow-sm p-6'>
                 <div className='flex items-center mb-6'>
                   <Plus className='w-6 h-6 text-anchor-500 mr-2' />
                   <h2 className='text-xl font-semibold text-slate-800'>Optional Add-Ons</h2>
                 </div>
 
-                {Object.entries(addOnsByCategory).map(([category, addOns]) => (
-                  <div key={category} className='mb-6'>
-                    <h3 className='font-medium text-slate-700 mb-3 capitalize'>
-                      {category.replace('-', ' ')} Options
-                    </h3>
-                    <div className='grid md:grid-cols-2 gap-3'>
-                      {addOns.map(addOn => (
-                        <label
-                          key={addOn.name}
-                          className={`flex items-start p-3 rounded-lg border cursor-pointer transition-all ${
-                            formData.selectedAddOns.includes(addOn.name)
-                              ? 'border-anchor-500 bg-anchor-50'
-                              : 'border-slate-200 hover:border-anchor-300'
-                          }`}
-                        >
-                          <input
-                            type='checkbox'
-                            checked={formData.selectedAddOns.includes(addOn.name)}
-                            onChange={() => toggleAddOn(addOn.name)}
-                            className='mr-3 mt-1 w-4 h-4 text-anchor-600'
-                          />
-                          <div className='flex-1'>
-                            <div className='font-medium text-slate-800'>{addOn.name}</div>
-                            <div className='text-sm text-slate-600'>{addOn.description}</div>
-                            <div className='text-sm font-semibold text-anchor-600'>
-                              +${addOn.price.toLocaleString()}
-                            </div>
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                <div className='grid md:grid-cols-1 gap-3'>
+                  {addOnOptions.map(addOn => (
+                    <label
+                      key={addOn.name}
+                      className={`flex items-start p-4 rounded-lg border cursor-pointer transition-all ${
+                        formData.selectedAddOns.includes(addOn.name)
+                          ? 'border-anchor-500 bg-anchor-50'
+                          : 'border-slate-200 hover:border-anchor-300'
+                      }`}
+                    >
+                      <input
+                        type='checkbox'
+                        checked={formData.selectedAddOns.includes(addOn.name)}
+                        onChange={() => toggleAddOn(addOn.name)}
+                        className='mr-3 mt-1 w-4 h-4 text-anchor-600'
+                      />
+                      <div className='flex-1'>
+                        <div className='font-medium text-slate-800'>{addOn.name}</div>
+                        <div className='text-sm text-slate-600'>{addOn.description}</div>
+                        <div className='text-sm font-semibold text-anchor-600'>
+                          +${addOn.price.toLocaleString()}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
 

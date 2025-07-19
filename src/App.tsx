@@ -20,23 +20,23 @@ function App() {
       zipCode: '',
     },
     project: {
-      lotSize: '',
-      aduType: 'studio',
-      squareFootage: 400,
-      foundationType: 'slab',
-      sitework: 'minimal',
+      aduType: 'detached',
+      squareFootage: 800,
+      bedrooms: 2,
+      bathrooms: 2,
+      appliancesIncluded: true,
+      hvacType: 'central-ac',
       finishLevel: 'standard',
       utilities: {
-        electric: true,
-        plumbing: true,
-        gas: false,
-        cableInternet: false,
+        waterMeter: 'shared',
+        gasMeter: 'shared',
+        electricMeter: 'separate',
       },
-      selectedAddOns: [],
-      needsPermits: true,
+      sewerConnection: 'existing-lateral',
       needsDesign: true,
-      needsManagement: false,
-      timeline: 'standard',
+      solarDesign: false,
+      femaIncluded: false,
+      selectedAddOns: [],
     },
     additionalNotes: '',
     timeline: '6-8 months',
@@ -281,16 +281,16 @@ function App() {
                     const pricingInputs = {
                       squareFootage: formData.project.squareFootage,
                       aduType: formData.project.aduType,
-                      foundationType: formData.project.foundationType,
-                      sitework: formData.project.sitework,
-                      finishLevel: formData.project.finishLevel,
+                      bedrooms: formData.project.bedrooms,
+                      bathrooms: formData.project.bathrooms,
                       utilities: formData.project.utilities,
-                      selectedAddOns: formData.project.selectedAddOns,
-                      needsPermits: formData.project.needsPermits,
                       needsDesign: formData.project.needsDesign,
-                      needsManagement: formData.project.needsManagement,
-                      zipCode: formData.client.zipCode,
-                      timeline: formData.project.timeline,
+                      appliancesIncluded: formData.project.appliancesIncluded,
+                      hvacType: formData.project.hvacType,
+                      selectedAddOns: formData.project.selectedAddOns,
+                      sewerConnection: formData.project.sewerConnection,
+                      solarDesign: formData.project.solarDesign,
+                      femaIncluded: formData.project.femaIncluded,
                     };
 
                     const calculation = pricingEngine.calculateProposal(pricingInputs);
@@ -307,42 +307,26 @@ function App() {
 
                     return (
                       <div className='space-y-3 text-sm'>
-                        {Object.entries(majorCategories)
-                          .slice(0, 6)
-                          .map(([category, total]) => (
-                            <div key={category} className='flex justify-between'>
-                              <span className='text-slate-600'>{category}</span>
-                              <span className='font-medium'>${total.toLocaleString()}</span>
-                            </div>
-                          ))}
-
-                        {calculation.regionalMultiplier !== 1 && (
-                          <div className='flex justify-between text-blue-600'>
-                            <span>Regional Adjustment</span>
-                            <span>{((calculation.regionalMultiplier - 1) * 100).toFixed(0)}%</span>
+                        {Object.entries(majorCategories).map(([category, total]) => (
+                          <div key={category} className='flex justify-between'>
+                            <span className='text-slate-600'>{category}</span>
+                            <span className='font-medium'>${total.toLocaleString()}</span>
                           </div>
-                        )}
-
-                        {calculation.timelineMultiplier !== 1 && (
-                          <div className='flex justify-between text-purple-600'>
-                            <span>Timeline Adjustment</span>
-                            <span>{((calculation.timelineMultiplier - 1) * 100).toFixed(0)}%</span>
-                          </div>
-                        )}
+                        ))}
 
                         <div className='border-t pt-3 mt-3 space-y-2'>
                           <div className='flex justify-between'>
                             <span className='text-slate-600'>Subtotal</span>
                             <span className='font-medium'>
-                              ${calculation.totalBeforeTax.toLocaleString()}
+                              ${calculation.totalBeforeMarkup.toLocaleString()}
                             </span>
                           </div>
                           <div className='flex justify-between'>
                             <span className='text-slate-600'>
-                              Tax ({(calculation.taxRate * 100).toFixed(1)}%)
+                              Markup ({(calculation.markupPercentage * 100).toFixed(0)}%)
                             </span>
                             <span className='font-medium'>
-                              ${calculation.taxAmount.toLocaleString()}
+                              ${calculation.markupAmount.toLocaleString()}
                             </span>
                           </div>
                           <div className='flex justify-between font-semibold text-lg'>
@@ -352,12 +336,13 @@ function App() {
                             </span>
                           </div>
                           <div className='text-center text-xs text-slate-500'>
-                            ${calculation.pricePerSqFt.toLocaleString()}/sq ft
+                            ${Math.round(calculation.pricePerSqFt)}/sq ft
                           </div>
                         </div>
                       </div>
                     );
                   } catch (error) {
+                    console.error('Pricing calculation error:', error);
                     return (
                       <div className='space-y-3 text-sm'>
                         <p className='text-slate-500'>
