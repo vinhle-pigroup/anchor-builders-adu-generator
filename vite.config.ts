@@ -12,5 +12,11 @@ export default defineConfig({
   },
   server: {
     port: 5175, // Different port from other apps
+    host: true, // Allow external connections
+  },
+  preview: {
+    host: true,
+    port: 4173,
+    allowedHosts: ['anchor-builders-adu-generator-production.up.railway.app'],
   },
 });
