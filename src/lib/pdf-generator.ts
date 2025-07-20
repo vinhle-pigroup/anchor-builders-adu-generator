@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import { AnchorProposalFormData } from '../types/proposal';
 import { AnchorPricingEngine } from './pricing-engine';
+import { AnchorPDFTemplateGenerator } from './pdf-template-generator';
 
 export class AnchorPDFGenerator {
   private doc: jsPDF;
@@ -25,6 +26,18 @@ export class AnchorPDFGenerator {
   }
 
   generateProposal(formData: AnchorProposalFormData): Blob {
+    // Try to use the new template generator first
+    try {
+      const templateGenerator = new AnchorPDFTemplateGenerator();
+      return templateGenerator.generateProposal(formData);
+    } catch (error) {
+      console.warn('Template generator failed, falling back to jsPDF:', error);
+      // Fallback to jsPDF generation
+      return this.generateWithJsPDF(formData);
+    }
+  }
+
+  private generateWithJsPDF(formData: AnchorProposalFormData): Blob {
     // Reset position
     this.currentY = 20;
     
