@@ -45,7 +45,7 @@ export const aduTypePricing: AduTypePricing[] = [
 
 // Design Services - Fixed Fee
 export const designServices: DesignServices = {
-  planningDesign: 8500,
+  planningDesign: 12500,
   description: 'ADU Plan Design, Structural Engineering, MEP Design, Zoning & Site Planning',
 };
 

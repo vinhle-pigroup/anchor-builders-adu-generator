@@ -85,15 +85,13 @@ function App() {
           <div className='container mx-auto px-6 py-4'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center space-x-4'>
-                {/* Logo - text-based for now, replace with actual logo */}
+                {/* Anchor Builders Logo */}
                 <div className='flex items-center space-x-3'>
-                  <div className='w-12 h-12 bg-gradient-to-br from-anchor-500 to-anchor-700 rounded-lg flex items-center justify-center'>
-                    <Building2 className='w-7 h-7 text-white' />
-                  </div>
-                  <div>
-                    <h1 className='text-2xl font-bold text-slate-800'>ANCHOR BUILDERS</h1>
-                    <p className='text-sm text-anchor-600'>Professional ADU Construction</p>
-                  </div>
+                  <img 
+                    src="/anchor-builders-logo.svg" 
+                    alt="Anchor Builders Logo" 
+                    className="h-16 w-auto"
+                  />
                 </div>
               </div>
               <div className='text-sm text-slate-500'>

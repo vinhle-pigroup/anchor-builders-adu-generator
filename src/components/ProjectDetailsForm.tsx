@@ -462,7 +462,7 @@ export function ProjectDetailsForm({
                       <div className='flex-1'>
                         <div className='flex justify-between items-start mb-2'>
                           <h3 className='font-semibold text-slate-800'>Full Design Package</h3>
-                          <span className='text-anchor-600 font-medium'>+$8,500</span>
+                          <span className='text-anchor-600 font-medium'>+$12,500</span>
                         </div>
                         <p className='text-sm text-slate-600 mb-3'>
                           Complete architectural design, structural engineering, MEP design, and zoning compliance review.
@@ -624,7 +624,7 @@ export function ProjectDetailsForm({
                     </div>
                     <div className='flex justify-between'>
                       <span className='text-slate-600'>Design Services</span>
-                      <span className='font-medium'>{formData.needsDesign ? '$8,500' : '$0'}</span>
+                      <span className='font-medium'>{formData.needsDesign ? '$12,500' : '$0'}</span>
                     </div>
                     <div className='flex justify-between'>
                       <span className='text-slate-600'>Utilities</span>
