@@ -119,3 +119,71 @@ export const optionalServices = {
   solarDesign: false, // Default: No
   femaIncluded: false, // Default: No
 };
+
+// Milestone Payment Structure - Based on Excel Model
+export interface MilestonePayment {
+  code: string;
+  name: string;
+  percentage: number;
+  description: string;
+}
+
+export const milestonePayments: MilestonePayment[] = [
+  {
+    code: 'M1',
+    name: 'Mobilization',
+    percentage: 20,
+    description: 'Project setup, permits, and mobilization'
+  },
+  {
+    code: 'M2', 
+    name: 'Trenching & Underground Plumbing',
+    percentage: 20,
+    description: 'Site preparation and underground utilities'
+  },
+  {
+    code: 'M3',
+    name: 'Foundation',
+    percentage: 20,
+    description: 'Foundation and concrete work'
+  },
+  {
+    code: 'M4',
+    name: 'Framing',
+    percentage: 15,
+    description: 'Structural framing and roof'
+  },
+  {
+    code: 'M5',
+    name: 'MEP (Mechanical, Electrical, Plumbing)',
+    percentage: 15,
+    description: 'Rough mechanical, electrical, and plumbing'
+  },
+  {
+    code: 'M6',
+    name: 'Drywall',
+    percentage: 10,
+    description: 'Drywall installation and finish'
+  },
+  {
+    code: 'M7',
+    name: 'Property Final',
+    percentage: 5,
+    description: 'Final inspection and completion'
+  }
+];
+
+// Calculate milestone payments with rounding to nearest $50
+export const calculateMilestonePayments = (totalAmount: number) => {
+  return milestonePayments.map(milestone => {
+    const baseAmount = (totalAmount * milestone.percentage) / 100;
+    // Round to nearest $50 to avoid odd numbers
+    const roundedAmount = Math.round(baseAmount / 50) * 50;
+    
+    return {
+      ...milestone,
+      amount: roundedAmount,
+      baseAmount: baseAmount
+    };
+  });
+};

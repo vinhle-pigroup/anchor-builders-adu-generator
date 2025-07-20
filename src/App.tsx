@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, FileText, Calculator, Users, Download } from 'lucide-react';
+import { Building2, FileText, Calculator, Users, Download, Plus, ArrowLeft } from 'lucide-react';
 import type { AnchorProposalFormData, ClientInfo, ProjectInfo } from './types/proposal';
 import { ProjectDetailsForm } from './components/ProjectDetailsForm';
 import { AnchorPricingEngine } from './lib/pricing-engine';
@@ -79,93 +79,113 @@ function App() {
 
   if (currentStep === 'welcome') {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-slate-50 to-anchor-50'>
-        {/* Header with Logo */}
-        <div className='bg-white shadow-sm border-b'>
-          <div className='container mx-auto px-6 py-4'>
-            <div className='flex items-center justify-between'>
-              <div className='flex items-center space-x-4'>
-                {/* Anchor Builders Logo */}
-                <div className='flex items-center space-x-3'>
-                  <img 
-                    src="/anchor-builders-logo.svg" 
-                    alt="Anchor Builders Logo" 
-                    className="h-16 w-auto"
-                  />
+      <div className='min-h-screen bg-gradient-to-br from-stone-100 to-blue-50 flex items-center justify-center'>
+        <div className='text-center max-w-md mx-auto px-6'>
+          {/* Large Logo Container */}
+          <div className='inline-flex items-center justify-center w-52 h-52 bg-white rounded-2xl mb-8 shadow-lg'>
+            <img 
+              src="/logos/anchor-builders-logo.svg" 
+              alt="Anchor Builders Logo" 
+              className="w-48 h-48"
+              style={{ objectFit: 'contain' }}
+            />
+          </div>
+
+          {/* Brand Text */}
+          <h1 className='text-4xl font-bold text-stone-800 mb-2'>
+            Anchor{' '}
+            <span className='text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-anchor-600'>
+              Builders
+            </span>
+          </h1>
+          <p className='text-stone-600 mb-12'>ADU Proposal Generator</p>
+
+          {/* Action Buttons with Hover Explanations */}
+          <div className='space-y-4'>
+            {/* Start New Proposal */}
+            <div className='relative group'>
+              <button
+                onClick={() => setCurrentStep('client')}
+                className='w-full bg-gradient-to-r from-blue-500 to-anchor-500 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-blue-600 hover:to-anchor-600 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center'
+              >
+                <Plus className='w-5 h-5 mr-2' />
+                Start New Proposal
+              </button>
+              
+              {/* Hover Explanation */}
+              <div className='absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 w-80 bg-gray-900 text-white text-sm rounded-lg py-3 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50'>
+                <div className='text-center'>
+                  <p className='font-medium mb-1'>Create Professional ADU Proposals</p>
+                  <p className='text-gray-300 text-xs'>
+                    • Step-by-step guided form with real-time pricing
+                    • Milestone payment breakdowns (M1-M7)
+                    • Professional PDF generation with Anchor Builders branding
+                    • Accurate California pricing with utility connections
+                  </p>
                 </div>
+                {/* Arrow */}
+                <div className='absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45'></div>
               </div>
-              <div className='text-sm text-slate-500'>
-                www.anchorbuilders.io
+            </div>
+
+            {/* Edit Existing */}
+            <div className='relative group'>
+              <button
+                onClick={() => alert('Edit Existing - Coming Soon!')}
+                className='w-full bg-white text-stone-700 px-6 py-3 rounded-xl text-base font-semibold hover:bg-stone-50 transition-all shadow-lg border border-stone-200 flex items-center justify-center'
+              >
+                <FileText className='w-4 h-4 mr-2' />
+                Edit Existing
+              </button>
+              
+              {/* Hover Explanation */}
+              <div className='absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 w-72 bg-gray-900 text-white text-sm rounded-lg py-3 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50'>
+                <div className='text-center'>
+                  <p className='font-medium mb-1'>Manage Saved Proposals</p>
+                  <p className='text-gray-300 text-xs'>
+                    • Load and modify existing proposals
+                    • Update client information and pricing
+                    • Track proposal status (Draft, Sent, Approved)
+                    • Regenerate PDFs with latest pricing
+                  </p>
+                </div>
+                {/* Arrow */}
+                <div className='absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45'></div>
+              </div>
+            </div>
+
+            {/* Admin Settings */}
+            <div className='relative group'>
+              <button
+                onClick={() => alert('Admin Settings - Coming Soon!')}
+                className='w-full bg-slate-600 text-white px-6 py-3 rounded-xl text-base font-semibold hover:bg-slate-700 transition-all shadow-lg flex items-center justify-center'
+              >
+                <Users className='w-4 h-4 mr-2' />
+                Admin Settings
+              </button>
+              
+              {/* Hover Explanation */}
+              <div className='absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 w-72 bg-gray-900 text-white text-sm rounded-lg py-3 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50'>
+                <div className='text-center'>
+                  <p className='font-medium mb-1'>System Administration</p>
+                  <p className='text-gray-300 text-xs'>
+                    • Manage pricing tables and markup rates
+                    • Configure milestone payment percentages
+                    • Update company branding and templates
+                    • User management and permissions
+                  </p>
+                </div>
+                {/* Arrow */}
+                <div className='absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45'></div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Main Content */}
-        <div className='flex items-center justify-center min-h-[calc(100vh-100px)]'>
-          <div className='text-center max-w-4xl mx-auto px-6'>
-            <div className='mb-12'>
-              <h2 className='text-4xl font-bold text-slate-800 mb-4'>ADU Proposal Generator</h2>
-              <p className='text-xl text-slate-600 max-w-2xl mx-auto'>
-                Create professional ADU proposals with accurate pricing, detailed specifications, 
-                and customizable options for your clients.
-              </p>
-            </div>
-
-            {/* Action Cards */}
-            <div className='grid md:grid-cols-3 gap-6 max-w-5xl mx-auto'>
-              {/* Start New Proposal */}
-              <div className='bg-white rounded-xl shadow-lg border border-slate-200 p-8 hover:shadow-xl transition-shadow cursor-pointer group'
-                   onClick={() => setCurrentStep('client')}>
-                <div className='w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center mx-auto mb-6 group-hover:scale-105 transition-transform'>
-                  <FileText className='w-8 h-8 text-white' />
-                </div>
-                <h3 className='text-xl font-semibold text-slate-800 mb-3'>Start New Proposal</h3>
-                <p className='text-slate-600 mb-6'>
-                  Create a new ADU proposal from scratch with our guided form and pricing calculator.
-                </p>
-                <button className='btn-primary w-full'>
-                  Begin New Proposal
-                </button>
-              </div>
-
-              {/* Edit Existing */}
-              <div className='bg-white rounded-xl shadow-lg border border-slate-200 p-8 hover:shadow-xl transition-shadow cursor-pointer group opacity-75'
-                   onClick={() => alert('Edit Existing - Coming Soon!')}>
-                <div className='w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mx-auto mb-6 group-hover:scale-105 transition-transform'>
-                  <FileText className='w-8 h-8 text-white' />
-                </div>
-                <h3 className='text-xl font-semibold text-slate-800 mb-3'>Edit Existing</h3>
-                <p className='text-slate-600 mb-6'>
-                  Load and modify previously saved proposals or update client information.
-                </p>
-                <button className='btn-secondary w-full'>
-                  Load Proposal
-                </button>
-              </div>
-
-              {/* Admin Settings */}
-              <div className='bg-white rounded-xl shadow-lg border border-slate-200 p-8 hover:shadow-xl transition-shadow cursor-pointer group opacity-75'
-                   onClick={() => alert('Admin Settings - Coming Soon!')}>
-                <div className='w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mx-auto mb-6 group-hover:scale-105 transition-transform'>
-                  <Users className='w-8 h-8 text-white' />
-                </div>
-                <h3 className='text-xl font-semibold text-slate-800 mb-3'>Admin Settings</h3>
-                <p className='text-slate-600 mb-6'>
-                  Manage pricing, templates, and system settings for your organization.
-                </p>
-                <button className='btn-secondary w-full'>
-                  Access Settings
-                </button>
-              </div>
-            </div>
-
-            {/* Footer Info */}
-            <div className='mt-12 text-center'>
-              <p className='text-slate-500 text-sm'>
-                Professional ADU proposals with accurate California pricing • Licensed & Insured
-              </p>
-            </div>
+          {/* Footer Info */}
+          <div className='mt-8 text-center'>
+            <p className='text-stone-500 text-sm'>
+              Professional ADU proposals with accurate California pricing • Licensed & Insured
+            </p>
           </div>
         </div>
       </div>
@@ -177,15 +197,28 @@ function App() {
       <div className='min-h-screen bg-slate-50'>
         <div className='container mx-auto px-4 py-8'>
           <div className='max-w-2xl mx-auto'>
-            {/* Progress Bar */}
-            <div className='mb-8'>
-              <div className='flex items-center justify-between text-sm text-slate-600 mb-2'>
-                <span>Step 1 of 3</span>
-                <span>Client Information</span>
+            {/* Header with Back Button */}
+            <div className='flex items-center justify-between mb-6'>
+              <button 
+                onClick={() => setCurrentStep('welcome')}
+                className='flex items-center space-x-2 text-slate-600 hover:text-anchor-600 transition-colors'
+              >
+                <ArrowLeft className='w-5 h-5' />
+                <span>Back to Home</span>
+              </button>
+              
+              {/* Progress Bar */}
+              <div className='flex-1 max-w-md mx-8'>
+                <div className='flex items-center justify-between text-sm text-slate-600 mb-2'>
+                  <span>Step 1 of 3</span>
+                  <span>Client Information</span>
+                </div>
+                <div className='w-full bg-slate-200 rounded-full h-2'>
+                  <div className='bg-anchor-500 h-2 rounded-full' style={{ width: '33%' }}></div>
+                </div>
               </div>
-              <div className='w-full bg-slate-200 rounded-full h-2'>
-                <div className='bg-anchor-500 h-2 rounded-full' style={{ width: '33%' }}></div>
-              </div>
+              
+              <div className='w-24'></div> {/* Spacer for balance */}
             </div>
 
             <div className='bg-white rounded-lg shadow-sm p-6'>
@@ -317,15 +350,28 @@ function App() {
       <div className='min-h-screen bg-slate-50'>
         <div className='container mx-auto px-4 py-8'>
           <div className='max-w-4xl mx-auto'>
-            {/* Progress Bar */}
-            <div className='mb-8'>
-              <div className='flex items-center justify-between text-sm text-slate-600 mb-2'>
-                <span>Step 3 of 3</span>
-                <span>Review & Generate</span>
+            {/* Header with Back Button */}
+            <div className='flex items-center justify-between mb-6'>
+              <button 
+                onClick={() => setCurrentStep('project')}
+                className='flex items-center space-x-2 text-slate-600 hover:text-anchor-600 transition-colors'
+              >
+                <ArrowLeft className='w-5 h-5' />
+                <span>Back to Project Details</span>
+              </button>
+              
+              {/* Progress Bar */}
+              <div className='flex-1 max-w-md mx-8'>
+                <div className='flex items-center justify-between text-sm text-slate-600 mb-2'>
+                  <span>Step 3 of 3</span>
+                  <span>Review & Generate</span>
+                </div>
+                <div className='w-full bg-slate-200 rounded-full h-2'>
+                  <div className='bg-anchor-500 h-2 rounded-full' style={{ width: '100%' }}></div>
+                </div>
               </div>
-              <div className='w-full bg-slate-200 rounded-full h-2'>
-                <div className='bg-anchor-500 h-2 rounded-full' style={{ width: '100%' }}></div>
-              </div>
+              
+              <div className='w-24'></div> {/* Spacer for balance */}
             </div>
 
             <div className='grid lg:grid-cols-3 gap-6'>
