@@ -79,25 +79,96 @@ function App() {
 
   if (currentStep === 'welcome') {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-slate-50 to-anchor-50 flex items-center justify-center'>
-        <div className='text-center max-w-2xl mx-auto px-6'>
-          <div className='inline-flex items-center justify-center w-24 h-24 bg-anchor-500 rounded-full mb-8'>
-            <Building2 className='w-12 h-12 text-white' />
+      <div className='min-h-screen bg-gradient-to-br from-slate-50 to-anchor-50'>
+        {/* Header with Logo */}
+        <div className='bg-white shadow-sm border-b'>
+          <div className='container mx-auto px-6 py-4'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center space-x-4'>
+                {/* Logo - text-based for now, replace with actual logo */}
+                <div className='flex items-center space-x-3'>
+                  <div className='w-12 h-12 bg-gradient-to-br from-anchor-500 to-anchor-700 rounded-lg flex items-center justify-center'>
+                    <Building2 className='w-7 h-7 text-white' />
+                  </div>
+                  <div>
+                    <h1 className='text-2xl font-bold text-slate-800'>ANCHOR BUILDERS</h1>
+                    <p className='text-sm text-anchor-600'>Professional ADU Construction</p>
+                  </div>
+                </div>
+              </div>
+              <div className='text-sm text-slate-500'>
+                www.anchorbuilders.io
+              </div>
+            </div>
           </div>
+        </div>
 
-          <h1 className='text-4xl font-bold text-slate-800 mb-4'>Anchor Builders</h1>
-          <h2 className='text-2xl font-semibold text-anchor-600 mb-6'>ADU Proposal Generator</h2>
-          <p className='text-lg text-slate-600 mb-8'>
-            Create professional ADU proposals with accurate pricing and detailed project
-            specifications.
-          </p>
+        {/* Main Content */}
+        <div className='flex items-center justify-center min-h-[calc(100vh-100px)]'>
+          <div className='text-center max-w-4xl mx-auto px-6'>
+            <div className='mb-12'>
+              <h2 className='text-4xl font-bold text-slate-800 mb-4'>ADU Proposal Generator</h2>
+              <p className='text-xl text-slate-600 max-w-2xl mx-auto'>
+                Create professional ADU proposals with accurate pricing, detailed specifications, 
+                and customizable options for your clients.
+              </p>
+            </div>
 
-          <button
-            onClick={() => setCurrentStep('client')}
-            className='btn-primary text-lg px-8 py-3'
-          >
-            Start New Proposal
-          </button>
+            {/* Action Cards */}
+            <div className='grid md:grid-cols-3 gap-6 max-w-5xl mx-auto'>
+              {/* Start New Proposal */}
+              <div className='bg-white rounded-xl shadow-lg border border-slate-200 p-8 hover:shadow-xl transition-shadow cursor-pointer group'
+                   onClick={() => setCurrentStep('client')}>
+                <div className='w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center mx-auto mb-6 group-hover:scale-105 transition-transform'>
+                  <FileText className='w-8 h-8 text-white' />
+                </div>
+                <h3 className='text-xl font-semibold text-slate-800 mb-3'>Start New Proposal</h3>
+                <p className='text-slate-600 mb-6'>
+                  Create a new ADU proposal from scratch with our guided form and pricing calculator.
+                </p>
+                <button className='btn-primary w-full'>
+                  Begin New Proposal
+                </button>
+              </div>
+
+              {/* Edit Existing */}
+              <div className='bg-white rounded-xl shadow-lg border border-slate-200 p-8 hover:shadow-xl transition-shadow cursor-pointer group opacity-75'
+                   onClick={() => alert('Edit Existing - Coming Soon!')}>
+                <div className='w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mx-auto mb-6 group-hover:scale-105 transition-transform'>
+                  <FileText className='w-8 h-8 text-white' />
+                </div>
+                <h3 className='text-xl font-semibold text-slate-800 mb-3'>Edit Existing</h3>
+                <p className='text-slate-600 mb-6'>
+                  Load and modify previously saved proposals or update client information.
+                </p>
+                <button className='btn-secondary w-full'>
+                  Load Proposal
+                </button>
+              </div>
+
+              {/* Admin Settings */}
+              <div className='bg-white rounded-xl shadow-lg border border-slate-200 p-8 hover:shadow-xl transition-shadow cursor-pointer group opacity-75'
+                   onClick={() => alert('Admin Settings - Coming Soon!')}>
+                <div className='w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mx-auto mb-6 group-hover:scale-105 transition-transform'>
+                  <Users className='w-8 h-8 text-white' />
+                </div>
+                <h3 className='text-xl font-semibold text-slate-800 mb-3'>Admin Settings</h3>
+                <p className='text-slate-600 mb-6'>
+                  Manage pricing, templates, and system settings for your organization.
+                </p>
+                <button className='btn-secondary w-full'>
+                  Access Settings
+                </button>
+              </div>
+            </div>
+
+            {/* Footer Info */}
+            <div className='mt-12 text-center'>
+              <p className='text-slate-500 text-sm'>
+                Professional ADU proposals with accurate California pricing • Licensed & Insured
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -196,6 +267,16 @@ function App() {
                     placeholder='CA'
                   />
                 </div>
+                <div>
+                  <label className='form-label'>ZIP Code *</label>
+                  <input
+                    type='text'
+                    className='form-input'
+                    value={formData.client.zipCode}
+                    onChange={e => updateClientData({ zipCode: e.target.value })}
+                    placeholder='92683'
+                  />
+                </div>
               </div>
 
               <div className='flex justify-between mt-8'>
@@ -208,7 +289,8 @@ function App() {
                   disabled={
                     !formData.client.firstName ||
                     !formData.client.lastName ||
-                    !formData.client.email
+                    !formData.client.email ||
+                    !formData.client.zipCode
                   }
                 >
                   Next: Project Details

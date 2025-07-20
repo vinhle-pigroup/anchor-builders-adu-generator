@@ -8,10 +8,10 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 5000 --host 0.0.0.0",
     "build": "vite build",
     "lint": "eslint . --max-warnings 0",
-    "preview": "vite preview",
+    "preview": "vite preview --port 5000 --host 0.0.0.0",
     "test": "vitest",
     "test:coverage": "vitest run --coverage"
   },
@@ -25,6 +25,7 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.60.0",
     "react-router-dom": "^6.26.2",
+    "xlsx": "^0.18.5",
     "zod": "^4.0.5",
     "zustand": "^4.5.5"
   },

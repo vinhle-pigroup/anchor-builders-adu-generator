@@ -1,0 +1,62 @@
+Test Case,Excel Total,React App Total,Difference,Difference %,Excel Price/sqft,React Price/sqft,Square Footage,ADU Type,Client Name
+Nikki Vu 800sqft,$184500,$214475,$29975,16.2%,$230.63,$268.09,800,Detached,Nikki Vu
+Barney 600sqft,$156500,TBD,TBD,TBD,$260.83,TBD,600,Detached,My Le
+Barney 750sqft,$186500,TBD,TBD,TBD,$248.67,TBD,750,Detached,My Le
+
+LINE ITEM BREAKDOWN - NIKKI VU EXAMPLE
+Component,Excel Amount,React App Amount,Difference,Notes
+Base Construction,$180000,$176000,-$4000,Excel uses detailed line items vs $/sqft
+Design Services,$6500,$8500,$2000,React app pricing higher
+Utilities,$0,$2000,$2000,React charges for separate electric
+Add-ons,$0,$0,$0,Both none selected
+Subtotal,$186500,$186500,$0,EXACT MATCH!
+Markup/Discount,-$2000 (discount),$27975 (15%),+$29975,Different markup methods
+FINAL TOTAL,$184500,$214475,$29975,React app 16% higher
+
+BARNEY EXAMPLES - EXCEL LINE ITEMS
+Category,600sqft Amount,750sqft Amount,Increase,Scaling %
+Mobilization,$30000,$35000,$5000,16.7%
+Trenching & Underground Plumbing,$30000,$35000,$5000,16.7%
+Foundation,$22000,$28000,$6000,27.3%
+Framing,$20000,$25000,$5000,25.0%
+MEP,$20000,$25000,$5000,25.0%
+Drywall,$20000,$22000,$2000,10.0%
+Subtotal,$142000,$170000,$28000,19.7%
+FINAL TOTAL,$156500,$186500,$30000,19.2%
+
+CLIENT INFORMATION COMPARISON
+Field,Nikki Vu (Excel),Nikki Vu (React),Barney Examples (Excel)
+Name,Nikki Vu,Nikki Vu,My Le
+Address,17231 San Ricardo Cir,17231 San Ricardo Cir,13351 Barney St.
+City,Fountain Valley,Fountain Valley,Westminster
+State,California,CA,CA
+ZIP,92708,MISSING,92683
+Phone,714-623-4118,714-623-4118,714-349-1459
+Email,Nikkiloanvu@gmail.com,Nikkiloanvu@gmail.com,myle.nguyenk@gmail.com
+
+PROJECT SPECIFICATIONS COMPARISON
+Field,Nikki Vu,Barney 600sqft,Barney 750sqft
+ADU Type,Detached (1 Story),Detached,Detached
+Square Footage,800,600,750
+Bedrooms,2,2,2
+Bathrooms,2,2,2
+Design Services,Yes ($6500),Yes,Yes
+Water Meter,Shared,Separate ($1000),Separate ($1000)
+Gas Meter,Shared,Separate ($1500),Separate ($1500)
+Electric Meter,Separate,Separate ($2000),Separate ($2000)
+
+PRICING PATTERN ANALYSIS
+Pattern,Finding,Impact
+Size Efficiency,Larger ADUs more cost-effective per sqft,750sqft = $248.67/sqft vs 600sqft = $260.83/sqft
+Markup Method,Excel uses discount vs React uses percentage,Excel: -$2000 discount vs React: +15% markup
+Design Services,Excel $6500 vs React $8500,$2000 consistent difference
+Utility Pricing,Excel varies by project vs React fixed rates,Excel shows separate meters on Barney examples
+Base Construction,Excel detailed line items vs React $/sqft,React simplified but subtotals match
+
+RECOMMENDATIONS
+Priority,Action,Expected Impact
+High,Add ZIP code field to React app,Enable regional pricing
+High,Adjust design services from $8500 to $6500,Reduce $2000 per project
+High,Review markup method (discount vs percentage),Reduce final total by ~$30000
+Medium,Implement non-linear scaling for different categories,More accurate large project pricing
+Medium,Add detailed line-item breakdown option,Match Excel granularity
