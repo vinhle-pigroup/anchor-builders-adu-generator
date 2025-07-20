@@ -102,7 +102,6 @@ export function ProjectDetailsForm({
   };
 
   // Calculate real-time pricing for display
-  const pricingEngine = new AnchorPricingEngine();
   const currentPricing = (() => {
     try {
       const pricingInputs = {
