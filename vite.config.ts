@@ -19,4 +19,23 @@ export default defineConfig({
     port: 5000,
     allowedHosts: ['anchor-builders-adu-generator-production.up.railway.app'],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          icons: ['lucide-react'],
+          pdf: ['jspdf', 'html2canvas', 'dompurify']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    }
+  }
 });
