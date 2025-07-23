@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Building2, FileText, Calculator, Users, Download, Plus, ArrowLeft } from 'lucide-react';
 import type { AnchorProposalFormData, ClientInfo, ProjectInfo } from './types/proposal';
 import { ProjectDetailsForm } from './components/ProjectDetailsForm';
@@ -6,9 +6,7 @@ import { AnchorPricingEngine } from './lib/pricing-engine';
 import { AnchorPDFGenerator } from './lib/pdf-generator';
 
 function App() {
-  const [currentStep, setCurrentStep] = useState<'welcome' | 'client' | 'project' | 'review'>(
-    'welcome'
-  );
+  const [currentStep, setCurrentStep] = useState<'welcome' | 'form' | 'review'>('welcome');
   const [formData, setFormData] = useState<AnchorProposalFormData>({
     client: {
       firstName: '',
@@ -57,11 +55,11 @@ function App() {
     }));
   };
 
-  const generatePDF = () => {
+  const generatePDF = useCallback(() => {
     try {
       const pdfGenerator = new AnchorPDFGenerator();
       const pdfBlob = pdfGenerator.generateProposal(formData);
-      
+
       // Create download link
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
@@ -72,10 +70,38 @@ function App() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('PDF generation error:', error);
+      console.error('PDF generation failed:', error);
+      // TODO: Replace with proper error toast
       alert('Error generating PDF. Please try again.');
     }
-  };
+  }, [formData]);
+
+  // Pre-calculate pricing for review section (moved before conditional renders)
+  const reviewPricing = useMemo(() => {
+    if (currentStep !== 'review') return null;
+
+    try {
+      const pricingEngine = new AnchorPricingEngine();
+      const pricingInputs = {
+        squareFootage: formData.project.squareFootage,
+        aduType: formData.project.aduType,
+        bedrooms: formData.project.bedrooms,
+        bathrooms: formData.project.bathrooms,
+        utilities: formData.project.utilities,
+        needsDesign: formData.project.needsDesign,
+        appliancesIncluded: formData.project.appliancesIncluded,
+        hvacType: formData.project.hvacType,
+        selectedAddOns: formData.project.selectedAddOns,
+        sewerConnection: formData.project.sewerConnection,
+        solarDesign: formData.project.solarDesign,
+        femaIncluded: formData.project.femaIncluded,
+      };
+      return pricingEngine.calculateProposal(pricingInputs);
+    } catch (error) {
+      console.error('Pricing calculation error:', error);
+      return null;
+    }
+  }, [currentStep, formData.project]);
 
   if (currentStep === 'welcome') {
     return (
@@ -83,12 +109,9 @@ function App() {
         <div className='text-center max-w-md mx-auto px-6'>
           {/* Large Logo Container */}
           <div className='inline-flex items-center justify-center w-52 h-52 bg-white rounded-2xl mb-8 shadow-lg'>
-            <img 
-              src="/logos/anchor-builders-logo.svg" 
-              alt="Anchor Builders Logo" 
-              className="w-48 h-48"
-              style={{ objectFit: 'contain' }}
-            />
+            <div className='flex items-center justify-center w-48 h-48 text-anchor-600'>
+              <Building2 className='w-24 h-24' />
+            </div>
           </div>
 
           {/* Brand Text */}
@@ -98,29 +121,28 @@ function App() {
               Builders
             </span>
           </h1>
-          <p className='text-stone-600 mb-12'>ADU Proposal Generator</p>
+          <p className='text-stone-600 mb-12'>ADU Proposal Generator - DEPLOYED v3</p>
 
           {/* Action Buttons with Hover Explanations */}
           <div className='space-y-4'>
             {/* Start New Proposal */}
             <div className='relative group'>
               <button
-                onClick={() => setCurrentStep('client')}
+                onClick={() => setCurrentStep('form')}
                 className='w-full bg-gradient-to-r from-blue-500 to-anchor-500 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-blue-600 hover:to-anchor-600 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center'
               >
                 <Plus className='w-5 h-5 mr-2' />
                 Start New Proposal
               </button>
-              
+
               {/* Hover Explanation */}
               <div className='absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 w-80 bg-gray-900 text-white text-sm rounded-lg py-3 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50'>
                 <div className='text-center'>
                   <p className='font-medium mb-1'>Create Professional ADU Proposals</p>
                   <p className='text-gray-300 text-xs'>
-                    • Step-by-step guided form with real-time pricing
-                    • Milestone payment breakdowns (M1-M7)
-                    • Professional PDF generation with Anchor Builders branding
-                    • Accurate California pricing with utility connections
+                    • Step-by-step guided form with real-time pricing • Milestone payment breakdowns
+                    (M1-M7) • Professional PDF generation with Anchor Builders branding • Accurate
+                    California pricing with utility connections
                   </p>
                 </div>
                 {/* Arrow */}
@@ -137,16 +159,15 @@ function App() {
                 <FileText className='w-4 h-4 mr-2' />
                 Edit Existing
               </button>
-              
+
               {/* Hover Explanation */}
               <div className='absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 w-72 bg-gray-900 text-white text-sm rounded-lg py-3 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50'>
                 <div className='text-center'>
                   <p className='font-medium mb-1'>Manage Saved Proposals</p>
                   <p className='text-gray-300 text-xs'>
-                    • Load and modify existing proposals
-                    • Update client information and pricing
-                    • Track proposal status (Draft, Sent, Approved)
-                    • Regenerate PDFs with latest pricing
+                    • Load and modify existing proposals • Update client information and pricing •
+                    Track proposal status (Draft, Sent, Approved) • Regenerate PDFs with latest
+                    pricing
                   </p>
                 </div>
                 {/* Arrow */}
@@ -163,16 +184,15 @@ function App() {
                 <Users className='w-4 h-4 mr-2' />
                 Admin Settings
               </button>
-              
+
               {/* Hover Explanation */}
               <div className='absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 w-72 bg-gray-900 text-white text-sm rounded-lg py-3 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50'>
                 <div className='text-center'>
                   <p className='font-medium mb-1'>System Administration</p>
                   <p className='text-gray-300 text-xs'>
-                    • Manage pricing tables and markup rates
-                    • Configure milestone payment percentages
-                    • Update company branding and templates
-                    • User management and permissions
+                    • Manage pricing tables and markup rates • Configure milestone payment
+                    percentages • Update company branding and templates • User management and
+                    permissions
                   </p>
                 </div>
                 {/* Arrow */}
@@ -192,156 +212,164 @@ function App() {
     );
   }
 
-  if (currentStep === 'client') {
+  if (currentStep === 'form') {
     return (
       <div className='min-h-screen bg-slate-50'>
         <div className='container mx-auto px-4 py-8'>
-          <div className='max-w-2xl mx-auto'>
+          <div className='max-w-6xl mx-auto'>
             {/* Header with Back Button */}
             <div className='flex items-center justify-between mb-6'>
-              <button 
+              <button
                 onClick={() => setCurrentStep('welcome')}
                 className='flex items-center space-x-2 text-slate-600 hover:text-anchor-600 transition-colors'
               >
                 <ArrowLeft className='w-5 h-5' />
                 <span>Back to Home</span>
               </button>
-              
               {/* Progress Bar */}
               <div className='flex-1 max-w-md mx-8'>
                 <div className='flex items-center justify-between text-sm text-slate-600 mb-2'>
-                  <span>Step 1 of 3</span>
-                  <span>Client Information</span>
+                  <span>Step 1 of 2</span>
+                  <span>Project Information</span>
                 </div>
                 <div className='w-full bg-slate-200 rounded-full h-2'>
-                  <div className='bg-anchor-500 h-2 rounded-full' style={{ width: '33%' }}></div>
+                  <div className='bg-anchor-500 h-2 rounded-full' style={{ width: '50%' }}></div>
                 </div>
               </div>
-              
               <div className='w-24'></div> {/* Spacer for balance */}
             </div>
 
-            <div className='bg-white rounded-lg shadow-sm p-6'>
-              <div className='flex items-center mb-6'>
-                <Users className='w-6 h-6 text-anchor-500 mr-2' />
-                <h2 className='text-xl font-semibold text-slate-800'>Client Information</h2>
+            <div className='grid lg:grid-cols-2 gap-8'>
+              {/* Client Information Panel */}
+              <div className='bg-white rounded-lg shadow-sm p-6'>
+                <div className='flex items-center mb-6'>
+                  <Users className='w-6 h-6 text-anchor-500 mr-2' />
+                  <h2 className='text-xl font-semibold text-slate-800'>Client Information</h2>
+                </div>
+
+                <div className='grid gap-4'>
+                  <div className='grid md:grid-cols-2 gap-4'>
+                    <div>
+                      <label className='form-label'>First Name *</label>
+                      <input
+                        type='text'
+                        className='form-input'
+                        value={formData.client.firstName}
+                        onChange={e => updateClientData({ firstName: e.target.value })}
+                        placeholder='First Name'
+                      />
+                    </div>
+                    <div>
+                      <label className='form-label'>Last Name *</label>
+                      <input
+                        type='text'
+                        className='form-input'
+                        value={formData.client.lastName}
+                        onChange={e => updateClientData({ lastName: e.target.value })}
+                        placeholder='Last Name'
+                      />
+                    </div>
+                  </div>
+                  <div className='grid md:grid-cols-2 gap-4'>
+                    <div>
+                      <label className='form-label'>Email *</label>
+                      <input
+                        type='email'
+                        className='form-input'
+                        value={formData.client.email}
+                        onChange={e => updateClientData({ email: e.target.value })}
+                        placeholder='email@example.com'
+                      />
+                    </div>
+                    <div>
+                      <label className='form-label'>Phone *</label>
+                      <input
+                        type='tel'
+                        className='form-input'
+                        value={formData.client.phone}
+                        onChange={e => updateClientData({ phone: e.target.value })}
+                        placeholder='(555) 123-4567'
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className='form-label'>Address *</label>
+                    <input
+                      type='text'
+                      className='form-input'
+                      value={formData.client.address}
+                      onChange={e => updateClientData({ address: e.target.value })}
+                      placeholder='123 Main Street'
+                    />
+                  </div>
+                  <div className='grid md:grid-cols-3 gap-4'>
+                    <div>
+                      <label className='form-label'>City *</label>
+                      <input
+                        type='text'
+                        className='form-input'
+                        value={formData.client.city}
+                        onChange={e => updateClientData({ city: e.target.value })}
+                        placeholder='City'
+                      />
+                    </div>
+                    <div>
+                      <label className='form-label'>State *</label>
+                      <input
+                        type='text'
+                        className='form-input'
+                        value={formData.client.state}
+                        onChange={e => updateClientData({ state: e.target.value })}
+                        placeholder='CA'
+                      />
+                    </div>
+                    <div>
+                      <label className='form-label'>ZIP Code *</label>
+                      <input
+                        type='text'
+                        className='form-input'
+                        value={formData.client.zipCode}
+                        onChange={e => updateClientData({ zipCode: e.target.value })}
+                        placeholder='92683'
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className='grid md:grid-cols-2 gap-4'>
-                <div>
-                  <label className='form-label'>First Name *</label>
-                  <input
-                    type='text'
-                    className='form-input'
-                    value={formData.client.firstName}
-                    onChange={e => updateClientData({ firstName: e.target.value })}
-                    placeholder='First Name'
-                  />
-                </div>
-                <div>
-                  <label className='form-label'>Last Name *</label>
-                  <input
-                    type='text'
-                    className='form-input'
-                    value={formData.client.lastName}
-                    onChange={e => updateClientData({ lastName: e.target.value })}
-                    placeholder='Last Name'
-                  />
-                </div>
-                <div>
-                  <label className='form-label'>Email *</label>
-                  <input
-                    type='email'
-                    className='form-input'
-                    value={formData.client.email}
-                    onChange={e => updateClientData({ email: e.target.value })}
-                    placeholder='email@example.com'
-                  />
-                </div>
-                <div>
-                  <label className='form-label'>Phone *</label>
-                  <input
-                    type='tel'
-                    className='form-input'
-                    value={formData.client.phone}
-                    onChange={e => updateClientData({ phone: e.target.value })}
-                    placeholder='(555) 123-4567'
-                  />
-                </div>
-                <div className='md:col-span-2'>
-                  <label className='form-label'>Address *</label>
-                  <input
-                    type='text'
-                    className='form-input'
-                    value={formData.client.address}
-                    onChange={e => updateClientData({ address: e.target.value })}
-                    placeholder='123 Main Street'
-                  />
-                </div>
-                <div>
-                  <label className='form-label'>City *</label>
-                  <input
-                    type='text'
-                    className='form-input'
-                    value={formData.client.city}
-                    onChange={e => updateClientData({ city: e.target.value })}
-                    placeholder='City'
-                  />
-                </div>
-                <div>
-                  <label className='form-label'>State *</label>
-                  <input
-                    type='text'
-                    className='form-input'
-                    value={formData.client.state}
-                    onChange={e => updateClientData({ state: e.target.value })}
-                    placeholder='CA'
-                  />
-                </div>
-                <div>
-                  <label className='form-label'>ZIP Code *</label>
-                  <input
-                    type='text'
-                    className='form-input'
-                    value={formData.client.zipCode}
-                    onChange={e => updateClientData({ zipCode: e.target.value })}
-                    placeholder='92683'
-                  />
-                </div>
+              {/* Project Details Panel */}
+              <div className='bg-white rounded-lg shadow-sm p-6'>
+                <ProjectDetailsForm
+                  formData={formData.project}
+                  updateProjectData={updateProjectData}
+                  onBack={() => setCurrentStep('welcome')}
+                  onNext={() => setCurrentStep('review')}
+                  isEmbedded={true}
+                />
               </div>
+            </div>
 
-              <div className='flex justify-between mt-8'>
-                <button onClick={() => setCurrentStep('welcome')} className='btn-secondary'>
-                  Back
-                </button>
-                <button
-                  onClick={() => setCurrentStep('project')}
-                  className='btn-primary'
-                  disabled={
-                    !formData.client.firstName ||
-                    !formData.client.lastName ||
-                    !formData.client.email ||
-                    !formData.client.zipCode
-                  }
-                >
-                  Next: Project Details
-                </button>
-              </div>
+            {/* Action Buttons */}
+            <div className='flex justify-between mt-8'>
+              <button onClick={() => setCurrentStep('welcome')} className='btn-secondary'>
+                Back to Home
+              </button>
+              <button
+                onClick={() => setCurrentStep('review')}
+                className='btn-primary'
+                disabled={
+                  !formData.client.firstName ||
+                  !formData.client.lastName ||
+                  !formData.client.email ||
+                  !formData.client.zipCode
+                }
+              >
+                Review & Generate PDF
+              </button>
             </div>
           </div>
         </div>
       </div>
-    );
-  }
-
-  if (currentStep === 'project') {
-    return (
-      <ProjectDetailsForm
-        formData={formData.project}
-        updateProjectData={updateProjectData}
-        onBack={() => setCurrentStep('client')}
-        onNext={() => setCurrentStep('review')}
-      />
     );
   }
 
@@ -352,25 +380,23 @@ function App() {
           <div className='max-w-4xl mx-auto'>
             {/* Header with Back Button */}
             <div className='flex items-center justify-between mb-6'>
-              <button 
-                onClick={() => setCurrentStep('project')}
+              <button
+                onClick={() => setCurrentStep('form')}
                 className='flex items-center space-x-2 text-slate-600 hover:text-anchor-600 transition-colors'
               >
                 <ArrowLeft className='w-5 h-5' />
-                <span>Back to Project Details</span>
+                <span>Back to Form</span>
               </button>
-              
               {/* Progress Bar */}
               <div className='flex-1 max-w-md mx-8'>
                 <div className='flex items-center justify-between text-sm text-slate-600 mb-2'>
-                  <span>Step 3 of 3</span>
+                  <span>Step 2 of 2</span>
                   <span>Review & Generate</span>
                 </div>
                 <div className='w-full bg-slate-200 rounded-full h-2'>
                   <div className='bg-anchor-500 h-2 rounded-full' style={{ width: '100%' }}></div>
                 </div>
               </div>
-              
               <div className='w-24'></div> {/* Spacer for balance */}
             </div>
 
@@ -395,17 +421,24 @@ function App() {
 
                   <div>
                     <h3 className='font-semibold text-slate-700 mb-2'>Project Details</h3>
-                    <p className='text-slate-600'>Type: {formData.project.aduType === 'detached' ? 'Detached (1 Story)' : 'Attached ADU'}</p>
+                    <p className='text-slate-600'>
+                      Type:{' '}
+                      {formData.project.aduType === 'detached'
+                        ? 'Detached (1 Story)'
+                        : 'Attached ADU'}
+                    </p>
                     <p className='text-slate-600'>Size: {formData.project.squareFootage} sq ft</p>
                     <p className='text-slate-600'>Bedrooms: {formData.project.bedrooms}</p>
                     <p className='text-slate-600'>Bathrooms: {formData.project.bathrooms}</p>
-                    <p className='text-slate-600'>Design Services: {formData.project.needsDesign ? 'Included' : 'Not Included'}</p>
+                    <p className='text-slate-600'>
+                      Design Services: {formData.project.needsDesign ? 'Included' : 'Not Included'}
+                    </p>
                   </div>
                 </div>
 
                 <div className='flex gap-4 mt-8'>
-                  <button onClick={() => setCurrentStep('project')} className='btn-secondary'>
-                    Edit Project
+                  <button onClick={() => setCurrentStep('form')} className='btn-secondary'>
+                    Edit Details
                   </button>
                   <button
                     onClick={generatePDF}
@@ -425,26 +458,9 @@ function App() {
                   <h3 className='font-semibold text-slate-800'>Estimated Pricing</h3>
                 </div>
 
-                {(() => {
-                  try {
-                    const pricingEngine = new AnchorPricingEngine();
-                    const pricingInputs = {
-                      squareFootage: formData.project.squareFootage,
-                      aduType: formData.project.aduType,
-                      bedrooms: formData.project.bedrooms,
-                      bathrooms: formData.project.bathrooms,
-                      utilities: formData.project.utilities,
-                      needsDesign: formData.project.needsDesign,
-                      appliancesIncluded: formData.project.appliancesIncluded,
-                      hvacType: formData.project.hvacType,
-                      selectedAddOns: formData.project.selectedAddOns,
-                      sewerConnection: formData.project.sewerConnection,
-                      solarDesign: formData.project.solarDesign,
-                      femaIncluded: formData.project.femaIncluded,
-                    };
-
-                    const calculation = pricingEngine.calculateProposal(pricingInputs);
-                    const majorCategories = calculation.lineItems.reduce(
+                {reviewPricing ? (
+                  (() => {
+                    const majorCategories = reviewPricing.lineItems.reduce(
                       (acc, item) => {
                         if (!acc[item.category]) {
                           acc[item.category] = 0;
@@ -468,40 +484,37 @@ function App() {
                           <div className='flex justify-between'>
                             <span className='text-slate-600'>Subtotal</span>
                             <span className='font-medium'>
-                              ${calculation.totalBeforeMarkup.toLocaleString()}
+                              ${reviewPricing.totalBeforeMarkup.toLocaleString()}
                             </span>
                           </div>
                           <div className='flex justify-between'>
                             <span className='text-slate-600'>
-                              Markup ({(calculation.markupPercentage * 100).toFixed(0)}%)
+                              Markup ({(reviewPricing.markupPercentage * 100).toFixed(0)}%)
                             </span>
                             <span className='font-medium'>
-                              ${calculation.markupAmount.toLocaleString()}
+                              ${reviewPricing.markupAmount.toLocaleString()}
                             </span>
                           </div>
                           <div className='flex justify-between font-semibold text-lg'>
                             <span className='text-slate-800'>Total</span>
                             <span className='text-anchor-600'>
-                              ${calculation.grandTotal.toLocaleString()}
+                              ${reviewPricing.grandTotal.toLocaleString()}
                             </span>
                           </div>
                           <div className='text-center text-xs text-slate-500'>
-                            ${Math.round(calculation.pricePerSqFt)}/sq ft
+                            ${Math.round(reviewPricing.pricePerSqFt)}/sq ft
                           </div>
                         </div>
                       </div>
                     );
-                  } catch (error) {
-                    console.error('Pricing calculation error:', error);
-                    return (
-                      <div className='space-y-3 text-sm'>
-                        <p className='text-slate-500'>
-                          Please complete project details for accurate pricing
-                        </p>
-                      </div>
-                    );
-                  }
-                })()}
+                  })()
+                ) : (
+                  <div className='space-y-3 text-sm'>
+                    <p className='text-slate-500'>
+                      Please complete project details for accurate pricing
+                    </p>
+                  </div>
+                )}
 
                 <p className='text-xs text-slate-500 mt-4'>
                   *Estimate based on current specifications. Final pricing subject to site
