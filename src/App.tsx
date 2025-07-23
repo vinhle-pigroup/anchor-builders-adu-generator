@@ -239,113 +239,204 @@ function App() {
               <div className='w-24'></div> {/* Spacer for balance */}
             </div>
 
-            <div className='grid lg:grid-cols-2 gap-8'>
-              {/* Client Information Panel */}
-              <div className='bg-white rounded-lg shadow-sm p-6'>
-                <div className='flex items-center mb-6'>
-                  <Users className='w-6 h-6 text-anchor-500 mr-2' />
-                  <h2 className='text-xl font-semibold text-slate-800'>Client Information</h2>
+            <div className='grid lg:grid-cols-3 gap-8'>
+              {/* Main Form - Takes up 2 columns */}
+              <div className='lg:col-span-2 space-y-6'>
+                {/* Client Information Section */}
+                <div className='bg-white rounded-lg shadow-sm p-6'>
+                  <div className='flex items-center mb-6'>
+                    <Users className='w-6 h-6 text-anchor-500 mr-2' />
+                    <h2 className='text-xl font-semibold text-slate-800'>Client Information</h2>
+                  </div>
+
+                  <div className='grid gap-4'>
+                    <div className='grid md:grid-cols-2 gap-4'>
+                      <div>
+                        <label className='form-label'>First Name *</label>
+                        <input
+                          type='text'
+                          className='form-input'
+                          value={formData.client.firstName}
+                          onChange={e => updateClientData({ firstName: e.target.value })}
+                          placeholder='First Name'
+                        />
+                      </div>
+                      <div>
+                        <label className='form-label'>Last Name *</label>
+                        <input
+                          type='text'
+                          className='form-input'
+                          value={formData.client.lastName}
+                          onChange={e => updateClientData({ lastName: e.target.value })}
+                          placeholder='Last Name'
+                        />
+                      </div>
+                    </div>
+                    <div className='grid md:grid-cols-2 gap-4'>
+                      <div>
+                        <label className='form-label'>Email *</label>
+                        <input
+                          type='email'
+                          className='form-input'
+                          value={formData.client.email}
+                          onChange={e => updateClientData({ email: e.target.value })}
+                          placeholder='email@example.com'
+                        />
+                      </div>
+                      <div>
+                        <label className='form-label'>Phone *</label>
+                        <input
+                          type='tel'
+                          className='form-input'
+                          value={formData.client.phone}
+                          onChange={e => updateClientData({ phone: e.target.value })}
+                          placeholder='(555) 123-4567'
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className='form-label'>Address *</label>
+                      <input
+                        type='text'
+                        className='form-input'
+                        value={formData.client.address}
+                        onChange={e => updateClientData({ address: e.target.value })}
+                        placeholder='123 Main Street'
+                      />
+                    </div>
+                    <div className='grid md:grid-cols-3 gap-4'>
+                      <div>
+                        <label className='form-label'>City *</label>
+                        <input
+                          type='text'
+                          className='form-input'
+                          value={formData.client.city}
+                          onChange={e => updateClientData({ city: e.target.value })}
+                          placeholder='City'
+                        />
+                      </div>
+                      <div>
+                        <label className='form-label'>State *</label>
+                        <input
+                          type='text'
+                          className='form-input'
+                          value={formData.client.state}
+                          onChange={e => updateClientData({ state: e.target.value })}
+                          placeholder='CA'
+                        />
+                      </div>
+                      <div>
+                        <label className='form-label'>ZIP Code *</label>
+                        <input
+                          type='text'
+                          className='form-input'
+                          value={formData.client.zipCode}
+                          onChange={e => updateClientData({ zipCode: e.target.value })}
+                          placeholder='92683'
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className='grid gap-4'>
-                  <div className='grid md:grid-cols-2 gap-4'>
-                    <div>
-                      <label className='form-label'>First Name *</label>
-                      <input
-                        type='text'
-                        className='form-input'
-                        value={formData.client.firstName}
-                        onChange={e => updateClientData({ firstName: e.target.value })}
-                        placeholder='First Name'
-                      />
-                    </div>
-                    <div>
-                      <label className='form-label'>Last Name *</label>
-                      <input
-                        type='text'
-                        className='form-input'
-                        value={formData.client.lastName}
-                        onChange={e => updateClientData({ lastName: e.target.value })}
-                        placeholder='Last Name'
-                      />
-                    </div>
-                  </div>
-                  <div className='grid md:grid-cols-2 gap-4'>
-                    <div>
-                      <label className='form-label'>Email *</label>
-                      <input
-                        type='email'
-                        className='form-input'
-                        value={formData.client.email}
-                        onChange={e => updateClientData({ email: e.target.value })}
-                        placeholder='email@example.com'
-                      />
-                    </div>
-                    <div>
-                      <label className='form-label'>Phone *</label>
-                      <input
-                        type='tel'
-                        className='form-input'
-                        value={formData.client.phone}
-                        onChange={e => updateClientData({ phone: e.target.value })}
-                        placeholder='(555) 123-4567'
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className='form-label'>Address *</label>
-                    <input
-                      type='text'
-                      className='form-input'
-                      value={formData.client.address}
-                      onChange={e => updateClientData({ address: e.target.value })}
-                      placeholder='123 Main Street'
-                    />
-                  </div>
-                  <div className='grid md:grid-cols-3 gap-4'>
-                    <div>
-                      <label className='form-label'>City *</label>
-                      <input
-                        type='text'
-                        className='form-input'
-                        value={formData.client.city}
-                        onChange={e => updateClientData({ city: e.target.value })}
-                        placeholder='City'
-                      />
-                    </div>
-                    <div>
-                      <label className='form-label'>State *</label>
-                      <input
-                        type='text'
-                        className='form-input'
-                        value={formData.client.state}
-                        onChange={e => updateClientData({ state: e.target.value })}
-                        placeholder='CA'
-                      />
-                    </div>
-                    <div>
-                      <label className='form-label'>ZIP Code *</label>
-                      <input
-                        type='text'
-                        className='form-input'
-                        value={formData.client.zipCode}
-                        onChange={e => updateClientData({ zipCode: e.target.value })}
-                        placeholder='92683'
-                      />
-                    </div>
-                  </div>
+                {/* Project Details Section */}
+                <div className='bg-white rounded-lg shadow-sm p-6'>
+                  <ProjectDetailsForm
+                    formData={formData.project}
+                    updateProjectData={updateProjectData}
+                    onBack={() => setCurrentStep('welcome')}
+                    onNext={() => setCurrentStep('review')}
+                    isEmbedded={true}
+                  />
                 </div>
               </div>
 
-              {/* Project Details Panel */}
+              {/* Live Pricing Sidebar - Takes up 1 column */}
               <div className='bg-white rounded-lg shadow-sm p-6'>
-                <ProjectDetailsForm
-                  formData={formData.project}
-                  updateProjectData={updateProjectData}
-                  onBack={() => setCurrentStep('welcome')}
-                  onNext={() => setCurrentStep('review')}
-                  isEmbedded={true}
-                />
+                <div className='flex items-center mb-4'>
+                  <Calculator className='w-5 h-5 text-anchor-500 mr-2' />
+                  <h3 className='font-semibold text-slate-800'>Live Pricing</h3>
+                </div>
+
+                {(() => {
+                  const pricingEngine = new AnchorPricingEngine();
+                  try {
+                    const pricing = pricingEngine.calculateProposal({
+                      squareFootage: formData.project.squareFootage,
+                      aduType: formData.project.aduType,
+                      bedrooms: formData.project.bedrooms,
+                      bathrooms: formData.project.bathrooms,
+                      utilities: formData.project.utilities,
+                      needsDesign: formData.project.needsDesign,
+                      appliancesIncluded: formData.project.appliancesIncluded,
+                      hvacType: formData.project.hvacType,
+                      selectedAddOns: formData.project.selectedAddOns,
+                      sewerConnection: formData.project.sewerConnection,
+                      solarDesign: formData.project.solarDesign,
+                      femaIncluded: formData.project.femaIncluded,
+                    });
+
+                    const majorCategories = pricing.lineItems.reduce(
+                      (acc, item) => {
+                        if (!acc[item.category]) {
+                          acc[item.category] = 0;
+                        }
+                        acc[item.category] += item.totalPrice;
+                        return acc;
+                      },
+                      {} as Record<string, number>
+                    );
+
+                    return (
+                      <div className='space-y-3 text-sm'>
+                        {Object.entries(majorCategories).map(([category, total]) => (
+                          <div key={category} className='flex justify-between'>
+                            <span className='text-slate-600'>{category}</span>
+                            <span className='font-medium'>${total.toLocaleString()}</span>
+                          </div>
+                        ))}
+
+                        <div className='border-t pt-3 mt-3 space-y-2'>
+                          <div className='flex justify-between'>
+                            <span className='text-slate-600'>Subtotal</span>
+                            <span className='font-medium'>
+                              ${pricing.totalBeforeMarkup.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className='flex justify-between'>
+                            <span className='text-slate-600'>
+                              Markup ({(pricing.markupPercentage * 100).toFixed(0)}%)
+                            </span>
+                            <span className='font-medium'>
+                              ${pricing.markupAmount.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className='flex justify-between font-semibold text-lg'>
+                            <span className='text-slate-800'>Total</span>
+                            <span className='text-anchor-600'>
+                              ${pricing.grandTotal.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className='text-center text-xs text-slate-500'>
+                            ${Math.round(pricing.pricePerSqFt)}/sq ft
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  } catch (error) {
+                    return (
+                      <div className='space-y-3 text-sm'>
+                        <p className='text-slate-500'>
+                          Configure project details for live pricing
+                        </p>
+                      </div>
+                    );
+                  }
+                })()}
+
+                <p className='text-xs text-slate-500 mt-4'>
+                  *Pricing updates as you make selections
+                </p>
               </div>
             </div>
 

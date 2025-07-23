@@ -141,11 +141,9 @@ export function ProjectDetailsForm({
 
   const milestones = currentPricing ? calculateMilestonePayments(currentPricing.grandTotal) : [];
 
-  // Common form content
+  // Common form content - simplified for embedded mode
   const formContent = (
-    <div className='grid lg:grid-cols-3 gap-6'>
-      {/* Main Form */}
-      <div className='lg:col-span-2 space-y-4'>
+    <div className='space-y-4'>
         {/* Step 1: ADU Configuration - Blue Theme */}
         <div className='bg-white rounded-lg shadow-sm border-l-4 border-blue-500'>
           <div className='bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-t-lg'>
@@ -634,9 +632,6 @@ export function ProjectDetailsForm({
           )}
         </div>
       </div>
-
-      {/* Pricing Summary Sidebar */}
-      <div className='lg:col-span-1'>
         <div className='sticky top-8 space-y-6'>
           {/* Real-time Pricing Breakdown */}
           <div className='bg-white rounded-lg shadow-sm p-6'>
@@ -805,7 +800,6 @@ export function ProjectDetailsForm({
           </div>
         </div>
       </div>
-    </div>
   );
 
   // Return embedded or full layout
