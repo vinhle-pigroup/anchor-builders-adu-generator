@@ -177,7 +177,7 @@ function App() {
           <div className='inline-flex items-center justify-center w-52 h-52 bg-white rounded-2xl mb-8 shadow-lg'>
             <div className='flex items-center justify-center w-48 h-48'>
               <img 
-                src="/anchor-logo.jpg" 
+                src="/anchor-logo-official.jpg" 
                 alt="Anchor Builders Logo" 
                 className="w-40 h-40 object-contain"
               />
