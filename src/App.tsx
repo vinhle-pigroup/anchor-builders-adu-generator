@@ -175,8 +175,12 @@ function App() {
         <div className='text-center max-w-md mx-auto px-6'>
           {/* Large Logo Container */}
           <div className='inline-flex items-center justify-center w-52 h-52 bg-white rounded-2xl mb-8 shadow-lg'>
-            <div className='flex items-center justify-center w-48 h-48 text-anchor-600'>
-              <Building2 className='w-24 h-24' />
+            <div className='flex items-center justify-center w-48 h-48'>
+              <img 
+                src="/anchor-logo.svg" 
+                alt="Anchor Builders Logo" 
+                className="w-40 h-40 object-contain"
+              />
             </div>
           </div>
 
