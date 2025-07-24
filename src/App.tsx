@@ -1019,21 +1019,42 @@ function PricingCard({ liveCalculation, pricingData }: any) {
 // Payment Schedule Card Component
 function PaymentScheduleCard({ liveCalculation }: any) {
   const milestones = [
-    { number: 1, name: 'Mobilization', percentage: 19 },
-    { number: 2, name: 'Trenching & Underground Plumbing', percentage: 19 },
-    { number: 3, name: 'Foundation', percentage: 19 },
-    { number: 4, name: 'Framing', percentage: 14 },
-    { number: 5, name: 'Mechanical, Electrical, Plumbing (MEP)', percentage: 14 },
+    { number: 1, name: 'Mobilization', percentage: 20 },
+    { number: 2, name: 'Trenching & Underground Plumbing', percentage: 20 },
+    { number: 3, name: 'Foundation', percentage: 20 },
+    { number: 4, name: 'Framing', percentage: 15 },
+    { number: 5, name: 'Mechanical, Electrical, Plumbing (MEP)', percentage: 15 },
     { number: 6, name: 'Drywall', percentage: 10 },
     { number: 7, name: 'Property Final', percentage: 5 },
   ];
+
+  // Excel-style calculation: (Total - Design - Deposit) for construction amount
+  const deposit = 1000; // Fixed $1,000 deposit
+  const designAmount = 12500; // Design services (could be dynamic)
+  const constructionAmount = liveCalculation.finalTotal - designAmount - deposit;
+  
+  // Calculate milestones using Excel ROUND(amount, -3) formula
+  const calculateMilestone = (percentage: number, isLast: boolean = false) => {
+    if (isLast) {
+      // Final milestone: remainder to ensure exact total
+      const previousSum = milestones.slice(0, -1).reduce((sum, m) => {
+        const baseAmount = (constructionAmount * m.percentage) / 100;
+        return sum + Math.round(baseAmount / 1000) * 1000; // ROUND(amount, -3)
+      }, 0);
+      return constructionAmount - previousSum;
+    } else {
+      // Regular milestone: ROUND(percentage * constructionAmount / 100, -3)
+      const baseAmount = (constructionAmount * percentage) / 100;
+      return Math.round(baseAmount / 1000) * 1000; // ROUND(amount, -3)
+    }
+  };
 
   return (
     <div className='bg-white rounded-xl p-4 shadow-md border border-slate-200'>
       <h3 className='font-semibold text-slate-800 mb-3 text-sm'>Payment Milestones</h3>
       <div className='space-y-2'>
-        {milestones.map(milestone => {
-          const amount = Math.round((liveCalculation.finalTotal * milestone.percentage) / 100);
+        {milestones.map((milestone, index) => {
+          const amount = calculateMilestone(milestone.percentage, index === milestones.length - 1);
           return (
             <div key={milestone.number} className='flex justify-between items-center text-xs'>
               <div className='flex items-center space-x-2'>
