@@ -15,4 +15,4 @@ These samples help inform the proposal generator's:
 - Professional formatting
 
 ---
-*Created for Anchor Builders ADU Proposal Generator*
+*Created for Anchor Builders ADU Proposal Generator*# Force Railway Deploy - Thu Jul 24 00:20:51 PDT 2025
