@@ -440,7 +440,12 @@
         </table>
 
         <div class="cost-per-sqft">
-            Cost per square foot: ${{formatNumber pricingBreakdown.pricePerSqFt}}/sqft
+            <div style="margin-bottom: 10px;">
+                <strong>Base Construction:</strong> ${{formatNumber pricingBreakdown.baseConstructionPricePerSqFt}}/sqft
+            </div>
+            <div>
+                <strong>Total Project Cost:</strong> ${{formatNumber pricingBreakdown.pricePerSqFt}}/sqft
+            </div>
         </div>
 
         <div class="section-header">ESTIMATED DELIVERY</div>

@@ -56,6 +56,7 @@ export interface PricingBreakdown {
   totalBeforeMarkup: number;
   grandTotal: number;
   pricePerSqFt: number;
+  baseConstructionPricePerSqFt: number;
 }
 
 export class AnchorPricingEngine {
@@ -82,6 +83,12 @@ export class AnchorPricingEngine {
     const markupAmount = 0;
     const grandTotal = subtotal;
 
+    // Calculate base construction price per sqft (just the construction cost)
+    const baseConstructionItem = lineItems.find(item => item.category === 'CONSTRUCTION');
+    const baseConstructionPricePerSqFt = baseConstructionItem 
+      ? baseConstructionItem.totalPrice / inputs.squareFootage
+      : getSizeBasedPricing(inputs.squareFootage, inputs.aduType === 'attached');
+
     return {
       lineItems,
       subtotal,
@@ -90,6 +97,7 @@ export class AnchorPricingEngine {
       totalBeforeMarkup: subtotal,
       grandTotal,
       pricePerSqFt: grandTotal / inputs.squareFootage,
+      baseConstructionPricePerSqFt,
     };
   }
 
