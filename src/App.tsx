@@ -431,9 +431,25 @@ function ProposalFormPage({
                 label='Property Address *'
                 value={formData.client.address}
                 onChange={value => updateClientData({ address: value })}
-                placeholder='123 Main Street, Garden Grove, CA 92683'
+                placeholder='123 Main Street'
                 required
               />
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <FormInput
+                  label='City *'
+                  value={formData.client.city}
+                  onChange={value => updateClientData({ city: value })}
+                  placeholder='Garden Grove'
+                  required
+                />
+                <FormInput
+                  label='ZIP Code *'
+                  value={formData.client.zipCode}
+                  onChange={value => updateClientData({ zipCode: value })}
+                  placeholder='92683'
+                  required
+                />
+              </div>
             </FormSection>
 
             {/* ADU Configuration */}
@@ -612,7 +628,7 @@ function ADUConfigurationForm({ pricingData, setPricingData, updateProjectData }
       {/* ADU Type */}
       <div>
         <label className='text-xs font-medium text-slate-700 mb-3 block'>ADU Type</label>
-        <div className='grid grid-cols-3 gap-3'>
+        <div className='grid grid-cols-2 gap-3'>
           {[
             {
               type: 'detached-1story',
@@ -632,6 +648,12 @@ function ADUConfigurationForm({ pricingData, setPricingData, updateProjectData }
               title: 'Attached ADU',
               desc: 'Connected to existing home',
             },
+            {
+              type: 'junior-adu',
+              price: 244,
+              title: 'Junior ADU (Garage Conversion)',
+              desc: 'Garage converted to living space',
+            },
           ].map(option => (
             <button
               key={option.type}
@@ -642,9 +664,8 @@ function ADUConfigurationForm({ pricingData, setPricingData, updateProjectData }
                   : 'border-slate-200 hover:border-blue-300'
               }`}
             >
-              <div className='flex justify-between items-start mb-2'>
+              <div className='mb-2'>
                 <h3 className='font-semibold text-sm text-slate-800'>{option.title}</h3>
-                <span className='text-blue-600 font-bold text-sm'>${option.price}/sq ft</span>
               </div>
               <p className='text-xs text-slate-600'>{option.desc}</p>
             </button>
@@ -794,7 +815,7 @@ function DesignServicesForm({ pricingData, setPricingData }: any) {
     {
       key: 'fema',
       label: 'FEMA Flood Compliance',
-      cost: 0,
+      cost: 2000,
       desc: 'Required in flood zones for elevated construction standards.',
     },
   ];
