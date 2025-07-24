@@ -27,26 +27,44 @@ export interface DesignServices {
   description: string;
 }
 
-// ADU Type Pricing - Real Anchor Builders Model
+// ADU Type Pricing - Real Anchor Builders Model (Based on actual proposals)
 export const aduTypePricing: AduTypePricing[] = [
   {
     name: 'Detached ADU',
     type: 'detached',
-    pricePerSqFt: 220,
+    pricePerSqFt: 240, // $240/sqft for 750+ sqft
     description: 'Detached single-story ADU (1 Story)',
   },
   {
     name: 'Attached ADU', 
     type: 'attached',
-    pricePerSqFt: 200,
-    description: 'Attached ADU to existing structure',
+    pricePerSqFt: 244, // $244.19/sqft for garage conversions
+    description: 'Attached ADU or Garage Conversion',
   },
 ];
 
-// Design Services - Fixed Fee
+// Size-based pricing tiers from actual proposals
+export const getSizeBasedPricing = (sqft: number, isAttached: boolean = false): number => {
+  if (isAttached && sqft <= 430) {
+    return 244.19; // Garage conversion rate
+  }
+  if (sqft <= 600) {
+    return 250; // Small ADU rate
+  }
+  return 240; // Standard rate for 750+ sqft
+};
+
+// Design Services - Fixed Fee (from actual proposals)
 export const designServices: DesignServices = {
-  planningDesign: 12500,
-  description: 'ADU Plan Design, Structural Engineering, MEP Design, Zoning & Site Planning',
+  planningDesign: 8500, // Range: $8,500-$12,500, using lower end
+  description: 'ADU Plan Design, Structural Engineering, MEP Design, Zoning & Site Planning Review, Title 24 Energy Compliance',
+};
+
+// Design service pricing tiers
+export const getDesignPricing = (sqft: number): number => {
+  if (sqft <= 600) return 8500;
+  if (sqft <= 750) return 10000;
+  return 12500; // For larger ADUs
 };
 
 // Utility Options - Separate vs Shared
@@ -74,22 +92,22 @@ export const utilityOptions: UtilityOption[] = [
   },
 ];
 
-// Add-On Options - Real Anchor Builders Options
+// Add-On Options - From actual Anchor Builders proposals
 export const addOnOptions: AddOnOption[] = [
   {
-    name: 'Extra Bathroom',
-    price: 8000,
-    description: 'Additional bathroom beyond standard',
+    name: 'Additional Bathroom',
+    price: 10250, // Average from proposals: $8,000-$12,500
+    description: 'Additional bathroom beyond standard configuration',
   },
   {
-    name: 'Driveway',
-    price: 5000,
-    description: 'Dedicated driveway for ADU',
+    name: 'Third-Party Testing (HERS, QII, Compaction)',
+    price: 1500, // From proposals: $1,000-$2,000
+    description: 'Required testing and certifications',
   },
   {
-    name: 'Basic Landscaping',
-    price: 10000,
-    description: 'Basic landscaping around ADU',
+    name: 'Family/Friends Discount',
+    price: -2000, // From proposals
+    description: 'Special discount for family and friends',
   },
 ];
 

@@ -4,6 +4,8 @@ import {
   utilityOptions,
   addOnOptions,
   businessSettings,
+  getSizeBasedPricing,
+  getDesignPricing,
   type AduTypePricing,
   type UtilityOption,
   type AddOnOption,
@@ -63,10 +65,8 @@ export class AnchorPricingEngine {
     // 1. Base ADU Construction Cost ($/sqft model)
     this.calculateBaseConstructionCost(inputs, lineItems);
 
-    // 2. Design Services (if selected)
-    if (inputs.needsDesign) {
-      this.calculateDesignServices(lineItems);
-    }
+    // 2. Design & Planning Phase (always included)
+    this.calculateDesignServices(inputs, lineItems);
 
     // 3. Utility Connections
     this.calculateUtilityConnections(inputs, lineItems);
@@ -77,10 +77,10 @@ export class AnchorPricingEngine {
     // Calculate subtotal
     const subtotal = lineItems.reduce((sum, item) => sum + item.totalPrice, 0);
 
-    // Apply 15% markup
-    const markupPercentage = businessSettings.standardMarkup;
-    const markupAmount = subtotal * markupPercentage;
-    const grandTotal = subtotal + markupAmount;
+    // No markup applied - prices are already final (based on actual proposals)
+    const markupPercentage = 0;
+    const markupAmount = 0;
+    const grandTotal = subtotal;
 
     return {
       lineItems,
@@ -94,30 +94,30 @@ export class AnchorPricingEngine {
   }
 
   private calculateBaseConstructionCost(inputs: PricingInputs, lineItems: PricingLineItem[]) {
-    // Get price per sqft based on ADU type
-    const aduType = aduTypePricing.find(type => type.type === inputs.aduType);
-    if (!aduType) return;
-
-    const baseConstructionCost = inputs.squareFootage * aduType.pricePerSqFt;
-
+    // Use size-based pricing from actual proposals
+    const pricePerSqFt = getSizeBasedPricing(inputs.squareFootage, inputs.aduType === 'attached');
+    const baseConstructionCost = inputs.squareFootage * pricePerSqFt;
+    
     lineItems.push({
-      category: 'Base Construction',
-      description: `${aduType.name} (${inputs.squareFootage} sq ft @ $${aduType.pricePerSqFt}/sq ft)`,
+      category: 'CONSTRUCTION',
+      description: `${inputs.aduType === 'attached' ? 'Attached/Garage Conversion' : 'Detached'} ADU Construction (${inputs.squareFootage} sqft)`,
       quantity: inputs.squareFootage,
-      unitPrice: aduType.pricePerSqFt,
+      unitPrice: pricePerSqFt,
       totalPrice: baseConstructionCost,
       isOptional: false,
     });
   }
 
-  private calculateDesignServices(lineItems: PricingLineItem[]) {
+  private calculateDesignServices(inputs: PricingInputs, lineItems: PricingLineItem[]) {
+    const designCost = getDesignPricing(inputs.squareFootage);
+    
     lineItems.push({
-      category: 'Design Services',
-      description: designServices.description,
+      category: 'DESIGN & PLANNING',
+      description: 'ADU Plan Design, Structural Engineering, MEP Design, Zoning & Site Planning Review, Title 24 Energy Compliance',
       quantity: 1,
-      unitPrice: designServices.planningDesign,
-      totalPrice: designServices.planningDesign,
-      isOptional: true,
+      unitPrice: designCost,
+      totalPrice: designCost,
+      isOptional: false,
     });
   }
 
