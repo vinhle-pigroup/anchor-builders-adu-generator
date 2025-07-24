@@ -154,7 +154,7 @@ export const milestonePayments: MilestonePayment[] = [
     description: 'Project setup, permits, and mobilization'
   },
   {
-    code: 'M2', 
+    code: 'M2',
     name: 'Trenching & Underground Plumbing',
     percentage: 20,
     description: 'Site preparation and underground utilities'
@@ -169,39 +169,82 @@ export const milestonePayments: MilestonePayment[] = [
     code: 'M4',
     name: 'Framing',
     percentage: 15,
-    description: 'Structural framing and roof'
+    description: 'Structural framing and roof construction'
   },
   {
     code: 'M5',
-    name: 'MEP (Mechanical, Electrical, Plumbing)',
+    name: 'Mechanical, Electrical, Plumbing (MEP)',
     percentage: 15,
-    description: 'Rough mechanical, electrical, and plumbing'
+    description: 'Rough mechanical, electrical, and plumbing installation'
   },
   {
     code: 'M6',
     name: 'Drywall',
     percentage: 10,
-    description: 'Drywall installation and finish'
+    description: 'Drywall installation and interior finishes'
   },
   {
     code: 'M7',
     name: 'Property Final',
     percentage: 5,
-    description: 'Final inspection and completion'
+    description: 'Final inspection, cleanup, and project completion'
   }
 ];
 
-// Calculate milestone payments with rounding to nearest $50
-export const calculateMilestonePayments = (totalAmount: number) => {
-  return milestonePayments.map(milestone => {
-    const baseAmount = (totalAmount * milestone.percentage) / 100;
-    // Round to nearest $50 to avoid odd numbers
-    const roundedAmount = Math.round(baseAmount / 50) * 50;
-    
-    return {
-      ...milestone,
-      amount: roundedAmount,
-      baseAmount: baseAmount
-    };
+// Calculate milestone payments exactly like Excel formulas
+export const calculateMilestonePayments = (totalAmount: number, designAmount: number = 0) => {
+  const deposit = Math.min(1000, totalAmount * 0.10); // Max $1,000 or 10% per CA law
+  const constructionAmount = totalAmount - designAmount - deposit;
+  
+  const payments = [];
+  
+  // Add deposit as first payment
+  payments.push({
+    code: 'DEPOSIT',
+    name: 'Deposit',
+    percentage: (deposit / totalAmount) * 100,
+    description: 'Initial deposit to begin project (max $1,000 per CA law)',
+    amount: deposit,
+    baseAmount: deposit
   });
+  
+  // Add design payment if applicable
+  if (designAmount > 0) {
+    payments.push({
+      code: 'DESIGN',
+      name: 'Design & Planning',
+      percentage: (designAmount / totalAmount) * 100,
+      description: 'ADU Plan Design, Structural Engineering, MEP Design',
+      amount: designAmount,
+      baseAmount: designAmount
+    });
+  }
+  
+  // Calculate construction milestone payments
+  let runningTotal = 0;
+  
+  milestonePayments.forEach((milestone, index) => {
+    if (index < milestonePayments.length - 1) {
+      // Round to nearest $1,000 like Excel formula ROUND(amount, -3)
+      const baseAmount = (milestone.percentage * constructionAmount) / 100;
+      const roundedAmount = Math.round(baseAmount / 1000) * 1000;
+      runningTotal += roundedAmount;
+      
+      payments.push({
+        ...milestone,
+        amount: roundedAmount,
+        baseAmount: baseAmount
+      });
+    } else {
+      // Final milestone is remainder to ensure exact total
+      const finalAmount = constructionAmount - runningTotal;
+      payments.push({
+        ...milestone,
+        amount: finalAmount,
+        baseAmount: finalAmount
+      });
+    }
+  });
+  
+  return payments;
 };
