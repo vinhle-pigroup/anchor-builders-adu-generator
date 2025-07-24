@@ -1019,11 +1019,13 @@ function PricingCard({ liveCalculation, pricingData }: any) {
 // Payment Schedule Card Component
 function PaymentScheduleCard({ liveCalculation }: any) {
   const milestones = [
-    { number: 1, name: 'Mobilization', percentage: 20 },
-    { number: 2, name: 'Foundation', percentage: 20 },
-    { number: 3, name: 'Framing', percentage: 20 },
-    { number: 4, name: 'MEP & Drywall', percentage: 25 },
-    { number: 5, name: 'Final', percentage: 15 },
+    { number: 1, name: 'Mobilization', percentage: 19 },
+    { number: 2, name: 'Trenching & Underground Plumbing', percentage: 19 },
+    { number: 3, name: 'Foundation', percentage: 19 },
+    { number: 4, name: 'Framing', percentage: 14 },
+    { number: 5, name: 'Mechanical, Electrical, Plumbing (MEP)', percentage: 14 },
+    { number: 6, name: 'Drywall', percentage: 10 },
+    { number: 7, name: 'Property Final', percentage: 5 },
   ];
 
   return (
