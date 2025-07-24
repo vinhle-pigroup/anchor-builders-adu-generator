@@ -974,7 +974,10 @@ function PricingCard({ liveCalculation, pricingData }: any) {
         <div className='text-2xl font-bold text-blue-600 transition-all duration-200'>
           ${liveCalculation.finalTotal.toLocaleString()}
         </div>
-        <div className='text-sm text-slate-600'>${liveCalculation.pricePerSqFt} per sq ft</div>
+        <div className='text-sm text-slate-600 space-y-1'>
+          <div>Base Construction: ${pricingData.pricePerSqFt} per sq ft</div>
+          <div>Total Project: ${liveCalculation.pricePerSqFt} per sq ft</div>
+        </div>
       </div>
 
       <div className='space-y-2 mb-6'>
