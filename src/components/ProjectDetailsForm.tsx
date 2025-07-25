@@ -13,6 +13,7 @@ import type { ProjectInfo } from '../types/proposal';
 import { AnchorPricingEngine } from '../lib/pricing-engine';
 import { AnchorPDFGenerator } from '../lib/pdf-generator';
 import { calculateMilestonePayments } from '../data/pricing-config';
+import { EditablePriceDisplay } from './EditablePriceDisplay';
 
 interface ProjectDetailsFormProps {
   formData: ProjectInfo;
@@ -46,6 +47,46 @@ export function ProjectDetailsForm({
         selectedAddOns: [...currentAddOns, addOnName],
       });
     }
+  };
+
+  // Price override functions
+  const updateBasePriceOverride = (newPrice: number) => {
+    updateProjectData({
+      priceOverrides: {
+        ...formData.priceOverrides,
+        basePricePerSqFt: newPrice,
+      },
+    });
+  };
+
+  const updateDesignPriceOverride = (newPrice: number) => {
+    updateProjectData({
+      priceOverrides: {
+        ...formData.priceOverrides,
+        designServices: newPrice,
+      },
+    });
+  };
+
+  const updateAddOnPriceOverride = (addOnName: string, newPrice: number) => {
+    updateProjectData({
+      priceOverrides: {
+        ...formData.priceOverrides,
+        addOnPrices: {
+          ...formData.priceOverrides?.addOnPrices,
+          [addOnName]: newPrice,
+        },
+      },
+    });
+  };
+
+  const updateMarkupOverride = (newPercentage: number) => {
+    updateProjectData({
+      priceOverrides: {
+        ...formData.priceOverrides,
+        markupPercentage: newPercentage / 100, // Convert percentage to decimal
+      },
+    });
   };
 
   const updateUtility = (
@@ -122,6 +163,7 @@ export function ProjectDetailsForm({
       const pricingInputs = {
         squareFootage: formData.squareFootage,
         aduType: formData.aduType,
+        stories: formData.stories,
         bedrooms: formData.bedrooms,
         bathrooms: formData.bathrooms,
         utilities: formData.utilities,
@@ -132,6 +174,7 @@ export function ProjectDetailsForm({
         sewerConnection: formData.sewerConnection,
         solarDesign: formData.solarDesign,
         femaIncluded: formData.femaIncluded,
+        priceOverrides: formData.priceOverrides,
       };
       return pricingEngine.calculateProposal(pricingInputs);
     } catch {
@@ -162,28 +205,89 @@ export function ProjectDetailsForm({
               {/* ADU Type */}
               <div>
                 <label className='block text-sm font-medium text-slate-700 mb-2'>ADU Type *</label>
-                <div className='grid grid-cols-1 gap-2'>
-                  {aduTypeOptions.map(option => (
-                    <button
-                      key={option.type}
-                      onClick={() => updateProjectData({ aduType: option.type })}
-                      className={`p-3 rounded-lg border-2 text-left transition-all ${
-                        formData.aduType === option.type
-                          ? 'border-blue-500 bg-blue-50 shadow-md'
-                          : 'border-slate-200 hover:border-blue-300'
-                      }`}
-                    >
-                      <div className='flex justify-between items-center'>
-                        <div>
-                          <h4 className='font-medium text-slate-800'>{option.name}</h4>
-                          <p className='text-xs text-slate-600'>{option.description}</p>
-                        </div>
-                        <div className='text-blue-600 font-medium text-sm'>
-                          ${option.pricePerSqFt}/sq ft
-                        </div>
+                <div className='space-y-3'>
+                  {/* Detached ADU Option */}
+                  <div
+                    className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                      formData.aduType === 'detached'
+                        ? 'border-blue-500 bg-blue-50 shadow-md'
+                        : 'border-slate-200 hover:border-blue-300'
+                    }`}
+                    onClick={() =>
+                      updateProjectData({ aduType: 'detached', stories: formData.stories || 1 })
+                    }
+                  >
+                    <div className='flex justify-between items-start mb-3'>
+                      <div>
+                        <h4 className='font-medium text-slate-800'>Detached ADU</h4>
+                        <p className='text-xs text-slate-600'>Standalone unit on your property</p>
                       </div>
-                    </button>
-                  ))}
+                      <EditablePriceDisplay
+                        value={
+                          formData.priceOverrides?.basePricePerSqFt ??
+                          (formData.aduType === 'detached' && formData.stories === 2 ? 240 : 220)
+                        }
+                        onSave={updateBasePriceOverride}
+                        suffix='/sq ft'
+                        className='text-blue-600 font-medium text-sm'
+                      />
+                    </div>
+
+                    {/* Story Selection - Only show when detached is selected */}
+                    {formData.aduType === 'detached' && (
+                      <div className='flex gap-2'>
+                        <button
+                          onClick={e => {
+                            e.stopPropagation();
+                            updateProjectData({ stories: 1 });
+                          }}
+                          className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                            formData.stories === 1 || !formData.stories
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          1 Story
+                        </button>
+                        <button
+                          onClick={e => {
+                            e.stopPropagation();
+                            updateProjectData({ stories: 2 });
+                          }}
+                          className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                            formData.stories === 2
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          2 Story
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Attached ADU Option */}
+                  <div
+                    className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                      formData.aduType === 'attached'
+                        ? 'border-blue-500 bg-blue-50 shadow-md'
+                        : 'border-slate-200 hover:border-blue-300'
+                    }`}
+                    onClick={() => updateProjectData({ aduType: 'attached', stories: undefined })}
+                  >
+                    <div className='flex justify-between items-center'>
+                      <div>
+                        <h4 className='font-medium text-slate-800'>Attached ADU</h4>
+                        <p className='text-xs text-slate-600'>Connected to existing home</p>
+                      </div>
+                      <EditablePriceDisplay
+                        value={formData.priceOverrides?.basePricePerSqFt ?? 200}
+                        onSave={updateBasePriceOverride}
+                        suffix='/sq ft'
+                        className='text-blue-600 font-medium text-sm'
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -484,29 +588,27 @@ export function ProjectDetailsForm({
 
           {/* Optional Features */}
           <div className='grid md:grid-cols-2 gap-6'>
-            {/* Solar Design */}
+            {/* Solar Design - Always Included */}
             <div>
               <label className='block text-sm font-medium text-slate-700 mb-3'>
                 Solar Preparation
               </label>
-              <div
-                className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                  formData.solarDesign
-                    ? 'border-anchor-500 bg-anchor-50'
-                    : 'border-slate-200 hover:border-anchor-300'
-                }`}
-                onClick={() => updateProjectData({ solarDesign: !formData.solarDesign })}
-              >
+              <div className='p-4 rounded-lg border-2 border-green-500 bg-green-50 transition-all'>
                 <div className='flex items-start space-x-3'>
                   <input
                     type='checkbox'
-                    checked={formData.solarDesign}
-                    onChange={e => updateProjectData({ solarDesign: e.target.checked })}
-                    className='mt-1 w-4 h-4 text-anchor-600'
+                    checked={true}
+                    disabled={true}
+                    className='mt-1 w-4 h-4 text-green-600 cursor-not-allowed'
                   />
-                  <div>
-                    <h4 className='font-medium text-slate-800'>Solar Design Included</h4>
-                    <p className='text-sm text-slate-600'>
+                  <div className='flex-1'>
+                    <div className='flex items-center justify-between'>
+                      <h4 className='font-medium text-slate-800'>Solar Design Preparation</h4>
+                      <span className='text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full'>
+                        INCLUDED - NO COST
+                      </span>
+                    </div>
+                    <p className='text-sm text-slate-600 mt-1'>
                       Pre-wire and structural prep for future solar installation
                     </p>
                   </div>
@@ -581,9 +683,12 @@ export function ProjectDetailsForm({
                   <div className='flex-1'>
                     <div className='flex justify-between items-start mb-2'>
                       <h3 className='font-semibold text-slate-800'>{addOn.name}</h3>
-                      <span className='text-anchor-600 font-medium text-lg'>
-                        +${addOn.price.toLocaleString()}
-                      </span>
+                      <EditablePriceDisplay
+                        value={formData.priceOverrides?.addOnPrices?.[addOn.name] ?? addOn.price}
+                        onSave={newPrice => updateAddOnPriceOverride(addOn.name, newPrice)}
+                        prefix='+$'
+                        className='text-anchor-600 font-medium text-lg'
+                      />
                     </div>
                     <p className='text-sm text-slate-600 mb-3'>{addOn.description}</p>
 
@@ -695,8 +800,22 @@ export function ProjectDetailsForm({
                       ${currentPricing.totalBeforeMarkup.toLocaleString()}
                     </span>
                   </div>
-                  <div className='flex justify-between'>
-                    <span className='text-slate-600'>Markup (15%)</span>
+                  <div className='flex justify-between items-center'>
+                    <div className='flex items-center space-x-2'>
+                      <span className='text-slate-600'>Markup</span>
+                      <EditablePriceDisplay
+                        value={
+                          formData.priceOverrides?.markupPercentage
+                            ? formData.priceOverrides.markupPercentage * 100
+                            : 15
+                        }
+                        onSave={updateMarkupOverride}
+                        suffix='%'
+                        prefix=''
+                        format='number'
+                        className='text-slate-600'
+                      />
+                    </div>
                     <span className='font-medium'>
                       ${currentPricing.markupAmount.toLocaleString()}
                     </span>
@@ -710,6 +829,13 @@ export function ProjectDetailsForm({
                   <div className='text-center text-sm text-slate-500'>
                     ${Math.round(currentPricing.pricePerSqFt)}/sq ft
                   </div>
+
+                  {/* Price Override Indicator */}
+                  {formData.priceOverrides && Object.keys(formData.priceOverrides).length > 0 && (
+                    <div className='text-center text-xs text-amber-600 bg-amber-50 rounded-md p-2 mt-3'>
+                      * Custom pricing applied - hover over prices to edit
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (

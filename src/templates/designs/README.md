@@ -1,0 +1,1563 @@
+# HTML Design Templates
+
+This folder contains HTML design files for PDF generation improvements.
+
+## Current Structure
+- `anchor-proposal-template.html` - Main template (in parent directory)
+- `designs/` - New design variations and improvements
+
+## Usage
+Copy and paste your HTML design files here. The PDF generator will use these templates to create the final proposals.
+
+## Requirements
+- Use Handlebars template syntax: `{{VARIABLE_NAME}}`
+- Include base64 image placeholders: `{{ANCHOR_LOGO_BASE64}}`, `{{ADU_PHOTO_BASE64}}`
+- Keep responsive design for PDF generation
+- Test with sample data before deployment
+
+## Available Variables
+See `src/types/proposal.ts` for full list of template variables available.
+
+
+
+.additional-scope ul {
+            margin-left: 10px;
+            font-size: 8px;
+            color: #6b7280;
+        }        .info-value {
+            font-weight: 400;
+            color: #374151;
+            font-size: 10px;
+        }<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADU Construction Proposal - Anchor Builders</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Print-optimized page setup */
+        @page {
+            size: letter;
+            margin: 0.5in;
+        }
+
+        body {
+            font-family: 'Inter', 'Arial', sans-serif;
+            line-height: 1.4;
+            color: #374151;
+            background: white;
+            font-size: 12px;
+        }
+
+        .proposal-container {
+            max-width: 8.5in;
+            margin: 0 auto;
+            background: white;
+            min-height: 11in;
+        }
+
+        /* Subtle section dividers */
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e5e7eb 20%, #e5e7eb 80%, transparent);
+            margin: 8px 0;
+        }
+
+        .section-divider.thick {
+            height: 2px;
+            background: linear-gradient(to right, transparent, #d1d5db 20%, #d1d5db 80%, transparent);
+        }
+
+        /* Soft, family-friendly header */
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            color: white;
+            padding: 20px 30px;
+            margin-bottom: 0;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+        }
+
+        .anchor-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            margin-right: 10px;
+        }
+
+        .company-info {
+            line-height: 1.1;
+        }
+
+        .company-name {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        .company-tagline {
+            font-size: 9px;
+            opacity: 0.85;
+            font-weight: 400;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        /* Compact property image in header */
+        .header-property-image {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.1);
+            width: 120px;
+        }
+
+        .header-image {
+            width: 120px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 8px;
+            text-align: center;
+            line-height: 1.2;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-image-caption {
+            padding: 3px 5px;
+            background: rgba(255, 255, 255, 0.15);
+            font-size: 7px;
+            color: white;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .header-contact {
+            text-align: right;
+            font-size: 9px;
+            line-height: 1.2;
+            opacity: 0.9;
+        }
+
+        .proposal-title {
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 12px 0;
+        }
+
+        .proposal-title h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            letter-spacing: -0.8px;
+        }
+
+        .proposal-title h2 {
+            font-size: 12px;
+            font-weight: 300;
+            opacity: 0.85;
+            letter-spacing: 0.8px;
+        }
+
+        .proposal-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            font-size: 9px;
+        }
+
+        .proposal-date {
+            background: rgba(255, 255, 255, 0.12);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-weight: 500;
+        }
+
+        /* Compact project information */
+        .project-info {
+            padding: 20px 35px;
+            background: #f8fafc;
+        }
+
+        .info-header {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .info-header h3 {
+            color: #4f46e5;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .info-subtitle {
+            color: #6b7280;
+            font-size: 11px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .info-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 18px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-card h4 {
+            color: #4f46e5;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            border-bottom: 1px solid #e0e7ff;
+            padding-bottom: 4px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            padding: 2px 0;
+        }
+
+        .info-label {
+            font-weight: 500;
+            color: #6b7280;
+            font-size: 10px;
+        }
+
+        /* Compact property image in header */
+        .property-image-box {
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #f8fafc;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 150px;
+        }
+
+        .property-image {
+            width: 150px;
+            height: 100px;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 9px;
+            text-align: center;
+            line-height: 1.2;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .property-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .property-image-caption {
+            padding: 5px 6px;
+            background: white;
+            font-size: 8px;
+            color: #6b7280;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* Compact scope section */
+        .scope-section {
+            padding: 20px 35px;
+            background: white;
+        }
+
+        .scope-header {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .scope-header h3 {
+            color: #4f46e5;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .scope-subtitle {
+            color: #6b7280;
+            font-size: 11px;
+            font-style: italic;
+        }
+
+        .scope-overview {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .scope-stat {
+            text-align: center;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 15px 12px;
+            border-radius: 6px;
+        }
+
+        .scope-stat-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 4px;
+        }
+
+        .scope-stat-label {
+            font-size: 9px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .scope-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .scope-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 16px;
+        }
+
+        .scope-card h4 {
+            color: #4f46e5;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .scope-list {
+            list-style: none;
+            font-size: 9px;
+            line-height: 1.4;
+        }
+
+        .scope-list li {
+            margin-bottom: 5px;
+            padding-left: 10px;
+            position: relative;
+        }
+
+        .scope-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        /* Visual timeline */
+        .timeline-section {
+            padding: 18px 35px;
+            background: #f8fafc;
+        }
+
+        .timeline-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .timeline-header h3 {
+            color: #4f46e5;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .timeline-visual {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 25px 0;
+            padding: 0 40px;
+        }
+
+        .timeline-line {
+            position: absolute;
+            top: 50%;
+            left: 40px;
+            right: 40px;
+            height: 3px;
+            background: linear-gradient(to right, #60a5fa, #4f46e5, #8b5cf6);
+            border-radius: 2px;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        .timeline-step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            background: white;
+            padding: 15px 8px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            min-width: 120px;
+        }
+
+        .timeline-step.active-1 {
+            border-color: #60a5fa;
+            background: linear-gradient(135deg, #dbeafe, #f0f9ff);
+        }
+
+        .timeline-step.active-2 {
+            border-color: #4f46e5;
+            background: linear-gradient(135deg, #e0e7ff, #f0f4ff);
+        }
+
+        .timeline-step.active-3 {
+            border-color: #8b5cf6;
+            background: linear-gradient(135deg, #ede9fe, #f5f3ff);
+        }
+
+        .timeline-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-size: 14px;
+            color: white;
+            font-weight: 700;
+        }
+
+        .timeline-step.active-1 .timeline-icon {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+        }
+
+        .timeline-step.active-2 .timeline-icon {
+            background: linear-gradient(135deg, #4f46e5, #3730a3);
+        }
+
+        .timeline-step.active-3 .timeline-icon {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+
+        .phase-title {
+            font-weight: 600;
+            color: #374151;
+            font-size: 11px;
+            margin-bottom: 3px;
+        }
+
+        .phase-duration {
+            font-size: 9px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .phase-details {
+            font-size: 8px;
+            color: #9ca3af;
+            margin-top: 2px;
+            line-height: 1.2;
+        }
+
+        .total-timeline {
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px;
+            background: linear-gradient(135deg, #dbeafe, #f0f9ff);
+            border: 1px solid #93c5fd;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .total-timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(to right, #60a5fa, #4f46e5, #8b5cf6);
+        }
+
+        .total-timeline strong {
+            color: #4f46e5;
+            font-size: 12px;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .timeline-note {
+            font-size: 8px;
+            color: #6b7280;
+            margin-top: 3px;
+        }
+
+        /* Compact price section */
+        .price-section {
+            padding: 20px 35px;
+            background: white;
+        }
+
+        .price-header {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .price-header h3 {
+            color: #4f46e5;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .price-subtitle {
+            color: #6b7280;
+            font-size: 11px;
+        }
+
+        /* Softer price table */
+        .price-table-container {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .price-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .price-table th {
+            background: #4f46e5;
+            color: white;
+            padding: 10px 12px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+
+        .price-table th:last-child {
+            text-align: right;
+        }
+
+        .price-table td {
+            padding: 5px 12px;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 10px;
+            vertical-align: top;
+            line-height: 1.3;
+        }
+
+        .price-table tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        /* Softer phase headers */
+        .phase-header {
+            background: #f3f4f6 !important;
+            font-weight: 600 !important;
+            color: #4b5563 !important;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .phase-header.design {
+            background: #fef7cd !important;
+            color: #92400e !important;
+        }
+
+        .phase-header.coordination {
+            background: #f3e8ff !important;
+            color: #7c3aed !important;
+        }
+
+        .phase-header.construction {
+            background: #dbeafe !important;
+            color: #1d4ed8 !important;
+        }
+
+        .phase-header.addon {
+            background: #d1fae5 !important;
+            color: #065f46 !important;
+        }
+
+        .subtotal-row {
+            background: #f9fafb !important;
+            font-weight: 600 !important;
+            border-top: 1px solid #e5e7eb !important;
+            border-bottom: 1px solid #e5e7eb !important;
+        }
+
+        .total-row {
+            background: #4f46e5 !important;
+            color: white !important;
+            font-weight: 700 !important;
+            font-size: 12px !important;
+        }
+
+        .price-right {
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .price-included {
+            color: #059669;
+            font-style: italic;
+        }
+
+        .price-discount {
+            color: #dc2626;
+        }
+
+        /* Compact cost summary */
+        .cost-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .cost-card {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .cost-title {
+            font-size: 10px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 6px;
+        }
+
+        .cost-amount {
+            font-size: 20px;
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 4px;
+        }
+
+        .cost-note {
+            font-size: 9px;
+            color: #6b7280;
+        }
+
+        /* Subtle terms section */
+        .terms-section {
+            padding: 20px 35px;
+            background: #f9fafb;
+        }
+
+        .terms-header {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .terms-header h3 {
+            color: #4f46e5;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .terms-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Much more subtle terms cards */
+        .terms-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .terms-card-header {
+            background: #9ca3af;
+            color: white;
+            padding: 8px 10px;
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+            letter-spacing: 0.3px;
+        }
+
+        .terms-content {
+            padding: 15px;
+            font-size: 9px;
+            line-height: 1.4;
+        }
+
+        .terms-category {
+            margin-bottom: 12px;
+        }
+
+        .terms-category h4 {
+            color: #4b5563;
+            font-size: 10px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .terms-category ul {
+            margin-left: 10px;
+            margin-bottom: 6px;
+        }
+
+        .terms-category li {
+            margin-bottom: 2px;
+            color: #6b7280;
+        }
+
+        .terms-category p {
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+
+        /* Soft footer */
+        .footer {
+            background: #4f46e5;
+            color: white;
+            padding: 20px 35px;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .footer-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .company-details {
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        .company-details strong {
+            font-size: 12px;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .website-info {
+            text-align: right;
+            font-size: 10px;
+        }
+
+        .website-info strong {
+            font-size: 11px;
+        }
+
+        /* Compact signature section */
+        .signature-section {
+            background: white;
+            color: #374151;
+            padding: 18px;
+            margin-top: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 5px;
+        }
+
+        .signature-header {
+            background: #6b7280;
+            color: white;
+            padding: 8px;
+            text-align: center;
+            margin: -18px -18px 15px -18px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .acceptance-text {
+            font-size: 10px;
+            line-height: 1.4;
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 5px;
+        }
+
+        .signature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .signature-field {
+            text-align: center;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #6b7280;
+            height: 30px;
+            margin-bottom: 6px;
+        }
+
+        .signature-label {
+            font-size: 9px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        /* Compact terms text */
+        .terms-text {
+            margin-top: 15px;
+            font-size: 8px;
+            line-height: 1.3;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .terms-text p {
+            margin-bottom: 6px;
+        }
+
+        .terms-text strong {
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Compact additional scope */
+        .additional-scope {
+            margin-top: 15px;
+            padding: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+        }
+
+        .additional-scope h4 {
+            color: #4f46e5;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .additional-scope ul {
+            margin-left: 12px;
+            font-size: 9px;
+            color: #6b7280;
+        }
+
+        /* Page break for print */
+        .page-break {
+            page-break-before: always;
+        }
+
+        /* Print optimizations */
+        @media print {
+            body {
+                font-size: 10px;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            .proposal-container {
+                box-shadow: none;
+                max-width: none;
+                width: 100%;
+            }
+            
+            .page-break {
+                page-break-before: always;
+            }
+            
+            .price-table th,
+            .phase-header,
+            .total-row,
+            .header,
+            .footer,
+            .terms-card-header {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+        }
+
+        /* Responsive adjustments */
+        @media screen and (max-width: 768px) {
+            .proposal-container {
+                margin: 10px;
+            }
+            
+            .header, .project-info, .scope-section, .price-section, .terms-section, .footer {
+                padding: 15px;
+            }
+            
+            .info-grid, .scope-overview, .scope-details, .terms-grid, .cost-summary {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="proposal-container">
+        <!-- Reorganized Header Layout -->
+        <div class="header">
+            <div class="header-top">
+                <div class="header-left">
+                    <div class="logo-section">
+                        <div class="anchor-icon">⚓</div>
+                        <div class="company-info">
+                            <div class="company-name">ANCHOR</div>
+                            <div class="company-tagline">BUILDERS</div>
+                        </div>
+                    </div>
+                    
+                    <div class="header-contact">
+                        <strong>12962 Main Street, Garden Grove, CA 92840</strong><br>
+                        Licensed General Contractor • CSLB# 1029392<br>
+                        Phone: (714) 555-0123 • www.AnchorBuilders.io
+                    </div>
+                </div>
+                
+                <div class="header-property-image">
+                    <div class="header-image" id="headerImageContainer">
+                        <img id="headerPropertyImage" 
+                             src="https://maps.googleapis.com/maps/api/staticmap?center=12962+Main+Street,+Garden+Grove,+CA&zoom=19&size=120x80&maptype=satellite&key=YOUR_API_KEY" 
+                             alt="Property Satellite View"
+                             style="display: none;"
+                             onload="this.style.display='block'; this.parentElement.innerHTML = this.outerHTML;"
+                             onerror="this.style.display='none';">
+                        <div id="headerImageText">
+                            Project Site<br>
+                            <span style="font-size: 7px;">Satellite View</span>
+                        </div>
+                    </div>
+                    <div class="header-image-caption" id="headerImageCaption">
+                        Property Location
+                    </div>
+                </div>
+            </div>
+            
+            <div class="proposal-title">
+                <h1>ADU CONSTRUCTION PROPOSAL</h1>
+                <h2>Accessory Dwelling Unit Development</h2>
+            </div>
+            
+            <div class="proposal-meta">
+                <div style="font-size: 10px; opacity: 0.8;">
+                    Professional ADU Construction Services
+                </div>
+                <div class="proposal-date" id="proposalDate">April 29, 2025                </div>
+            </div>
+        </div>
+
+        <div class="section-divider thick"></div>
+
+        <!-- Compact Multi-Column Project Information -->
+        <div class="project-info">
+            <div class="info-header">
+                <h3>PROJECT INFORMATION</h3>
+                <div class="info-subtitle">Client Details & Property Specifications</div>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>Client Information</h4>
+                    <div class="info-row">
+                        <span class="info-label">NAME:</span>
+                        <span class="info-value" id="clientName">My Le</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">PHONE:</span>
+                        <span class="info-value" id="clientPhone">(714) 349-1459</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">EMAIL:</span>
+                        <span class="info-value" id="clientEmail">myle.nguyenk@gmail.com</span>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h4>Property Information</h4>
+                    <div class="info-row">
+                        <span class="info-label">ADDRESS:</span>
+                        <span class="info-value" id="projectAddress">13351 Barney Street</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">CITY:</span>
+                        <span class="info-value" id="projectCity">Westminster, CA 92683</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">COUNTY:</span>
+                        <span class="info-value">Orange County</span>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h4>Project Details</h4>
+                    <div class="info-row">
+                        <span class="info-label">DATE:</span>
+                        <span class="info-value" id="infoProposalDate">April 29, 2025</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">JURISDICTION:</span>
+                        <span class="info-value">City of Westminster</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">PERMIT TYPE:</span>
+                        <span class="info-value">ADU Construction</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- Compact Project Scope -->
+        <div class="scope-section">
+            <div class="scope-header">
+                <h3>PROJECT SCOPE & SPECIFICATIONS</h3>
+                <div class="scope-subtitle">Complete ADU Construction & Development Services</div>
+            </div>
+            
+            <div class="scope-overview">
+                <div class="scope-stat">
+                    <div class="scope-stat-value" id="bedBathDisplay">1 BR / 1 BA</div>
+                    <div class="scope-stat-label">Bedrooms / Bathrooms</div>
+                </div>
+                <div class="scope-stat">
+                    <div class="scope-stat-value" id="livingAreaDisplay">430 sq ft</div>
+                    <div class="scope-stat-label">Total Living Area</div>
+                </div>
+                <div class="scope-stat">
+                    <div class="scope-stat-value" id="aduTypeDisplay">Garage Conversion</div>
+                    <div class="scope-stat-label">ADU Configuration</div>
+                </div>
+            </div>
+
+            <div class="scope-details">
+                <div class="scope-card">
+                    <h4>Included Features & Systems</h4>
+                    <ul class="scope-list">
+                        <li>Standardized finishes & fixtures from curated material selection</li>
+                        <li>Central HVAC system with energy-efficient controls</li>
+                        <li>Separate electrical panel with dedicated 200-amp service</li>
+                        <li>Shared utility connections (gas & water meter setup)</li>
+                        <li>Custom kitchen cabinetry with soft-close doors & drawers</li>
+                        <li>Bathroom vanity with integrated storage solutions</li>
+                        <li>Complete appliance package: range, hood, dishwasher, sink</li>
+                        <li>Connection to existing lateral sewer system</li>
+                    </ul>
+                </div>
+                
+                <div class="scope-card">
+                    <h4>Professional Services</h4>
+                    <ul class="scope-list">
+                        <li>Architectural design & detailed construction drawings</li>
+                        <li>Structural engineering for foundation & roof systems</li>
+                        <li>MEP engineering (Mechanical, Electrical, Plumbing)</li>
+                        <li>Title 24 energy compliance calculations & certification</li>
+                        <li>Zoning analysis & site planning review</li>
+                        <li>Building permit coordination & plan check services</li>
+                        <li>Professional project management & construction oversight</li>
+                        <li>Quality assurance inspections & final walkthrough</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- Visual Timeline -->
+        <div class="timeline-section">
+            <div class="timeline-header">
+                <h3>PROJECT TIMELINE & DELIVERY SCHEDULE</h3>
+                <div style="color: #6b7280; font-size: 10px;">Estimated phases subject to city permitting and material availability</div>
+            </div>
+            
+            <div class="timeline-visual">
+                <div class="timeline-line"></div>
+                
+                <div class="timeline-step active-1">
+                    <div class="timeline-icon">1</div>
+                    <div class="phase-title">Design Phase</div>
+                    <div class="phase-duration">21 business days</div>
+                    <div class="phase-details">Plans & Engineering</div>
+                </div>
+                
+                <div class="timeline-step active-2">
+                    <div class="timeline-icon">2</div>
+                    <div class="phase-title">Planning & Permits</div>
+                    <div class="phase-duration">3-4 months</div>
+                    <div class="phase-details">City Approvals</div>
+                </div>
+                
+                <div class="timeline-step active-3">
+                    <div class="timeline-icon">3</div>
+                    <div class="phase-title">Construction</div>
+                    <div class="phase-duration">4-6 months</div>
+                    <div class="phase-details">Build & Completion</div>
+                </div>
+            </div>
+            
+            <div class="total-timeline">
+                <strong>Total Estimated Project Duration: <span id="estimatedCompletion">8-12 months</span></strong>
+                <div class="timeline-note">Timeline may vary based on complexity and permit processing times</div>
+            </div>
+        </div>
+
+        <div class="section-divider thick"></div>
+
+        <!-- Compact Price Breakdown -->
+        <div class="price-section">
+            <div class="price-header">
+                <h3>DETAILED COST BREAKDOWN</h3>
+                <div class="price-subtitle">Comprehensive pricing with transparent line items</div>
+            </div>
+
+            <div class="price-table-container">
+                <table class="price-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70%;">Description of Services</th>
+                            <th style="width: 30%; text-align: right;">Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="phase-header design">
+                            <td colspan="2"><strong>DESIGN & PLANNING PHASE</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Architectural Design & ADU Plans</td>
+                            <td class="price-right" id="planDesign">$6,500</td>
+                        </tr>
+                        <tr>
+                            <td>Structural Engineering (Foundation & Roof Plans)</td>
+                            <td class="price-right price-included">included</td>
+                        </tr>
+                        <tr>
+                            <td>MEP Engineering (Mechanical, Electrical, Plumbing)</td>
+                            <td class="price-right price-included">included</td>
+                        </tr>
+                        <tr>
+                            <td>Zoning & Site Planning Review</td>
+                            <td class="price-right price-included">included</td>
+                        </tr>
+                        <tr>
+                            <td>Title 24 Energy Compliance Calculations</td>
+                            <td class="price-right price-included">included</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td><strong>Design & Planning Subtotal</strong></td>
+                            <td class="price-right" id="designSubtotal"><strong>$6,500</strong></td>
+                        </tr>
+
+                        <tr class="phase-header coordination">
+                            <td colspan="2"><strong>COORDINATION SERVICES</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Plan Check Coordination</td>
+                            <td class="price-right">$0</td>
+                        </tr>
+                        <tr>
+                            <td>Building Permit Coordination</td>
+                            <td class="price-right">$0</td>
+                        </tr>
+                        <tr>
+                            <td>Utility & Public Works Coordination</td>
+                            <td class="price-right">$0</td>
+                        </tr>
+                        <tr>
+                            <td>Solar Integration Coordination</td>
+                            <td class="price-right">$0</td>
+                        </tr>
+                        <tr>
+                            <td>Friends & Family Discount</td>
+                            <td class="price-right price-discount" id="discount">($1,000)</td>
+                        </tr>
+
+                        <tr class="phase-header construction">
+                            <td colspan="2"><strong>CONSTRUCTION PHASE</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Project Deposit & Mobilization</td>
+                            <td class="price-right price-included">included</td>
+                        </tr>
+                        <tr>
+                            <td>Interior Design & Finish Selection (2 Sessions)</td>
+                            <td class="price-right" id="interiorDesign">$20,000</td>
+                        </tr>
+                        <tr>
+                            <td>Site Mobilization & Preparation</td>
+                            <td class="price-right" id="mobilization">$20,000</td>
+                        </tr>
+                        <tr>
+                            <td>Trenching & Underground Plumbing</td>
+                            <td class="price-right" id="trenching">$20,000</td>
+                        </tr>
+                        <tr>
+                            <td>Foundation & Structural Work</td>
+                            <td class="price-right" id="foundation">$15,000</td>
+                        </tr>
+                        <tr>
+                            <td>Framing & Structural Assembly</td>
+                            <td class="price-right" id="framing">$15,000</td>
+                        </tr>
+                        <tr>
+                            <td>MEP Installation (Mechanical, Electrical, Plumbing)</td>
+                            <td class="price-right" id="mep">$9,000</td>
+                        </tr>
+                        <tr>
+                            <td>Drywall Installation & Finishing</td>
+                            <td class="price-right" id="drywall">$5,000</td>
+                        </tr>
+                        <tr>
+                            <td>Final Finishes & Project Completion</td>
+                            <td class="price-right" id="propertyFinal">$0</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td><strong>Construction Subtotal (without add-on work)</strong></td>
+                            <td class="price-right" id="constructionSubtotal"><strong>$104,000</strong></td>
+                        </tr>
+
+                        <tr class="phase-header addon">
+                            <td colspan="2"><strong>ADDITIONAL TESTING & COMPLIANCE</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Third-Party Testing: HERS, QII & Compaction Report (Scarify)</td>
+                            <td class="price-right">$0</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td><strong>Add-On Services Subtotal</strong></td>
+                            <td class="price-right">$0</td>
+                        </tr>
+
+                        <tr class="total-row">
+                            <td><strong>TOTAL PROJECT INVESTMENT</strong></td>
+                            <td class="price-right" id="grandTotal"><strong>$110,500</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="cost-summary">
+                <div class="cost-card">
+                    <div class="cost-title">Cost Per Square Foot</div>
+                    <div class="cost-amount" id="costPerSqft">$244.19</div>
+                    <div class="cost-note">(excluding design & coordination)</div>
+                </div>
+                <div class="cost-card">
+                    <div class="cost-title">Payment Terms</div>
+                    <div class="cost-amount">30 Days</div>
+                    <div class="cost-note">Proposal validity period</div>
+                </div>
+            </div>
+
+            <div class="additional-scope">
+                <h4>Additional Scope of Work</h4>
+                <ul>
+                    <li>Third-Party Testing - HERS (Home Energy Rating System), QII (Quality Insulation Installation), and Compaction Report with Scarification as required by local building codes</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-divider thick"></div>
+
+        <!-- Much more subtle Terms & Conditions -->
+        <div class="terms-section page-break">
+            <div class="terms-header">
+                <h3>PROJECT DETAILS & OPTIONS</h3>
+                <div style="color: #6b7280; font-size: 10px;">Important project considerations and additional service opportunities</div>
+            </div>
+            
+            <div class="terms-grid">
+                <div class="terms-card">
+                    <div class="terms-card-header exclusions">Items Not Included in Base Package</div>
+                    <div class="terms-content">
+                        <div class="terms-category">
+                            <h4>Permit & Municipal Fees</h4>
+                            <ul>
+                                <li>City building permits and planning approval fees</li>
+                                <li>Third-party inspections and testing fees</li>
+                                <li>Land surveys and specialized reports if required</li>
+                            </ul>
+                        </div>
+
+                        <div class="terms-category">
+                            <h4>Site Preparation</h4>
+                            <ul>
+                                <li>Removal of existing unpermitted structures</li>
+                                <li>Landscaping, fencing, and driveway work</li>
+                                <li>Underground irrigation repairs if damaged</li>
+                            </ul>
+                        </div>
+
+                        <div class="terms-category">
+                            <h4>Utility Connections</h4>
+                            <ul>
+                                <li>New utility service installations if needed</li>
+                                <li>Fire sprinkler systems (if required by city)</li>
+                                <li>Unforeseen structural or pest-related repairs</li>
+                            </ul>
+                        </div>
+
+                        <div class="terms-category">
+                            <h4>Insurance & Security</h4>
+                            <ul>
+                                <li>Site security systems during construction</li>
+                                <li>Builder's risk insurance (if required)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terms-card">
+                    <div class="terms-card-header additions">Optional Enhancement Services</div>
+                    <div class="terms-content">
+                        <div class="terms-category">
+                            <h4>1) Custom Design Upgrades</h4>
+                            <p>Personalize your ADU with premium finishes, custom cabinetry, upgraded fixtures, and architectural enhancements beyond our standard package.</p>
+                        </div>
+
+                        <div class="terms-category">
+                            <h4>2) Landscape & Outdoor Living</h4>
+                            <p>Professional landscape design, hardscaping, outdoor kitchens, and patio areas to create beautiful outdoor living spaces that complement your new ADU.</p>
+                        </div>
+
+                        <div class="terms-category">
+                            <h4>3) Rental Property Optimization</h4>
+                            <p>Site planning services including dedicated parking areas, separate entrances, and property management consultation to maximize rental potential.</p>
+                        </div>
+
+                        <div class="terms-category">
+                            <h4>4) Smart Home Technology</h4>
+                            <p>Home automation systems, smart thermostats, security systems, and energy monitoring for modern convenience and efficiency.</p>
+                        </div>
+
+                        <div class="terms-category">
+                            <h4>5) Energy & Sustainability</h4>
+                            <p>Solar panel systems, battery storage, electric vehicle charging, and eco-friendly building materials for reduced environmental impact.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- Soft Footer -->
+        <div class="footer">
+            <div class="footer-info">
+                <div class="company-details">
+                    <strong>Anchor Builders</strong>
+                    12962 Main Street, Garden Grove, CA 92840<br>
+                    Licensed General Contractor • CSLB# 1029392<br>
+                    Phone: (714) 555-0123 • Email: info@anchorbuilders.io
+                </div>
+                <div class="website-info">
+                    <strong>www.AnchorBuilders.io</strong><br>
+                    Professional ADU Construction<br>
+                    Serving Orange County Since 2018
+                </div>
+            </div>
+
+            <div class="signature-section">
+                <div class="signature-header">CLIENT ACCEPTANCE & AUTHORIZATION</div>
+                <div class="acceptance-text">
+                    I, <strong><span id="signatureName">My Le</span></strong>, acknowledge that I have read and understand the terms and conditions outlined in this proposal. I hereby accept the above scope of work to be completed by Anchor Builders for the total project investment of <strong><span id="signatureAmount">$110,500.00</span></strong>.
+                </div>
+                
+                <div class="signature-grid">
+                    <div class="signature-field">
+                        <div class="signature-line"></div>
+                        <div class="signature-label">Client Signature: <span id="submitName">My Le</span></div>
+                    </div>
+                    <div class="signature-field">
+                        <div class="signature-line"></div>
+                        <div class="signature-label">Date</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="terms-text">
+                <p><strong>TERMS & CONDITIONS:</strong> This proposal is valid for 30 days from the issue date. A formal construction contract will be prepared upon acceptance. Project timeline depends on city permitting, material availability, and client responsiveness.</p>
+                
+                <p><strong>CHANGE ORDERS:</strong> Any modifications to scope, materials, or layout must be requested in writing. Approved changes may affect timeline and cost with updated documentation provided.</p>
+                
+                <p><strong>IMPORTANT NOTICE:</strong> <em>This is a non-binding estimate. Final cost is subject to plan approval, scope adjustments, and change orders.</em></p>
+                
+                <p><strong>DESIGN SERVICES:</strong> Interior Design includes 2 consultation sessions (2 hours each). Additional sessions available at $150 per hour.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced data population function
+        function updateProposal(data) {
+            // Update client information
+            if (data.client) {
+                const fields = ['clientName', 'signatureName', 'submitName'];
+                fields.forEach(field => {
+                    const element = document.getElementById(field);
+                    if (element) element.textContent = data.client.name || 'My Le';
+                });
+                
+                if (document.getElementById('clientPhone')) {
+                    document.getElementById('clientPhone').textContent = data.client.phone || '(714) 349-1459';
+                }
+                
+                if (document.getElementById('clientEmail')) {
+                    document.getElementById('clientEmail').textContent = data.client.email || 'myle.nguyenk@gmail.com';
+                }
+            }
+            
+            // Update project information
+            if (data.project) {
+                if (document.getElementById('projectAddress')) {
+                    document.getElementById('projectAddress').textContent = data.project.address || '13351 Barney Street';
+                }
+                if (document.getElementById('projectCity')) {
+                    document.getElementById('projectCity').textContent = data.project.city || 'Westminster, CA 92683';
+                }
+                if (document.getElementById('bedBathDisplay')) {
+                    document.getElementById('bedBathDisplay').textContent = data.project.bedBath || '1 BR / 1 BA';
+                }
+                if (document.getElementById('livingAreaDisplay')) {
+                    document.getElementById('livingAreaDisplay').textContent = data.project.livingArea || '430 sq ft';
+                }
+                if (document.getElementById('aduTypeDisplay')) {
+                    document.getElementById('aduTypeDisplay').textContent = data.project.aduType || 'Garage Conversion';
+                }
+                
+                // Update property image and caption
+                updatePropertyImage(data.project.address || '13351 Barney Street', data.project.city || 'Westminster, CA 92683');
+            }
+            
+            // Update pricing
+            if (data.pricing) {
+                if (document.getElementById('grandTotal')) {
+                    document.getElementById('grandTotal').textContent = data.pricing.grandTotal || '$110,500';
+                }
+                if (document.getElementById('signatureAmount')) {
+                    document.getElementById('signatureAmount').textContent = data.pricing.signatureAmount || '$110,500.00';
+                }
+                if (document.getElementById('costPerSqft')) {
+                    document.getElementById('costPerSqft').textContent = data.pricing.costPerSqft || '$244.19';
+                }
+                
+                // Update individual line items
+                if (data.pricing.lineItems) {
+                    Object.keys(data.pricing.lineItems).forEach(key => {
+                        const element = document.getElementById(key);
+                        if (element) {
+                            element.textContent = data.pricing.lineItems[key];
+                        }
+                    });
+                }
+            }
+            
+            // Update dates
+            const today = new Date();
+            const formattedDate = today.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            ['proposalDate', 'infoProposalDate'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.textContent = formattedDate;
+            });
+        }
+
+        // Function to update property image in header
+        function updatePropertyImage(address, city) {
+            const fullAddress = encodeURIComponent(`${address}, ${city}`);
+            const headerImageElement = document.getElementById('headerPropertyImage');
+            const headerTextElement = document.getElementById('headerImageText');
+            const headerCaptionElement = document.getElementById('headerImageCaption');
+            
+            // Update placeholder text
+            headerTextElement.innerHTML = `Project Site<br><span style="font-size: 7px;">Satellite View</span>`;
+            headerCaptionElement.textContent = 'Property Location';
+            
+            // If you have a Google Maps API key, uncomment and modify this:
+            // headerImageElement.src = `https://maps.googleapis.com/maps/api/staticmap?center=${fullAddress}&zoom=19&size=120x80&maptype=satellite&key=YOUR_GOOGLE_MAPS_API_KEY`;
+        }
+
+        // Initialize with current date
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProposal({});
+        });
+    </script>
+</body>
+</html>

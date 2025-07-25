@@ -176,10 +176,10 @@ function App() {
           {/* Large Logo Container */}
           <div className='inline-flex items-center justify-center w-52 h-52 bg-white rounded-2xl mb-8 shadow-lg'>
             <div className='flex items-center justify-center w-48 h-48'>
-              <img 
-                src="/anchor-logo-official.jpg" 
-                alt="Anchor Builders Logo" 
-                className="w-40 h-40 object-contain"
+              <img
+                src='/anchor-logo-official.jpg'
+                alt='Anchor Builders Logo'
+                className='w-40 h-40 object-contain'
               />
             </div>
           </div>
@@ -1053,7 +1053,7 @@ function PaymentScheduleCard({ liveCalculation }: any) {
   const deposit = 1000; // Fixed $1,000 deposit
   const designAmount = 12500; // Design services (could be dynamic)
   const constructionAmount = liveCalculation.finalTotal - designAmount - deposit;
-  
+
   // Calculate milestones using Excel ROUND(amount, -3) formula
   const calculateMilestone = (percentage: number, isLast: boolean = false) => {
     if (isLast) {

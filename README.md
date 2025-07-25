@@ -49,9 +49,37 @@ This app is configured for Railway deployment with:
 3. Railway will automatically detect the configuration from `railway.toml`
 4. Set any required environment variables in Railway dashboard
 
+#### Setting Up Google Maps API in Railway
+
+1. Open your project in Railway dashboard
+2. Go to "Variables" tab
+3. Add the following environment variables:
+   ```
+   VITE_GOOGLE_MAPS_API_KEY=your-actual-api-key-here
+   VITE_GOOGLE_MAPS_DEFAULT_ZOOM=19
+   VITE_GOOGLE_MAPS_IMAGE_SIZE=800x600
+   VITE_GOOGLE_MAPS_HEADER_SIZE=120x80
+   VITE_ENABLE_GOOGLE_MAPS=true
+   ```
+4. Deploy the application
+5. Test satellite image generation
+
+
 ### Environment Variables
 
+Copy `.env.example` to `.env` and configure:
+
 ```bash
+# Copy example environment file
+cp .env.example .env
+
+# Edit .env with your values
+# Required for Google Maps integration:
+VITE_GOOGLE_MAPS_API_KEY="your-google-maps-api-key"
+
+# Optional configuration:
+VITE_GOOGLE_MAPS_DEFAULT_ZOOM=19
+VITE_GOOGLE_MAPS_IMAGE_SIZE="800x600"
 NODE_ENV=production
 # Add other environment variables as needed
 ```
@@ -83,6 +111,46 @@ The pricing engine calculates costs based on:
 - Sitework requirements (minimal, moderate, extensive)
 - Local permit and utility connection costs
 - Additional services and customizations
+
+## Google Maps Integration
+
+This application uses Google Maps Static API to display satellite imagery of properties in PDF proposals.
+
+### Required Google APIs
+
+1. **Maps Static API** - For generating satellite images
+2. **Geocoding API** (optional) - For address validation
+
+### Getting Your API Key
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing one
+3. Navigate to "APIs & Services" → "Library"
+4. Enable "Maps Static API"
+5. Navigate to "APIs & Services" → "Credentials"
+6. Click "Create Credentials" → "API Key"
+7. Copy your API key
+
+### API Key Security
+
+For production use:
+- Restrict your API key to specific domains
+- Set up billing alerts to monitor usage
+- Consider HTTP referrer restrictions
+
+### Rate Limits & Costs
+
+- Maps Static API: $2 per 1,000 requests
+- Free tier: $200 monthly credit
+- Typical usage: 1-3 requests per proposal
+
+### Troubleshooting
+
+- Check browser console for API errors
+- Verify API key has proper permissions
+- Ensure billing is enabled on Google Cloud project
+- Test with a simple address first
+
 
 ## Integration
 

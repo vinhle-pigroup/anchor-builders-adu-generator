@@ -1,6 +1,7 @@
 import { AnchorProposalFormData } from '../types/proposal';
 import { AnchorPricingEngine } from './pricing-engine';
 import { calculateMilestonePayments } from '../data/pricing-config';
+import { getSafePropertyImage } from './google-maps-service';
 
 export class AnchorPDFTemplateGenerator {
   private templateHtml: string = '';
@@ -88,7 +89,7 @@ export class AnchorPDFTemplateGenerator {
 
     // Get Google Maps satellite image for property
     const propertyAddress = `${formData.client.address}, ${formData.client.city}, ${formData.client.state} ${formData.client.zipCode}`;
-    const satelliteImage = null; // Google Maps integration temporarily disabled
+    const satelliteImage = await getSafePropertyImage(propertyAddress);
 
     return {
       // Date

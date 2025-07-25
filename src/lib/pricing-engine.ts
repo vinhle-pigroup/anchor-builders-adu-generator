@@ -4,8 +4,6 @@ import {
   utilityOptions,
   addOnOptions,
   businessSettings,
-  getSizeBasedPricing,
-  getDesignPricing,
   type AduTypePricing,
   type UtilityOption,
   type AddOnOption,
@@ -15,6 +13,7 @@ export interface PricingInputs {
   // Basic Project Info
   squareFootage: number;
   aduType: 'detached' | 'attached';
+  stories?: 1 | 2; // For detached ADUs only
   bedrooms: number;
   bathrooms: number;
 
@@ -37,6 +36,14 @@ export interface PricingInputs {
   sewerConnection: 'existing-lateral';
   solarDesign: boolean;
   femaIncluded: boolean;
+
+  // Price Overrides
+  priceOverrides?: {
+    basePricePerSqFt?: number;
+    designServices?: number;
+    addOnPrices?: Record<string, number>;
+    markupPercentage?: number;
+  };
 }
 
 export interface PricingLineItem {
@@ -56,7 +63,6 @@ export interface PricingBreakdown {
   totalBeforeMarkup: number;
   grandTotal: number;
   pricePerSqFt: number;
-  baseConstructionPricePerSqFt: number;
 }
 
 export class AnchorPricingEngine {
@@ -66,28 +72,25 @@ export class AnchorPricingEngine {
     // 1. Base ADU Construction Cost ($/sqft model)
     this.calculateBaseConstructionCost(inputs, lineItems);
 
-    // 2. Design & Planning Phase (always included)
-    this.calculateDesignServices(inputs, lineItems);
+    // 2. Design Services (if selected)
+    if (inputs.needsDesign) {
+      this.calculateDesignServices(inputs, lineItems);
+    }
 
     // 3. Utility Connections
     this.calculateUtilityConnections(inputs, lineItems);
 
-    // 4. Add-ons 
+    // 4. Add-ons
     this.calculateAddOns(inputs, lineItems);
 
     // Calculate subtotal
     const subtotal = lineItems.reduce((sum, item) => sum + item.totalPrice, 0);
 
-    // No markup applied - prices are already final (based on actual proposals)
-    const markupPercentage = 0;
-    const markupAmount = 0;
-    const grandTotal = subtotal;
-
-    // Calculate base construction price per sqft (just the construction cost)
-    const baseConstructionItem = lineItems.find(item => item.category === 'CONSTRUCTION');
-    const baseConstructionPricePerSqFt = baseConstructionItem 
-      ? baseConstructionItem.totalPrice / inputs.squareFootage
-      : getSizeBasedPricing(inputs.squareFootage, inputs.aduType === 'attached');
+    // Apply markup (use override if available)
+    const markupPercentage =
+      inputs.priceOverrides?.markupPercentage ?? businessSettings.standardMarkup;
+    const markupAmount = subtotal * markupPercentage;
+    const grandTotal = subtotal + markupAmount;
 
     return {
       lineItems,
@@ -97,18 +100,31 @@ export class AnchorPricingEngine {
       totalBeforeMarkup: subtotal,
       grandTotal,
       pricePerSqFt: grandTotal / inputs.squareFootage,
-      baseConstructionPricePerSqFt,
     };
   }
 
   private calculateBaseConstructionCost(inputs: PricingInputs, lineItems: PricingLineItem[]) {
-    // Use size-based pricing from actual proposals
-    const pricePerSqFt = getSizeBasedPricing(inputs.squareFootage, inputs.aduType === 'attached');
+    // Get price per sqft based on ADU type and stories
+    let aduType;
+    if (inputs.aduType === 'detached') {
+      // For detached, find by stories (default to 1-story if not specified)
+      const stories = inputs.stories || 1;
+      aduType = aduTypePricing.find(type => type.type === 'detached' && type.stories === stories);
+    } else {
+      // For attached, just find by type
+      aduType = aduTypePricing.find(type => type.type === 'attached');
+    }
+
+    if (!aduType) return;
+
+    // Use override price if available, otherwise use default
+    const pricePerSqFt = inputs.priceOverrides?.basePricePerSqFt ?? aduType.pricePerSqFt;
     const baseConstructionCost = inputs.squareFootage * pricePerSqFt;
-    
+    const isOverridden = inputs.priceOverrides?.basePricePerSqFt !== undefined;
+
     lineItems.push({
-      category: 'CONSTRUCTION',
-      description: `${inputs.aduType === 'attached' ? 'Attached/Garage Conversion' : 'Detached'} ADU Construction (${inputs.squareFootage} sqft)`,
+      category: 'Base Construction',
+      description: `${aduType.name} (${inputs.squareFootage} sq ft @ $${pricePerSqFt}/sq ft)${isOverridden ? ' *' : ''}`,
       quantity: inputs.squareFootage,
       unitPrice: pricePerSqFt,
       totalPrice: baseConstructionCost,
@@ -117,15 +133,17 @@ export class AnchorPricingEngine {
   }
 
   private calculateDesignServices(inputs: PricingInputs, lineItems: PricingLineItem[]) {
-    const designCost = getDesignPricing(inputs.squareFootage);
-    
+    // Use override price if available, otherwise use default
+    const designPrice = inputs.priceOverrides?.designServices ?? designServices.planningDesign;
+    const isOverridden = inputs.priceOverrides?.designServices !== undefined;
+
     lineItems.push({
-      category: 'DESIGN & PLANNING',
-      description: 'ADU Plan Design, Structural Engineering, MEP Design, Zoning & Site Planning Review, Title 24 Energy Compliance',
+      category: 'Design Services',
+      description: `${designServices.description}${isOverridden ? ' *' : ''}`,
       quantity: 1,
-      unitPrice: designCost,
-      totalPrice: designCost,
-      isOptional: false,
+      unitPrice: designPrice,
+      totalPrice: designPrice,
+      isOptional: true,
     });
   }
 
@@ -179,12 +197,16 @@ export class AnchorPricingEngine {
       const addOn = addOnOptions.find(a => a.name === addOnName);
       if (!addOn) return;
 
+      // Use override price if available, otherwise use default
+      const addOnPrice = inputs.priceOverrides?.addOnPrices?.[addOnName] ?? addOn.price;
+      const isOverridden = inputs.priceOverrides?.addOnPrices?.[addOnName] !== undefined;
+
       lineItems.push({
         category: 'Add-Ons',
-        description: addOn.description,
+        description: `${addOn.description}${isOverridden ? ' *' : ''}`,
         quantity: 1,
-        unitPrice: addOn.price,
-        totalPrice: addOn.price,
+        unitPrice: addOnPrice,
+        totalPrice: addOnPrice,
         isOptional: true,
       });
     });
