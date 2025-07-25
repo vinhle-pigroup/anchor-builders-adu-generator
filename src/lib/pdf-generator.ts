@@ -25,11 +25,11 @@ export class AnchorPDFGenerator {
     // Add some custom fonts if available
   }
 
-  generateProposal(formData: AnchorProposalFormData): Blob {
+  async generateProposal(formData: AnchorProposalFormData): Promise<Blob> {
     // Try to use the new template generator first
     try {
       const templateGenerator = new AnchorPDFTemplateGenerator();
-      return templateGenerator.generateProposal(formData);
+      return await templateGenerator.generateProposal(formData);
     } catch (error) {
       console.warn('Template generator failed, falling back to jsPDF:', error);
       // Fallback to jsPDF generation

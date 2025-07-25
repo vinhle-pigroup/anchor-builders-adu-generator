@@ -205,27 +205,52 @@ export class AnchorPDFTemplateGenerator {
   }
 
   private htmlToPdfBlob(html: string): Blob {
-    // Create a new window for printing
+    // For browser-based PDF generation, we'll create an HTML blob that opens in a new window
+    // This allows the user to use their browser's "Print to PDF" functionality
+    
+    // Create a complete HTML document with proper PDF styling
+    const completeHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Anchor Builders ADU Proposal</title>
+        <style>
+          @media print {
+            @page {
+              size: letter;
+              margin: 0.5in;
+            }
+            body {
+              -webkit-print-color-adjust: exact;
+              color-adjust: exact;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        ${html}
+        <script>
+          // Auto-trigger print dialog when page loads
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+            }, 500);
+          };
+        </script>
+      </body>
+      </html>
+    `;
+
+    // Open in new window for printing
     const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      throw new Error('Unable to open print window');
+    if (printWindow) {
+      printWindow.document.write(completeHtml);
+      printWindow.document.close();
     }
 
-    // Write the HTML content
-    printWindow.document.write(html);
-    printWindow.document.close();
-
-    // Trigger print dialog (user will save as PDF)
-    printWindow.focus();
-    printWindow.print();
-
-    // Clean up
-    setTimeout(() => {
-      printWindow.close();
-    }, 1000);
-
-    // Return a placeholder blob (actual PDF generation would happen through print dialog)
-    return new Blob([html], { type: 'text/html' });
+    // Return HTML blob for download fallback
+    return new Blob([completeHtml], { type: 'text/html' });
   }
 
   private getFallbackTemplate(): string {

@@ -101,7 +101,7 @@ export function ProjectDetailsForm({
     });
   };
 
-  const generateSamplePDF = () => {
+  const generateSamplePDF = async () => {
     try {
       // Create sample data using Vinh Le details
       const sampleFormData = {
@@ -140,7 +140,7 @@ export function ProjectDetailsForm({
       };
 
       const pdfGenerator = new AnchorPDFGenerator();
-      const pdfBlob = pdfGenerator.generateProposal(sampleFormData);
+      const pdfBlob = await pdfGenerator.generateProposal(sampleFormData);
 
       // Create download link
       const url = URL.createObjectURL(pdfBlob);

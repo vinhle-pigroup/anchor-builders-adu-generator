@@ -99,10 +99,10 @@ function App() {
     }));
   };
 
-  const generatePDF = useCallback(() => {
+  const generatePDF = useCallback(async () => {
     try {
       const pdfGenerator = new AnchorPDFGenerator();
-      const pdfBlob = pdfGenerator.generateProposal(formData);
+      const pdfBlob = await pdfGenerator.generateProposal(formData);
 
       // Create download link
       const url = URL.createObjectURL(pdfBlob);
