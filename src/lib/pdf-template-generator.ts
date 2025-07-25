@@ -10,22 +10,8 @@ export class AnchorPDFTemplateGenerator {
   }
 
   private async loadTemplate() {
-    try {
-      // Try to load the new modern template first
-      const response = await fetch('/src/templates/designs/anchor-adu-modern-template.html');
-      this.templateHtml = await response.text();
-    } catch (error) {
-      console.error('Failed to load modern template, trying fallback:', error);
-      try {
-        // Fallback to original template
-        const fallbackResponse = await fetch('/src/templates/anchor-proposal-template.html');
-        this.templateHtml = await fallbackResponse.text();
-      } catch (fallbackError) {
-        console.error('Failed to load templates:', fallbackError);
-        // Final fallback to embedded template
-        this.templateHtml = this.getFallbackTemplate();
-      }
-    }
+    // Use embedded modern template instead of fetching
+    this.templateHtml = this.getModernTemplate();
   }
 
   async generateProposal(formData: AnchorProposalFormData): Promise<void> {
@@ -237,52 +223,231 @@ export class AnchorPDFTemplateGenerator {
       </html>
     `;
 
-    // Create a new window and immediately trigger print
+    // Create blob and download directly as HTML file (which browsers can "Save as PDF")
+    const blob = new Blob([completeHtml], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Anchor-Builders-ADU-Proposal-${Date.now()}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    // Also open in new window for immediate viewing/printing
     const printWindow = window.open('', '_blank', 'width=1200,height=800');
     if (printWindow) {
       printWindow.document.write(completeHtml);
       printWindow.document.close();
-      
-      // Wait for content to load, then print
-      printWindow.onload = function() {
-        setTimeout(() => {
-          printWindow.print();
-          // Close window after user completes print dialog
-          printWindow.onafterprint = function() {
-            printWindow.close();
-          };
-        }, 1000);
-      };
     }
-
-    // PDF generation handled by print dialog in new window
   }
 
-  private getFallbackTemplate(): string {
+  private getModernTemplate(): string {
     return `
       <!DOCTYPE html>
-      <html>
+      <html lang="en">
       <head>
         <meta charset="UTF-8">
-        <title>Anchor Builders - ADU Proposal</title>
+        <title>ADU Construction Proposal - Anchor Builders</title>
         <style>
-          body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
-          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #1b365d; padding-bottom: 20px; }
-          .logo { font-size: 24px; font-weight: bold; color: #1b365d; margin-bottom: 10px; }
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+          
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          
+          @page { size: letter; margin: 0.5in; }
+          
+          body {
+            font-family: 'Inter', Arial, sans-serif;
+            line-height: 1.4;
+            color: #374151;
+            background: white;
+            font-size: 12px;
+          }
+          
+          .proposal-container {
+            max-width: 8.5in;
+            margin: 0 auto;
+            background: white;
+            min-height: 11in;
+          }
+          
+          .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 0 0 8px 8px;
+          }
+          
+          .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+          }
+          
+          .company-name {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+          }
+          
+          .proposal-title {
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 12px 0;
+          }
+          
+          .proposal-title h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 3px;
+          }
+          
+          .project-info {
+            padding: 20px 35px;
+            background: #f8fafc;
+          }
+          
+          .info-header h3 {
+            color: #4f46e5;
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 18px;
+          }
+          
+          .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+          }
+          
+          .info-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 18px;
+          }
+          
+          .info-card h4 {
+            color: #4f46e5;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+          }
+          
+          .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+          }
+          
+          .info-label {
+            font-weight: 500;
+            color: #6b7280;
+            font-size: 10px;
+          }
+          
+          .info-value {
+            font-weight: 400;
+            color: #374151;
+            font-size: 10px;
+          }
+          
+          @media print {
+            body { -webkit-print-color-adjust: exact; color-adjust: exact; }
+            .header { -webkit-print-color-adjust: exact; color-adjust: exact; }
+          }
         </style>
       </head>
       <body>
-        <div class="header">
-          <div class="logo">ANCHOR BUILDERS</div>
-          <div>Professional ADU Construction</div>
-          <div>ADU Construction Proposal</div>
+        <div class="proposal-container">
+          <div class="header">
+            <div class="header-top">
+              <div>
+                <div class="company-name">ANCHOR BUILDERS</div>
+                <div style="font-size: 9px; opacity: 0.85;">Licensed General Contractor • CSLB# 1029392</div>
+              </div>
+              <div style="text-align: right; font-size: 9px;">
+                12962 Main Street, Garden Grove, CA 92840<br>
+                Phone: (714) 555-0123 • www.AnchorBuilders.io
+              </div>
+            </div>
+            
+            <div class="proposal-title">
+              <h1>ADU CONSTRUCTION PROPOSAL</h1>
+              <h2 style="font-size: 12px; font-weight: 300;">Accessory Dwelling Unit Development</h2>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; margin-top: 12px; font-size: 9px;">
+              <div>Professional ADU Construction Services</div>
+              <div style="background: rgba(255, 255, 255, 0.12); padding: 5px 12px; border-radius: 15px;">{{PROPOSAL_DATE}}</div>
+            </div>
+          </div>
+
+          <div class="project-info">
+            <div class="info-header">
+              <h3>PROJECT INFORMATION</h3>
+            </div>
+            
+            <div class="info-grid">
+              <div class="info-card">
+                <h4>Client Information</h4>
+                <div class="info-row">
+                  <span class="info-label">NAME:</span>
+                  <span class="info-value">{{CLIENT_FIRST_NAME}} {{CLIENT_LAST_NAME}}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">PHONE:</span>
+                  <span class="info-value">{{CLIENT_PHONE}}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">EMAIL:</span>
+                  <span class="info-value">{{CLIENT_EMAIL}}</span>
+                </div>
+              </div>
+              
+              <div class="info-card">
+                <h4>Property Information</h4>
+                <div class="info-row">
+                  <span class="info-label">ADDRESS:</span>
+                  <span class="info-value">{{PROJECT_ADDRESS}}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">CITY:</span>
+                  <span class="info-value">{{PROJECT_CITY}}, {{PROJECT_STATE}} {{PROJECT_ZIP}}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">PROJECT:</span>
+                  <span class="info-value">{{BEDROOMS}} BR / {{BATHROOMS}} BA • {{SQUARE_FOOTAGE}} sq ft</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="padding: 20px 35px; background: white;">
+            <div style="text-align: center; margin-bottom: 18px;">
+              <h3 style="color: #4f46e5; font-size: 18px; font-weight: 600;">TOTAL PROJECT INVESTMENT</h3>
+            </div>
+            
+            <div style="text-align: center; background: #4f46e5; color: white; padding: 20px; border-radius: 8px;">
+              <div style="font-size: 36px; font-weight: 700; margin-bottom: 8px;">${{GRAND_TOTAL}}</div>
+              <div style="font-size: 14px; opacity: 0.9;">Complete ADU Construction Package</div>
+            </div>
+            
+            <div style="margin-top: 20px; text-align: center; font-size: 11px; color: #6b7280;">
+              <p>This proposal includes design, permits, construction, and professional project management.</p>
+              <p style="margin-top: 5px;"><strong>Cost per square foot:</strong> ${{COST_PER_SQFT}} • <strong>Living area:</strong> {{SQUARE_FOOTAGE}} sq ft</p>
+            </div>
+          </div>
         </div>
-        <h2>Template Loading Error - Using Fallback</h2>
-        <p><strong>Client:</strong> {{CLIENT_FIRST_NAME}} {{CLIENT_LAST_NAME}}</p>
-        <p><strong>Total:</strong> ${{ GRAND_TOTAL }}</p>
-        <p><strong>Note:</strong> This is a fallback template. The full template failed to load.</p>
       </body>
       </html>
     `;
+  }
+
+  private getFallbackTemplate(): string {
+    return this.getModernTemplate();
   }
 }
