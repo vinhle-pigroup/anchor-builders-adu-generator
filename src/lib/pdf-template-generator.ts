@@ -438,13 +438,13 @@ export class AnchorPDFTemplateGenerator {
             </div>
             
             <div style="text-align: center; background: #4f46e5; color: white; padding: 20px; border-radius: 8px;">
-              <div style="font-size: 36px; font-weight: 700; margin-bottom: 8px;">${{GRAND_TOTAL}}</div>
+              <div style="font-size: 36px; font-weight: 700; margin-bottom: 8px;">\\${{GRAND_TOTAL}}</div>
               <div style="font-size: 14px; opacity: 0.9;">Complete ADU Construction Package</div>
             </div>
             
             <div style="margin-top: 20px; text-align: center; font-size: 11px; color: #6b7280;">
               <p>This proposal includes design, permits, construction, and professional project management.</p>
-              <p style="margin-top: 5px;"><strong>Cost per square foot:</strong> ${{COST_PER_SQFT}} • <strong>Living area:</strong> {{SQUARE_FOOTAGE}} sq ft</p>
+              <p style="margin-top: 5px;"><strong>Cost per square foot:</strong> \\${{COST_PER_SQFT}} • <strong>Living area:</strong> {{SQUARE_FOOTAGE}} sq ft</p>
             </div>
           </div>
         </div>
