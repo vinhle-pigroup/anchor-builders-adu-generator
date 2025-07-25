@@ -25,15 +25,23 @@ export class AnchorPDFGenerator {
     // Add some custom fonts if available
   }
 
-  async generateProposal(formData: AnchorProposalFormData): Promise<Blob> {
+  async generateProposal(formData: AnchorProposalFormData): Promise<void> {
     // Try to use the new template generator first
     try {
       const templateGenerator = new AnchorPDFTemplateGenerator();
-      return await templateGenerator.generateProposal(formData);
+      await templateGenerator.generateProposal(formData);
     } catch (error) {
       console.warn('Template generator failed, falling back to jsPDF:', error);
-      // Fallback to jsPDF generation
-      return this.generateWithJsPDF(formData);
+      // Fallback to jsPDF generation - create download for this case
+      const pdfBlob = this.generateWithJsPDF(formData);
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Anchor-Builders-ADU-Proposal-Fallback-${Date.now()}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     }
   }
 

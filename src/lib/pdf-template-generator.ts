@@ -28,7 +28,7 @@ export class AnchorPDFTemplateGenerator {
     }
   }
 
-  async generateProposal(formData: AnchorProposalFormData): Promise<Blob> {
+  async generateProposal(formData: AnchorProposalFormData): Promise<void> {
     // Calculate pricing
     const pricingEngine = new AnchorPricingEngine();
     const pricingInputs = {
@@ -70,8 +70,8 @@ export class AnchorPDFTemplateGenerator {
       milestones
     );
 
-    // Convert HTML to PDF blob (using browser's print functionality)
-    return this.htmlToPdfBlob(processedHtml);
+    // Convert HTML to PDF (using browser's print functionality)
+    this.htmlToPdfBlob(processedHtml);
   }
 
   private async prepareTemplateVariables(
@@ -204,10 +204,7 @@ export class AnchorPDFTemplateGenerator {
     return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNmNWY1ZjUiLz48dGV4dCB4PSIyMDAiIHk9IjE1MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjY2Ij5BRFUgSW50ZXJpb3IgUGhvdG88L3RleHQ+PC9zdmc+';
   }
 
-  private htmlToPdfBlob(html: string): Blob {
-    // For browser-based PDF generation, we'll create an HTML blob that opens in a new window
-    // This allows the user to use their browser's "Print to PDF" functionality
-    
+  private htmlToPdfBlob(html: string): void {
     // Create a complete HTML document with proper PDF styling
     const completeHtml = `
       <!DOCTYPE html>
@@ -216,41 +213,49 @@ export class AnchorPDFTemplateGenerator {
         <meta charset="UTF-8">
         <title>Anchor Builders ADU Proposal</title>
         <style>
-          @media print {
-            @page {
-              size: letter;
-              margin: 0.5in;
-            }
-            body {
-              -webkit-print-color-adjust: exact;
-              color-adjust: exact;
-            }
+          @page {
+            size: letter;
+            margin: 0.5in;
+          }
+          body {
+            font-family: 'Inter', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+          }
+          /* Ensure all background colors and images print */
+          * {
+            -webkit-print-color-adjust: exact !important;
+            color-adjust: exact !important;
           }
         </style>
       </head>
       <body>
         ${html}
-        <script>
-          // Auto-trigger print dialog when page loads
-          window.onload = function() {
-            setTimeout(function() {
-              window.print();
-            }, 500);
-          };
-        </script>
       </body>
       </html>
     `;
 
-    // Open in new window for printing
-    const printWindow = window.open('', '_blank');
+    // Create a new window and immediately trigger print
+    const printWindow = window.open('', '_blank', 'width=1200,height=800');
     if (printWindow) {
       printWindow.document.write(completeHtml);
       printWindow.document.close();
+      
+      // Wait for content to load, then print
+      printWindow.onload = function() {
+        setTimeout(() => {
+          printWindow.print();
+          // Close window after user completes print dialog
+          printWindow.onafterprint = function() {
+            printWindow.close();
+          };
+        }, 1000);
+      };
     }
 
-    // Return HTML blob for download fallback
-    return new Blob([completeHtml], { type: 'text/html' });
+    // PDF generation handled by print dialog in new window
   }
 
   private getFallbackTemplate(): string {

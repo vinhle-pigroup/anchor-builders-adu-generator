@@ -140,17 +140,8 @@ export function ProjectDetailsForm({
       };
 
       const pdfGenerator = new AnchorPDFGenerator();
-      const pdfBlob = await pdfGenerator.generateProposal(sampleFormData);
-
-      // Create download link
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Anchor-Builders-Sample-ADU-Proposal-${Date.now()}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      await pdfGenerator.generateProposal(sampleFormData);
+      // Note: PDF generation now opens in a new window for printing
     } catch (error) {
       console.error('Sample PDF generation error:', error);
       alert('Error generating sample PDF. Please try again.');

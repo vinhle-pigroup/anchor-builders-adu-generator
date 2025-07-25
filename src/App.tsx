@@ -102,17 +102,9 @@ function App() {
   const generatePDF = useCallback(async () => {
     try {
       const pdfGenerator = new AnchorPDFGenerator();
-      const pdfBlob = await pdfGenerator.generateProposal(formData);
-
-      // Create download link
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Anchor-Builders-ADU-Proposal-${formData.client.lastName}-${Date.now()}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      await pdfGenerator.generateProposal(formData);
+      // Note: PDF generation now opens in a new window for printing
+      // No need to create download link as print dialog handles it
     } catch (error) {
       console.error('PDF generation failed:', error);
       alert('Error generating PDF. Please try again.');
