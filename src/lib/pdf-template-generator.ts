@@ -132,6 +132,7 @@ export class AnchorPDFTemplateGenerator {
 
       // Utilities
       GAS_WATER_SETUP: this.getUtilitySetupText(formData.project.utilities),
+      ELECTRICAL_SETUP: formData.project.utilities.electricMeter === 'separate' ? 'Separate electrical panel' : 'Shared electrical panel',
 
       // Pricing
       DESIGN_PRICE: '12,500',
@@ -140,6 +141,15 @@ export class AnchorPDFTemplateGenerator {
       GRAND_TOTAL: calculation.grandTotal.toLocaleString(),
       COST_PER_SQFT: Math.round(calculation.pricePerSqFt).toString(),
       DEPOSIT: '1,000',
+
+      // Milestone Payments
+      MILESTONE_1: `$ ${milestones[0]?.amount.toLocaleString() || '50,000'}`,
+      MILESTONE_2: `$ ${milestones[1]?.amount.toLocaleString() || '50,000'}`,
+      MILESTONE_3: `$ ${milestones[2]?.amount.toLocaleString() || '50,000'}`,
+      MILESTONE_4: `$ ${milestones[3]?.amount.toLocaleString() || '30,000'}`,
+      MILESTONE_5: `$ ${milestones[4]?.amount.toLocaleString() || '25,000'}`,
+      MILESTONE_6: `$ ${milestones[5]?.amount.toLocaleString() || '23,000'}`,
+      MILESTONE_7: `$ ${milestones[6]?.amount.toLocaleString() || '11,000'}`,
 
       // Additional
       ADDITIONAL_SCOPE: formData.additionalNotes || 'Standard ADU construction as specified above.',
@@ -411,15 +421,170 @@ export class AnchorPDFTemplateGenerator {
           '</div>' +
           '<div style="padding: 20px 35px; background: white;">' +
             '<div style="text-align: center; margin-bottom: 18px;">' +
-              '<h3 style="color: #4f46e5; font-size: 18px; font-weight: 600;">TOTAL PROJECT INVESTMENT</h3>' +
+              '<h3 style="color: #4f46e5; font-size: 18px; font-weight: 600;">SCOPE OF WORK</h3>' +
+              '<p style="font-size: 12px; color: #6b7280; margin-top: 5px;">[Full build out of an ADU]</p>' +
             '</div>' +
-            '<div style="text-align: center; background: #4f46e5; color: white; padding: 20px; border-radius: 8px;">' +
-              '<div style="font-size: 36px; font-weight: 700; margin-bottom: 8px;">${{GRAND_TOTAL}}</div>' +
-              '<div style="font-size: 14px; opacity: 0.9;">Complete ADU Construction Package</div>' +
+            '<div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin-bottom: 20px;">' +
+              '<h4 style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 10px;">{{BEDROOMS}} Bedrooms, {{BATHROOMS}} Bathrooms</h4>' +
+              '<ul style="font-size: 11px; color: #6b7280; line-height: 1.5; margin-left: 20px;">' +
+                '<li>Standardized Finishes & Fixtures - Installed from our pre-selected materials list for consistent quality.</li>' +
+                '<li>House Appliance - Range hood, stove, dishwasher, and kitchen sink.</li>' +
+                '<li>Cabinetry & Casework - Kitchen cabinets and bathroom vanities.</li>' +
+                '<li>HVAC - Central air conditioning and heating.</li>' +
+                '<li>Electrical - {{ELECTRICAL_SETUP}}</li>' +
+                '<li>Gas & Water - {{GAS_WATER_SETUP}}</li>' +
+                '<li>Sewer - Connect ADU plumbing to existing main house sewer line</li>' +
+              '</ul>' +
             '</div>' +
-            '<div style="margin-top: 20px; text-align: center; font-size: 11px; color: #6b7280;">' +
-              '<p>This proposal includes design, permits, construction, and professional project management.</p>' +
-              '<p style="margin-top: 5px;"><strong>Cost per square foot:</strong> ${{COST_PER_SQFT}} • <strong>Living area:</strong> {{SQUARE_FOOTAGE}} sq ft</p>' +
+            
+            '<h3 style="color: #4f46e5; font-size: 16px; font-weight: 600; margin-bottom: 15px; text-align: center;">ESTIMATED PRICE BREAKDOWN</h3>' +
+            '<table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px;">' +
+              '<thead>' +
+                '<tr style="background: #1e3a8a; color: white;">' +
+                  '<th style="padding: 8px; text-align: left; font-weight: 600;">Phase</th>' +
+                  '<th style="padding: 8px; text-align: left; font-weight: 600;">Description</th>' +
+                  '<th style="padding: 8px; text-align: right; font-weight: 600;">Price</th>' +
+                '</tr>' +
+              '</thead>' +
+              '<tbody>' +
+                '<tr style="background: #d4b895;">' +
+                  '<td rowspan="5" style="padding: 8px; font-weight: 600; vertical-align: top;">DESIGN &<br>PLANNING</td>' +
+                  '<td style="padding: 8px;">ADU Plan Design</td>' +
+                  '<td style="padding: 8px; text-align: right;">$ 12,500</td>' +
+                '</tr>' +
+                '<tr style="background: #d4b895;">' +
+                  '<td style="padding: 8px; font-style: italic;">Structural Engineering (Roof & Foundation Plan)</td>' +
+                  '<td style="padding: 8px; text-align: right;">included</td>' +
+                '</tr>' +
+                '<tr style="background: #d4b895;">' +
+                  '<td style="padding: 8px; font-style: italic;">MEP Design (Mechanical, Electrical, Plumbing)</td>' +
+                  '<td style="padding: 8px; text-align: right;">included</td>' +
+                '</tr>' +
+                '<tr style="background: #d4b895;">' +
+                  '<td style="padding: 8px; font-style: italic;">Zoning & Site Planning Review</td>' +
+                  '<td style="padding: 8px; text-align: right;">included</td>' +
+                '</tr>' +
+                '<tr style="background: #d4b895;">' +
+                  '<td style="padding: 8px; font-style: italic;">Title 24 Energy Compliance</td>' +
+                  '<td style="padding: 8px; text-align: right;">included</td>' +
+                '</tr>' +
+                '<tr style="background: #f59e0b; color: white; font-weight: 600;">' +
+                  '<td style="padding: 8px;">Subtotal</td>' +
+                  '<td style="padding: 8px;"></td>' +
+                  '<td style="padding: 8px; text-align: right;">$ 12,500</td>' +
+                '</tr>' +
+                
+                '<tr style="background: #fbbf24;">' +
+                  '<td rowspan="4" style="padding: 8px; font-weight: 600; vertical-align: top;">COORDINATION<br>SERVICES</td>' +
+                  '<td style="padding: 8px;">Plan Check Coordination</td>' +
+                  '<td style="padding: 8px; text-align: right;">$ 0</td>' +
+                '</tr>' +
+                '<tr style="background: #fbbf24;">' +
+                  '<td style="padding: 8px;">Building Permit Coordination</td>' +
+                  '<td style="padding: 8px; text-align: right;">$ 0</td>' +
+                '</tr>' +
+                '<tr style="background: #fbbf24;">' +
+                  '<td style="padding: 8px;">Utility & Public Works Coordination</td>' +
+                  '<td style="padding: 8px; text-align: right;">$ 0</td>' +
+                '</tr>' +
+                '<tr style="background: #fbbf24;">' +
+                  '<td style="padding: 8px;">Solar Vendor Coordination</td>' +
+                  '<td style="padding: 8px; text-align: right;">$ 0</td>' +
+                '</tr>' +
+                
+                '<tr style="background: #7dd3fc;">' +
+                  '<td rowspan="8" style="padding: 8px; font-weight: 600; vertical-align: top;">CONSTRUCTION</td>' +
+                  '<td style="padding: 8px;">Deposit</td>' +
+                  '<td style="padding: 8px; text-align: right;">$ 1,000</td>' +
+                '</tr>' +
+                '<tr style="background: #7dd3fc;">' +
+                  '<td style="padding: 8px; font-style: italic;">Mobilization</td>' +
+                  '<td style="padding: 8px; text-align: right;">{{MILESTONE_1}}</td>' +
+                '</tr>' +
+                '<tr style="background: #7dd3fc;">' +
+                  '<td style="padding: 8px;">Trenching & Underground Plumbing</td>' +
+                  '<td style="padding: 8px; text-align: right;">{{MILESTONE_2}}</td>' +
+                '</tr>' +
+                '<tr style="background: #7dd3fc;">' +
+                  '<td style="padding: 8px;">Foundation</td>' +
+                  '<td style="padding: 8px; text-align: right;">{{MILESTONE_3}}</td>' +
+                '</tr>' +
+                '<tr style="background: #7dd3fc;">' +
+                  '<td style="padding: 8px;">Framing</td>' +
+                  '<td style="padding: 8px; text-align: right;">{{MILESTONE_4}}</td>' +
+                '</tr>' +
+                '<tr style="background: #7dd3fc;">' +
+                  '<td style="padding: 8px;">Mechanical, Electrical, Plumbing (MEP)</td>' +
+                  '<td style="padding: 8px; text-align: right;">{{MILESTONE_5}}</td>' +
+                '</tr>' +
+                '<tr style="background: #7dd3fc;">' +
+                  '<td style="padding: 8px;">Drywall</td>' +
+                  '<td style="padding: 8px; text-align: right;">{{MILESTONE_6}}</td>' +
+                '</tr>' +
+                '<tr style="background: #7dd3fc;">' +
+                  '<td style="padding: 8px;">Property Final</td>' +
+                  '<td style="padding: 8px; text-align: right;">{{MILESTONE_7}}</td>' +
+                '</tr>' +
+                '<tr style="background: #1e40af; color: white; font-weight: 600;">' +
+                  '<td style="padding: 8px;">Subtotal (without Add on Work)</td>' +
+                  '<td style="padding: 8px;"></td>' +
+                  '<td style="padding: 8px; text-align: right;">{{CONSTRUCTION_SUBTOTAL}}</td>' +
+                '</tr>' +
+                
+                '{{#if ADD_ONS}}' +
+                '<tr style="background: #22c55e;">' +
+                  '<td style="padding: 8px; font-weight: 600;">ADD ON WORK</td>' +
+                  '<td style="padding: 8px;">{{#each ADD_ONS}}<div>{{this.name}}</div>{{/each}}</td>' +
+                  '<td style="padding: 8px; text-align: right;">{{#each ADD_ONS}}<div>${{this.price}}</div>{{/each}}</td>' +
+                '</tr>' +
+                '<tr style="background: #16a34a; color: white; font-weight: 600;">' +
+                  '<td style="padding: 8px;">Subtotal (with Add on Work)</td>' +
+                  '<td style="padding: 8px;"></td>' +
+                  '<td style="padding: 8px; text-align: right;">{{TOTAL_WITH_ADDONS}}</td>' +
+                '</tr>' +
+                '{{/if}}' +
+              '</tbody>' +
+            '</table>' +
+            
+            '<div style="text-align: center; background: #1e40af; color: white; padding: 20px; border-radius: 8px; margin: 20px 0;">' +
+              '<div style="font-size: 12px; margin-bottom: 5px;">CONSTRUCTION</div>' +
+              '<div style="font-size: 14px; margin-bottom: 10px;">Cost per sqft ${{COST_PER_SQFT}} per sqft</div>' +
+              '<div style="font-size: 32px; font-weight: 700; margin-bottom: 8px;">GRAND TOTAL</div>' +
+              '<div style="font-size: 40px; font-weight: 800;">${{GRAND_TOTAL}}</div>' +
+            '</div>' +
+            
+            '<div style="margin-top: 30px; padding: 20px; background: #f8fafc; border-radius: 8px;">' +
+              '<h3 style="color: #1e40af; font-size: 16px; font-weight: 600; margin-bottom: 15px;">TERMS & CONDITIONS</h3>' +
+              '<p style="font-size: 11px; color: #6b7280; line-height: 1.5; margin-bottom: 10px;">' +
+                'A formal construction contract will be prepared and executed upon acceptance of this bid. The pricing outlined in this proposal is valid for 30 days from the proposal date. A detailed payment schedule will be included in the formal contract. The overall project schedule is subject to factors such as city permitting timelines, material availability, and the client\'s responsiveness throughout the process.' +
+              '</p>' +
+              '<p style="font-size: 11px; color: #6b7280; line-height: 1.5; margin-bottom: 10px;">' +
+                'Any changes to the agreed-upon scope of work, materials, layout, or finish levels must be requested in writing and formally approved. Approved change orders may result in adjustments to both the total project cost and construction timeline.' +
+              '</p>' +
+              '<p style="font-size: 11px; color: #6b7280; line-height: 1.5; font-weight: 600;">' +
+                '*This is a non-binding estimate. Final cost is subject to plan approval, scope adjustments, and change orders.*' +
+              '</p>' +
+            '</div>' +
+            
+            '<div style="margin-top: 30px; padding: 20px; border: 2px solid #1e40af; border-radius: 8px;">' +
+              '<h3 style="color: #1e40af; font-size: 16px; font-weight: 600; margin-bottom: 15px; text-align: center;">OWNER ACCEPTANCE</h3>' +
+              '<p style="font-size: 12px; color: #374151; margin-bottom: 20px; text-align: center;">' +
+                'I, {{CLIENT_FIRST_NAME}} {{CLIENT_LAST_NAME}}, accept the above scope of work, proposed to be completed by Anchor Builders for the amount of ${{GRAND_TOTAL}}.' +
+              '</p>' +
+              '<div style="display: flex; justify-content: space-between; margin-top: 30px;">' +
+                '<div style="width: 45%;">' +
+                  '<div style="border-bottom: 1px solid #374151; height: 30px; margin-bottom: 5px;"></div>' +
+                  '<p style="font-size: 11px; color: #6b7280;">Submitted by {{CLIENT_FIRST_NAME}} {{CLIENT_LAST_NAME}}</p>' +
+                '</div>' +
+                '<div style="width: 45%;">' +
+                  '<div style="border-bottom: 1px solid #374151; height: 30px; margin-bottom: 5px;"></div>' +
+                  '<p style="font-size: 11px; color: #6b7280;">Date</p>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+            
+            '<div style="margin-top: 20px; text-align: center; font-size: 10px; color: #6b7280;">' +
+              '<p>{{ADDITIONAL_SCOPE}}</p>' +
             '</div>' +
           '</div>' +
         '</div>' +
