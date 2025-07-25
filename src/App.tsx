@@ -376,6 +376,25 @@ function ProposalFormPage({
           </div>
         </div>
 
+        {/* Generate Proposal Button - Top of Form */}
+        <div className='mb-6'>
+          <div className='bg-white rounded-xl p-4 shadow-md border border-slate-200'>
+            <button
+              onClick={generatePDF}
+              disabled={!isFormComplete}
+              className='w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg font-semibold text-base flex items-center justify-center space-x-3 hover:from-blue-600 hover:to-blue-800 transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-lg'
+            >
+              <FileText className='w-5 h-5' />
+              <span>Generate Proposal</span>
+            </button>
+            {!isFormComplete && (
+              <p className='text-xs text-slate-500 text-center mt-2'>
+                Complete all required fields to generate proposal
+              </p>
+            )}
+          </div>
+        </div>
+
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
           {/* Main Form */}
           <div className='lg:col-span-2 space-y-6'>
@@ -1091,15 +1110,7 @@ function PaymentScheduleCard({ liveCalculation }: any) {
 function ActionCard({ formData, generatePDF, isFormComplete }: any) {
   return (
     <div className='bg-white rounded-xl p-4 shadow-md border border-slate-200'>
-      <button
-        onClick={generatePDF}
-        disabled={!isFormComplete}
-        className='w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 hover:from-blue-600 hover:to-blue-800 transition-all disabled:opacity-60 disabled:cursor-not-allowed mb-2'
-      >
-        <FileText className='w-4 h-4' />
-        <span>Generate Proposal</span>
-      </button>
-      <button className='w-full px-4 py-2 bg-white text-slate-700 border border-slate-200 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 hover:bg-slate-50 transition-colors'>
+      <button className='w-full px-4 py-3 bg-white text-slate-700 border border-slate-200 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 hover:bg-slate-50 transition-colors'>
         <Eye className='w-4 h-4' />
         <span>Preview Sample</span>
       </button>
