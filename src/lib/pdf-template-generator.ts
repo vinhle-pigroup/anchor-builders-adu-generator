@@ -223,37 +223,11 @@ export class AnchorPDFTemplateGenerator {
   }
 
   private htmlToPdfBlob(html: string): void {
-    // Create a complete HTML document with proper PDF styling
-    const completeHtml = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <title>Anchor Builders ADU Proposal</title>
-        <style>
-          @page {
-            size: letter;
-            margin: 0.5in;
-          }
-          body {
-            font-family: 'Inter', Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            -webkit-print-color-adjust: exact;
-            color-adjust: exact;
-          }
-          /* Ensure all background colors and images print */
-          * {
-            -webkit-print-color-adjust: exact !important;
-            color-adjust: exact !important;
-          }
-        </style>
-      </head>
-      <body>
-        ${html}
-      </body>
-      </html>
-    `;
+    console.log('📄 Final HTML being used for PDF (first 500 chars):', html.substring(0, 500));
+    
+    // The html parameter already contains the complete modern template with styling
+    // No need to wrap it in additional HTML structure
+    const completeHtml = html;
 
     // Create blob and download directly as HTML file (which browsers can "Save as PDF")
     const blob = new Blob([completeHtml], { type: 'text/html' });
