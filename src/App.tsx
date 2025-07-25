@@ -403,7 +403,7 @@ function ProposalFormPage({
                     required
                   />
                   <FormInput
-                    label='Best Phone Number *'
+                    label='Phone *'
                     type='tel'
                     value={formData.client.phone}
                     onChange={value => updateClientData({ phone: value })}
