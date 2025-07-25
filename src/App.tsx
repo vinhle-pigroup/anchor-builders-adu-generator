@@ -379,84 +379,76 @@ function ProposalFormPage({
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
           {/* Main Form */}
           <div className='lg:col-span-2 space-y-6'>
+            {/* Client Information */}
             <FormSection
               icon={<User className='w-5 h-5' />}
-              title="Let's Get Started"
-              subtitle="Tell us about yourself and your property"
+              title='Client Information'
+              subtitle='Contact details and property address'
             >
-              {/* All contact info consolidated in one clean section */}
-              <div className='space-y-4'>
-                {/* Name and Contact - Single Row */}
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                  <FormInput
-                    label='Your Name *'
-                    value={formData.client.firstName}
-                    onChange={value => updateClientData({ firstName: value })}
-                    placeholder='First Name'
-                    required
-                  />
-                  <FormInput
-                    label=' '
-                    value={formData.client.lastName}
-                    onChange={value => updateClientData({ lastName: value })}
-                    placeholder='Last Name'
-                    required
-                  />
-                  <FormInput
-                    label='Phone *'
-                    type='tel'
-                    value={formData.client.phone}
-                    onChange={value => updateClientData({ phone: value })}
-                    placeholder='(714) 555-0123'
-                    required
-                  />
-                </div>
-                
-                {/* Email - Full Width */}
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <FormInput
-                  label='Email Address *'
+                  label='First Name *'
+                  value={formData.client.firstName}
+                  onChange={value => updateClientData({ firstName: value })}
+                  placeholder='John'
+                  required
+                />
+                <FormInput
+                  label='Last Name *'
+                  value={formData.client.lastName}
+                  onChange={value => updateClientData({ lastName: value })}
+                  placeholder='Smith'
+                  required
+                />
+              </div>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <FormInput
+                  label='Email *'
                   type='email'
                   value={formData.client.email}
                   onChange={value => updateClientData({ email: value })}
-                  placeholder='your.email@example.com'
+                  placeholder='john@example.com'
                   required
                 />
-                
-                {/* Property Address */}
-                <div className='pt-4 border-t border-slate-100'>
-                  <h4 className='text-sm font-medium text-slate-700 mb-3'>Where are you building your ADU?</h4>
-                  <FormInput
-                    label='Property Address *'
-                    value={formData.client.address}
-                    onChange={value => updateClientData({ address: value })}
-                    placeholder='123 Main Street'
-                    required
-                  />
-                  <div className='grid grid-cols-2 gap-4 mt-3'>
-                    <FormInput
-                      label='City *'
-                      value={formData.client.city}
-                      onChange={value => updateClientData({ city: value })}
-                      placeholder='Garden Grove'
-                      required
-                    />
-                    <FormInput
-                      label='ZIP Code *'
-                      value={formData.client.zipCode}
-                      onChange={value => updateClientData({ zipCode: value })}
-                      placeholder='92683'
-                      required
-                    />
-                  </div>
-                </div>
+                <FormInput
+                  label='Phone *'
+                  type='tel'
+                  value={formData.client.phone}
+                  onChange={value => updateClientData({ phone: value })}
+                  placeholder='(714) 555-0123'
+                  required
+                />
+              </div>
+              <FormInput
+                label='Property Address *'
+                value={formData.client.address}
+                onChange={value => updateClientData({ address: value })}
+                placeholder='123 Main Street'
+                required
+              />
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <FormInput
+                  label='City *'
+                  value={formData.client.city}
+                  onChange={value => updateClientData({ city: value })}
+                  placeholder='Garden Grove'
+                  required
+                />
+                <FormInput
+                  label='ZIP Code *'
+                  value={formData.client.zipCode}
+                  onChange={value => updateClientData({ zipCode: value })}
+                  placeholder='92683'
+                  required
+                />
               </div>
             </FormSection>
 
-            {/* What Kind of ADU Do You Want? */}
+            {/* ADU Configuration */}
             <FormSection
               icon={<Home className='w-5 h-5' />}
-              title='What Kind of ADU Do You Want?'
-              subtitle='Choose the size and style that fits your needs'
+              title='ADU Configuration'
+              subtitle='Size, type, and room configuration'
             >
               <ADUConfigurationForm
                 pricingData={pricingData}
@@ -465,29 +457,29 @@ function ProposalFormPage({
               />
             </FormSection>
 
-            {/* Utility Setup */}
+            {/* Utility Connections */}
             <FormSection
               icon={<Zap className='w-5 h-5' />}
-              title='Utility Setup'
-              subtitle='How do you want utilities connected?'
+              title='Utility Connections'
+              subtitle='Meter configurations'
             >
               <UtilityConnectionsForm pricingData={pricingData} setPricingData={setPricingData} />
             </FormSection>
 
-            {/* Professional Services */}
+            {/* Design Services */}
             <FormSection
               icon={<Compass className='w-5 h-5' />}
-              title='Professional Services'
-              subtitle='Design and compliance services we recommend'
+              title='Design Services & Features'
+              subtitle='Professional services'
             >
               <DesignServicesForm pricingData={pricingData} setPricingData={setPricingData} />
             </FormSection>
 
-            {/* Extra Features */}
+            {/* Optional Add-Ons */}
             <FormSection
               icon={<Square className='w-5 h-5' />}
-              title='Extra Features'
-              subtitle='Popular upgrades to consider'
+              title='Optional Add-Ons'
+              subtitle='Standard and custom upgrades'
             >
               <AddOnsForm pricingData={pricingData} setPricingData={setPricingData} />
             </FormSection>
@@ -594,9 +586,9 @@ function ADUConfigurationForm({ pricingData, setPricingData, updateProjectData }
 
   return (
     <div className='space-y-6'>
-      {/* How big do you want your ADU? */}
+      {/* Square Footage */}
       <div>
-        <label className='text-xs font-medium text-slate-700 mb-2 block'>How big do you want your ADU? *</label>
+        <label className='text-xs font-medium text-slate-700 mb-2 block'>Square Footage *</label>
         <div className='flex items-center space-x-4 mb-4'>
           <input
             type='number'
@@ -606,7 +598,7 @@ function ADUConfigurationForm({ pricingData, setPricingData, updateProjectData }
             max='1200'
             className='w-32 px-3 py-3 border-2 border-blue-500 rounded-lg text-base font-semibold text-center bg-blue-50'
           />
-          <span className='text-sm text-slate-600'>square feet - we can build from 300 to 1,200 sq ft</span>
+          <span className='text-sm text-slate-600'>sq ft (300-1200)</span>
         </div>
         <div className='grid grid-cols-5 gap-2'>
           {[400, 600, 800, 1000, 1200].map(size => (
@@ -625,9 +617,9 @@ function ADUConfigurationForm({ pricingData, setPricingData, updateProjectData }
         </div>
       </div>
 
-      {/* What style works best for your property? */}
+      {/* ADU Type */}
       <div>
-        <label className='text-xs font-medium text-slate-700 mb-3 block'>What style works best for your property?</label>
+        <label className='text-xs font-medium text-slate-700 mb-3 block'>ADU Type</label>
         <div className='grid grid-cols-2 gap-3'>
           {[
             {
@@ -673,10 +665,10 @@ function ADUConfigurationForm({ pricingData, setPricingData, updateProjectData }
         </div>
       </div>
 
-      {/* How many bedrooms? and How many bathrooms? */}
+      {/* Bedrooms and Bathrooms */}
       <div className='grid grid-cols-2 gap-6'>
         <div>
-          <label className='text-xs font-medium text-slate-700 mb-2 block'>How many bedrooms?</label>
+          <label className='text-xs font-medium text-slate-700 mb-2 block'>Bedrooms</label>
           <div className='grid grid-cols-5 gap-2'>
             {[
               { value: 0, label: 'Studio' },
@@ -701,7 +693,7 @@ function ADUConfigurationForm({ pricingData, setPricingData, updateProjectData }
         </div>
 
         <div>
-          <label className='text-xs font-medium text-slate-700 mb-2 block'>How many bathrooms?</label>
+          <label className='text-xs font-medium text-slate-700 mb-2 block'>Bathrooms</label>
           <div className='grid grid-cols-3 gap-2'>
             {[1, 2, 3].map(num => (
               <button
