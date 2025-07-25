@@ -15,6 +15,13 @@ export class AnchorPDFTemplateGenerator {
   }
 
   async generateProposal(formData: AnchorProposalFormData): Promise<void> {
+    console.log('🚀 [DEBUG] Starting PDF generation with form data:', formData);
+    console.log('📊 [DEBUG] Form data details:', {
+      client: formData.client,
+      project: formData.project,
+      additionalNotes: formData.additionalNotes
+    });
+    
     // Calculate pricing
     const pricingEngine = new AnchorPricingEngine();
     const pricingInputs = {
@@ -38,23 +45,48 @@ export class AnchorPDFTemplateGenerator {
     const designAmount = formData.project.needsDesign ? 12500 : 0;
     const milestones = calculateMilestonePayments(calculation.grandTotal, designAmount);
 
+    console.log('Calculated pricing:', { grandTotal: calculation.grandTotal, pricePerSqFt: calculation.pricePerSqFt });
+
     // Prepare template variables (including Google Maps image)
     const templateVars = await this.prepareTemplateVariables(formData, calculation, milestones);
+    console.log('📝 [DEBUG] Template variables prepared:');
+    console.log('📝 [DEBUG] Template variables keys:', Object.keys(templateVars));
+    console.log('📝 [DEBUG] GRAND_TOTAL:', templateVars.GRAND_TOTAL);
+    console.log('📝 [DEBUG] COST_PER_SQFT:', templateVars.COST_PER_SQFT);
+    console.log('Template variables prepared:', templateVars);
+
+    // Get fresh template HTML
+    let processedHtml = this.getModernTemplate();
+    console.log('Template loaded, length:', processedHtml.length);
 
     // Replace variables in template
-    let processedHtml = this.templateHtml;
     Object.entries(templateVars).forEach(([key, value]) => {
       const regex = new RegExp(`{{${key}}}`, 'g');
-      processedHtml = processedHtml.replace(regex, value);
+      const beforeCount = (processedHtml.match(regex) || []).length;
+      processedHtml = processedHtml.replace(regex, value || '');
+      const afterCount = (processedHtml.match(regex) || []).length; 
+      if (beforeCount > 0) {
+        console.log(`Replaced ${beforeCount} instances of {{${key}}} with "${value}"`);
+      }
     });
 
-    // Handle conditional sections
+  // Check for any remaining unreplaced variables
+  const remainingVars = processedHtml.match(/{{[^}]+}}/g);
+  if (remainingVars) {
+    console.warn('⚠️ [DEBUG] Unreplaced template variables found:', remainingVars);
+  } else {
+    console.log('✅ [DEBUG] All template variables successfully replaced');
+  }
+
+  // Handle conditional sections
     processedHtml = this.processConditionalSections(
       processedHtml,
       formData,
       calculation,
       milestones
     );
+
+    console.log('Final processed HTML length:', processedHtml.length);
 
     // Convert HTML to PDF (using browser's print functionality)
     this.htmlToPdfBlob(processedHtml);
