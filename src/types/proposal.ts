@@ -69,10 +69,13 @@ export interface ProposalCalculation {
 }
 
 export interface AnchorProposalFormData {
+  id?: string;
   client: ClientInfo;
   project: ProjectInfo;
   additionalNotes: string;
   timeline: string;
+  createdAt?: string;
+  lastModified?: string;
 }
 
 export interface SavedProposal {

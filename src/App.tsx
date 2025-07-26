@@ -26,6 +26,8 @@ import { AnchorPDFGenerator } from './lib/pdf-generator';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<'home' | 'proposal' | 'list' | 'admin'>('home');
+  const [savedProposals, setSavedProposals] = useState<AnchorProposalFormData[]>([]);
+  const [editingProposal, setEditingProposal] = useState<AnchorProposalFormData | null>(null);
   const [formData, setFormData] = useState<AnchorProposalFormData>({
     client: {
       firstName: '',
@@ -59,6 +61,21 @@ function App() {
     additionalNotes: '',
     timeline: '6-8 months',
   });
+
+  // Load saved proposals on app start
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem('anchorProposals') || '[]');
+    setSavedProposals(saved);
+  }, []);
+
+  // Load editing proposal data
+  useEffect(() => {
+    if (editingProposal) {
+      setFormData(editingProposal);
+      // Set current page to proposal form for editing
+      setCurrentPage('proposal');
+    }
+  }, [editingProposal]);
 
   // Pricing state for real-time updates
   const [pricingData, setPricingData] = useState({
@@ -103,6 +120,21 @@ function App() {
     try {
       const pdfGenerator = new AnchorPDFGenerator();
       await pdfGenerator.generateProposal(formData);
+      
+      // Save proposal to local storage for future editing
+      const proposalId = Date.now().toString();
+      const proposalToSave = {
+        ...formData,
+        id: proposalId,
+        createdAt: new Date().toISOString(),
+        lastModified: new Date().toISOString()
+      };
+      
+      const saved = JSON.parse(localStorage.getItem('anchorProposals') || '[]');
+      saved.push(proposalToSave);
+      localStorage.setItem('anchorProposals', JSON.stringify(saved));
+      setSavedProposals(saved);
+      
       // Note: PDF generation now opens in a new window for printing
       // No need to create download link as print dialog handles it
     } catch (error) {
@@ -196,13 +228,13 @@ function App() {
               Start New Proposal
             </button>
 
-            {/* View Proposals */}
+            {/* View and Edit Proposals */}
             <button
               onClick={() => setCurrentPage('list')}
               className='w-full bg-white text-stone-700 px-6 py-3 rounded-xl text-base font-semibold hover:bg-stone-50 transition-all shadow-lg border border-stone-200 flex items-center justify-center'
             >
               <FileText className='w-4 h-4 mr-2' />
-              View Proposals
+              View & Edit Proposals
             </button>
 
             {/* Admin Settings */}
@@ -236,45 +268,219 @@ function App() {
         updateProjectData={updateProjectData}
         setPricingData={setPricingData}
         generatePDF={generatePDF}
-        onBack={() => setCurrentPage('home')}
+        onBack={() => {
+          setCurrentPage('home');
+          setEditingProposal(null);
+          // Reset form to defaults when going back
+          setFormData({
+            client: {
+              firstName: '',
+              lastName: '',
+              email: '',
+              phone: '',
+              address: '',
+              city: '',
+              state: '',
+              zipCode: '',
+            },
+            project: {
+              aduType: 'detached',
+              squareFootage: 600,
+              bedrooms: 2,
+              bathrooms: 2,
+              appliancesIncluded: true,
+              hvacType: 'central-ac',
+              finishLevel: 'standard',
+              utilities: {
+                waterMeter: 'shared',
+                gasMeter: 'shared',
+                electricMeter: 'separate',
+              },
+              sewerConnection: 'existing-lateral',
+              needsDesign: true,
+              solarDesign: false,
+              femaIncluded: false,
+              selectedAddOns: [],
+            },
+            additionalNotes: '',
+            timeline: '6-8 months',
+          });
+        }}
       />
     );
   }
 
   if (currentPage === 'list') {
+    const handleEditProposal = (proposal: any) => {
+      setEditingProposal(proposal);
+    };
+
+    const handleDeleteProposal = (proposalId: string) => {
+      if (confirm('Are you sure you want to delete this proposal?')) {
+        const updated = savedProposals.filter((p: any) => p.id !== proposalId);
+        setSavedProposals(updated);
+        localStorage.setItem('anchorProposals', JSON.stringify(updated));
+      }
+    };
+
+    const handleDuplicateProposal = (proposal: any) => {
+      const duplicated = {
+        ...proposal,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString(),
+        lastModified: new Date().toISOString(),
+        client: {
+          ...proposal.client,
+          firstName: proposal.client.firstName + ' (Copy)',
+        }
+      };
+      const updated = [...savedProposals, duplicated];
+      setSavedProposals(updated);
+      localStorage.setItem('anchorProposals', JSON.stringify(updated));
+    };
+
     return (
       <div className='min-h-screen bg-slate-50 p-8'>
-        <div className='max-w-4xl mx-auto'>
+        <div className='max-w-6xl mx-auto'>
           <div className='flex items-center justify-between mb-6'>
-            <h1 className='text-2xl font-bold text-slate-800'>All Proposals</h1>
-            <button
-              onClick={() => setCurrentPage('home')}
-              className='flex items-center space-x-2 text-slate-600 hover:text-blue-600 transition-colors px-4 py-2 bg-white border border-slate-200 rounded-lg'
-            >
-              <ArrowLeft className='w-4 h-4' />
-              <span>Back to Home</span>
-            </button>
+            <h1 className='text-2xl font-bold text-slate-800'>Saved Proposals</h1>
+            <div className='flex items-center space-x-4'>
+              <button
+                onClick={() => setCurrentPage('proposal')}
+                className='flex items-center space-x-2 text-white bg-blue-600 hover:bg-blue-700 transition-colors px-4 py-2 rounded-lg'
+              >
+                <Plus className='w-4 h-4' />
+                <span>New Proposal</span>
+              </button>
+              <button
+                onClick={() => setCurrentPage('home')}
+                className='flex items-center space-x-2 text-slate-600 hover:text-blue-600 transition-colors px-4 py-2 bg-white border border-slate-200 rounded-lg'
+              >
+                <ArrowLeft className='w-4 h-4' />
+                <span>Back to Home</span>
+              </button>
+            </div>
           </div>
 
-          <div className='bg-white rounded-lg shadow-sm p-12 text-center'>
-            <div className='w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6'>
-              <FileText className='w-8 h-8 text-white' />
+          {savedProposals.length === 0 ? (
+            <div className='bg-white rounded-lg shadow-sm p-12 text-center'>
+              <div className='w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-6'>
+                <FileText className='w-8 h-8 text-white' />
+              </div>
+              <h2 className='text-xl font-semibold text-slate-800 mb-4'>No Proposals Yet</h2>
+              <p className='text-slate-600 mb-8'>Create your first ADU proposal to get started</p>
+              <button
+                onClick={() => setCurrentPage('proposal')}
+                className='px-8 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors flex items-center space-x-2 mx-auto'
+              >
+                <Plus className='w-4 h-4' />
+                <span>Create First Proposal</span>
+              </button>
             </div>
-            <h2 className='text-xl font-semibold text-slate-800 mb-4'>Proposals Management</h2>
-            <p className='text-slate-600 mb-8'>View, edit, and manage all your ADU proposals</p>
-            <button
-              onClick={() => setCurrentPage('home')}
-              className='px-8 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors'
-            >
-              Back to Home (Demo)
-            </button>
-          </div>
+          ) : (
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+              {savedProposals.map((proposal: any) => (
+                <div key={proposal.id} className='bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden'>
+                  <div className='p-6'>
+                    <div className='flex items-start justify-between mb-4'>
+                      <div>
+                        <h3 className='font-semibold text-slate-800 text-lg'>
+                          {proposal.client.firstName} {proposal.client.lastName}
+                        </h3>
+                        <p className='text-slate-600 text-sm'>{proposal.client.address}</p>
+                        <p className='text-slate-500 text-xs'>{proposal.client.city}, {proposal.client.state}</p>
+                      </div>
+                      <div className='text-right'>
+                        <div className='text-lg font-bold text-blue-600'>
+                          {proposal.project.squareFootage} sq ft
+                        </div>
+                        <div className='text-xs text-slate-500'>
+                          {proposal.project.bedrooms}BR / {proposal.project.bathrooms}BA
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className='text-xs text-slate-500 mb-4'>
+                      Created: {new Date(proposal.createdAt).toLocaleDateString()}
+                    </div>
+                    
+                    <div className='flex space-x-2'>
+                      <button
+                        onClick={() => handleEditProposal(proposal)}
+                        className='flex-1 px-3 py-2 bg-blue-500 text-white rounded text-sm font-medium hover:bg-blue-600 transition-colors flex items-center justify-center space-x-1'
+                      >
+                        <Eye className='w-3 h-3' />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        onClick={() => handleDuplicateProposal(proposal)}
+                        className='px-3 py-2 bg-slate-500 text-white rounded text-sm font-medium hover:bg-slate-600 transition-colors'
+                        title='Duplicate'
+                      >
+                        <Plus className='w-3 h-3' />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteProposal(proposal.id)}
+                        className='px-3 py-2 bg-red-500 text-white rounded text-sm font-medium hover:bg-red-600 transition-colors'
+                        title='Delete'
+                      >
+                        <X className='w-3 h-3' />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
   if (currentPage === 'admin') {
+    const clearAllProposals = () => {
+      if (confirm('Are you sure you want to delete ALL proposals? This cannot be undone.')) {
+        localStorage.removeItem('anchorProposals');
+        setSavedProposals([]);
+        alert('All proposals have been deleted.');
+      }
+    };
+
+    const exportProposals = () => {
+      const dataStr = JSON.stringify(savedProposals, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      
+      const exportFileDefaultName = `anchor-proposals-${new Date().toISOString().split('T')[0]}.json`;
+      
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+    };
+
+    const importProposals = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const imported = JSON.parse(e.target?.result as string);
+            if (Array.isArray(imported)) {
+              const updated = [...savedProposals, ...imported];
+              setSavedProposals(updated);
+              localStorage.setItem('anchorProposals', JSON.stringify(updated));
+              alert(`Imported ${imported.length} proposals successfully.`);
+            } else {
+              alert('Invalid file format. Please select a valid proposals JSON file.');
+            }
+          } catch (error) {
+            alert('Error reading file. Please check the file format.');
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+
     return (
       <div className='min-h-screen bg-slate-50 p-8'>
         <div className='max-w-4xl mx-auto'>
@@ -289,20 +495,75 @@ function App() {
             </button>
           </div>
 
-          <div className='bg-white rounded-lg shadow-sm p-12 text-center'>
-            <div className='w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-6'>
-              <Users className='w-8 h-8 text-white' />
+          <div className='space-y-6'>
+            {/* Data Management */}
+            <div className='bg-white rounded-lg shadow-sm p-6'>
+              <h2 className='text-xl font-semibold text-slate-800 mb-4 flex items-center'>
+                <FileText className='w-5 h-5 mr-2' />
+                Data Management
+              </h2>
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                <div className='text-center p-4 border border-slate-200 rounded-lg'>
+                  <div className='text-2xl font-bold text-blue-600 mb-2'>
+                    {savedProposals.length}
+                  </div>
+                  <div className='text-sm text-slate-600'>Saved Proposals</div>
+                </div>
+                <button
+                  onClick={exportProposals}
+                  disabled={savedProposals.length === 0}
+                  className='p-4 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2'
+                >
+                  <Download className='w-4 h-4' />
+                  <span>Export Data</span>
+                </button>
+                <label className='p-4 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors cursor-pointer flex items-center justify-center space-x-2'>
+                  <input
+                    type='file'
+                    accept='.json'
+                    onChange={importProposals}
+                    className='hidden'
+                  />
+                  <Plus className='w-4 h-4' />
+                  <span>Import Data</span>
+                </label>
+              </div>
             </div>
-            <h2 className='text-xl font-semibold text-slate-800 mb-4'>System Configuration</h2>
-            <p className='text-slate-600 mb-8'>
-              Configure pricing, templates, company info, and system settings
-            </p>
-            <button
-              onClick={() => setCurrentPage('home')}
-              className='px-8 py-3 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 transition-colors'
-            >
-              Back to Home (Demo)
-            </button>
+
+            {/* Danger Zone */}
+            <div className='bg-white rounded-lg shadow-sm p-6 border-l-4 border-red-500'>
+              <h2 className='text-xl font-semibold text-red-600 mb-4'>Danger Zone</h2>
+              <p className='text-slate-600 mb-4'>
+                Permanently delete all saved proposals. This action cannot be undone.
+              </p>
+              <button
+                onClick={clearAllProposals}
+                disabled={savedProposals.length === 0}
+                className='px-6 py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2'
+              >
+                <X className='w-4 h-4' />
+                <span>Clear All Proposals</span>
+              </button>
+            </div>
+
+            {/* System Info */}
+            <div className='bg-white rounded-lg shadow-sm p-6'>
+              <h2 className='text-xl font-semibold text-slate-800 mb-4'>System Information</h2>
+              <div className='space-y-2 text-sm'>
+                <div className='flex justify-between'>
+                  <span className='text-slate-600'>Version:</span>
+                  <span className='font-medium'>1.0.0</span>
+                </div>
+                <div className='flex justify-between'>
+                  <span className='text-slate-600'>Storage:</span>
+                  <span className='font-medium'>Local Browser Storage</span>
+                </div>
+                <div className='flex justify-between'>
+                  <span className='text-slate-600'>Last Updated:</span>
+                  <span className='font-medium'>{new Date().toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
