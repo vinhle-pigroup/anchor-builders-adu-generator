@@ -192,7 +192,7 @@ export const calculateMilestonePayments = (
   const constructionAmount = totalAmount - designAmount - deposit;
 
   let runningTotal = 0;
-  const payments = [];
+  const payments: Array<MilestonePayment & { amount: number; baseAmount: number }> = [];
 
   // Calculate milestones using Excel ROUND(amount, -3) formula
   milestonePayments.forEach((milestone, index) => {

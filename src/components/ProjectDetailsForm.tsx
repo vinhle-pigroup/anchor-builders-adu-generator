@@ -1,10 +1,5 @@
-import React from 'react';
 import {
   Building2,
-  Palette,
-  Wrench,
-  Plus,
-  Clock,
   FileText,
   ArrowLeft,
   Calculator,
@@ -31,7 +26,6 @@ export function ProjectDetailsForm({
   isEmbedded = false,
 }: ProjectDetailsFormProps) {
   const pricingEngine = new AnchorPricingEngine();
-  const aduTypeOptions = pricingEngine.getAduTypeOptions();
   const addOnOptions = pricingEngine.getAddOnOptions();
 
   const toggleAddOn = (addOnName: string) => {
@@ -59,14 +53,6 @@ export function ProjectDetailsForm({
     });
   };
 
-  const updateDesignPriceOverride = (newPrice: number) => {
-    updateProjectData({
-      priceOverrides: {
-        ...formData.priceOverrides,
-        designServices: newPrice,
-      },
-    });
-  };
 
   const updateAddOnPriceOverride = (addOnName: string, newPrice: number) => {
     updateProjectData({
@@ -841,7 +827,7 @@ export function ProjectDetailsForm({
             <div className='bg-white rounded-lg shadow-sm p-6'>
               <h3 className='font-semibold text-slate-800 mb-4'>Payment Milestones</h3>
               <div className='space-y-2 text-sm'>
-                {milestones.map((milestone, index) => (
+                {milestones.map((milestone) => (
                   <div key={milestone.code} className='flex justify-between items-center'>
                     <div className='flex items-center space-x-2'>
                       <span className='w-6 h-6 bg-slate-100 text-slate-600 rounded-full text-xs flex items-center justify-center font-medium'>

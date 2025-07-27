@@ -4,9 +4,6 @@ import {
   utilityOptions,
   addOnOptions,
   businessSettings,
-  type AduTypePricing,
-  type UtilityOption,
-  type AddOnOption,
 } from '../data/pricing-config';
 
 export interface PricingInputs {

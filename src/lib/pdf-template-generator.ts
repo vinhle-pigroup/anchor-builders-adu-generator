@@ -3,75 +3,114 @@ import { AnchorPricingEngine } from './pricing-engine';
 import { calculateMilestonePayments } from '../data/pricing-config';
 
 export class AnchorPDFTemplateGenerator {
-  private templateHtml: string = '';
-
   constructor() {
-    this.loadTemplate();
-  }
-
-  private async loadTemplate() {
-    // Use embedded modern template instead of fetching
-    this.templateHtml = this.getModernTemplate();
   }
 
   async generateProposal(formData: AnchorProposalFormData): Promise<void> {
-    console.log('🚀 [DEBUG] Starting PDF generation with form data:', formData);
-    console.log('📊 [DEBUG] Form data details:', {
-      client: formData.client,
-      project: formData.project,
-      additionalNotes: formData.additionalNotes,
-    });
+    try {
+      console.log('🚀 [DEBUG] Starting PDF generation with form data:', formData);
+      
+      // Validate required form data
+      this.validateFormData(formData);
+      
+      console.log('📊 [DEBUG] Form data validation passed:', {
+        client: formData.client,
+        project: formData.project,
+        additionalNotes: formData.additionalNotes,
+      });
+    } catch (error) {
+      console.error('❌ [ERROR] PDF generation validation failed:', error);
+      throw new Error(`PDF validation failed: ${error instanceof Error ? error.message : 'Unknown validation error'}`);
+    }
 
-    // Calculate pricing
-    const pricingEngine = new AnchorPricingEngine();
-    const pricingInputs = {
-      squareFootage: formData.project.squareFootage,
-      aduType: formData.project.aduType,
-      stories: formData.project.stories,
-      bedrooms: formData.project.bedrooms,
-      bathrooms: formData.project.bathrooms,
-      utilities: formData.project.utilities,
-      needsDesign: formData.project.needsDesign,
-      appliancesIncluded: formData.project.appliancesIncluded,
-      hvacType: formData.project.hvacType,
-      selectedAddOns: formData.project.selectedAddOns,
-      sewerConnection: formData.project.sewerConnection,
-      solarDesign: formData.project.solarDesign,
-      femaIncluded: formData.project.femaIncluded,
-      priceOverrides: formData.project.priceOverrides,
-    };
+    // Calculate pricing with error handling
+    let calculation;
+    let milestones;
+    let designAmount;
+    
+    try {
+      console.log('💰 [DEBUG] Starting pricing calculation...');
+      const pricingEngine = new AnchorPricingEngine();
+      const pricingInputs = {
+        squareFootage: formData.project.squareFootage,
+        aduType: formData.project.aduType,
+        stories: formData.project.stories,
+        bedrooms: formData.project.bedrooms,
+        bathrooms: formData.project.bathrooms,
+        utilities: formData.project.utilities,
+        needsDesign: formData.project.needsDesign,
+        appliancesIncluded: formData.project.appliancesIncluded,
+        hvacType: formData.project.hvacType,
+        selectedAddOns: formData.project.selectedAddOns,
+        sewerConnection: formData.project.sewerConnection,
+        solarDesign: formData.project.solarDesign,
+        femaIncluded: formData.project.femaIncluded,
+        priceOverrides: formData.project.priceOverrides,
+      };
 
-    const calculation = pricingEngine.calculateProposal(pricingInputs);
-    const designAmount = formData.project.needsDesign ? 12500 : 0;
-    const milestones = calculateMilestonePayments(calculation.grandTotal, designAmount);
+      calculation = pricingEngine.calculateProposal(pricingInputs);
+      designAmount = formData.project.needsDesign ? 12500 : 0;
+      milestones = calculateMilestonePayments(calculation.grandTotal, designAmount);
+      
+      console.log('✅ [DEBUG] Pricing calculation completed:', {
+        grandTotal: calculation.grandTotal,
+        lineItems: calculation.lineItems.length,
+        milestones: milestones.length
+      });
+    } catch (error) {
+      console.error('❌ [ERROR] Pricing calculation failed:', error);
+      throw new Error(`Pricing calculation failed: ${error instanceof Error ? error.message : 'Unknown pricing error'}`);
+    }
 
     console.log('Calculated pricing:', {
       grandTotal: calculation.grandTotal,
       pricePerSqFt: calculation.pricePerSqFt,
     });
 
-    // Prepare template variables (including Google Maps image)
-    const templateVars = await this.prepareTemplateVariables(formData, calculation, milestones);
-    console.log('📝 [DEBUG] Template variables prepared:');
-    console.log('📝 [DEBUG] Template variables keys:', Object.keys(templateVars));
-    console.log('📝 [DEBUG] GRAND_TOTAL:', templateVars.GRAND_TOTAL);
-    console.log('📝 [DEBUG] COST_PER_SQFT:', templateVars.COST_PER_SQFT);
-    console.log('Template variables prepared:', templateVars);
+    // Prepare template variables with error handling
+    let templateVars;
+    try {
+      console.log('📝 [DEBUG] Preparing template variables...');
+      templateVars = await this.prepareTemplateVariables(formData, calculation, milestones);
+      console.log('✅ [DEBUG] Template variables prepared successfully:', {
+        keysCount: Object.keys(templateVars).length,
+        grandTotal: templateVars.GRAND_TOTAL,
+        costPerSqft: templateVars.COST_PER_SQFT
+      });
+    } catch (error) {
+      console.error('❌ [ERROR] Template variable preparation failed:', error);
+      throw new Error(`Template preparation failed: ${error instanceof Error ? error.message : 'Unknown template error'}`);
+    }
 
-    // Get fresh template HTML
-    let processedHtml = this.getModernTemplate();
-    console.log('Template loaded, length:', processedHtml.length);
-
-    // Replace variables in template
-    Object.entries(templateVars).forEach(([key, value]) => {
-      const regex = new RegExp(`{{${key}}}`, 'g');
-      const beforeCount = (processedHtml.match(regex) || []).length;
-      processedHtml = processedHtml.replace(regex, value || '');
-      const afterCount = (processedHtml.match(regex) || []).length;
-      if (beforeCount > 0) {
-        console.log(`Replaced ${beforeCount} instances of {{${key}}} with "${value}"`);
+    // Process template with error handling
+    let processedHtml: string;
+    try {
+      console.log('🎨 [DEBUG] Processing HTML template...');
+      processedHtml = this.getModernTemplate();
+      
+      if (!processedHtml || processedHtml.length === 0) {
+        throw new Error('Template HTML is empty or invalid');
       }
-    });
+      
+      console.log('📄 [DEBUG] Template loaded successfully, length:', processedHtml.length);
+
+      // Replace variables in template
+      let replacementCount = 0;
+      Object.entries(templateVars).forEach(([key, value]) => {
+        const regex = new RegExp(`{{${key}}}`, 'g');
+        const beforeCount = (processedHtml.match(regex) || []).length;
+        processedHtml = processedHtml.replace(regex, value || '');
+        if (beforeCount > 0) {
+          replacementCount += beforeCount;
+          console.log(`✅ Replaced ${beforeCount} instances of {{${key}}}`);
+        }
+      });
+      
+      console.log(`🔄 [DEBUG] Total variable replacements: ${replacementCount}`);
+    } catch (error) {
+      console.error('❌ [ERROR] Template processing failed:', error);
+      throw new Error(`Template processing failed: ${error instanceof Error ? error.message : 'Unknown template processing error'}`);
+    }
 
     // Check for any remaining unreplaced variables
     const remainingVars = processedHtml.match(/{{[^}]+}}/g);
@@ -81,18 +120,32 @@ export class AnchorPDFTemplateGenerator {
       console.log('✅ [DEBUG] All template variables successfully replaced');
     }
 
-    // Handle conditional sections
-    processedHtml = this.processConditionalSections(
-      processedHtml,
-      formData,
-      calculation,
-      milestones
-    );
+    // Handle conditional sections with error handling
+    try {
+      console.log('🔧 [DEBUG] Processing conditional sections...');
+      processedHtml = this.processConditionalSections(
+        processedHtml,
+        formData,
+        calculation,
+        milestones
+      );
+      console.log('✅ [DEBUG] Conditional sections processed successfully');
+    } catch (error) {
+      console.error('❌ [ERROR] Conditional section processing failed:', error);
+      throw new Error(`Conditional processing failed: ${error instanceof Error ? error.message : 'Unknown conditional processing error'}`);
+    }
 
-    console.log('Final processed HTML length:', processedHtml.length);
+    console.log('✅ [DEBUG] Final processed HTML length:', processedHtml.length);
 
-    // Convert HTML to PDF (using browser's print functionality)
-    this.htmlToPdfBlob(processedHtml);
+    // Convert HTML to PDF with error handling
+    try {
+      console.log('🖨️ [DEBUG] Opening PDF in new window...');
+      this.htmlToPdfBlob(processedHtml);
+      console.log('✅ [DEBUG] PDF generation completed successfully');
+    } catch (error) {
+      console.error('❌ [ERROR] PDF window opening failed:', error);
+      throw new Error(`PDF generation failed: ${error instanceof Error ? error.message : 'Unknown PDF generation error'}`);
+    }
   }
 
   private async prepareTemplateVariables(
@@ -108,7 +161,6 @@ export class AnchorPDFTemplateGenerator {
     });
 
     // Get Google Maps satellite image for property
-    const propertyAddress = `${formData.client.address}, ${formData.client.city}, ${formData.client.state} ${formData.client.zipCode}`;
     const satelliteImage = null; // Google Maps integration temporarily disabled
 
     return {
@@ -210,14 +262,6 @@ export class AnchorPDFTemplateGenerator {
     return html;
   }
 
-  private getUtilitySetupText(utilities: any): string {
-    const gas = utilities.gasMeter === 'separate' ? 'Separate gas' : 'Shared gas';
-    const water =
-      utilities.waterMeter === 'separate'
-        ? 'separate water meter setup'
-        : 'shared water meter setup';
-    return `${gas} & ${water}`;
-  }
 
   private getAduTypeDisplay(aduType: string): string {
     switch (aduType) {
@@ -234,6 +278,61 @@ export class AnchorPDFTemplateGenerator {
       default:
         return 'Custom ADU';
     }
+  }
+
+  private validateFormData(formData: AnchorProposalFormData): void {
+    const errors: string[] = [];
+
+    // Validate client information
+    if (!formData.client) {
+      errors.push('Client information is required');
+    } else {
+      if (!formData.client.firstName?.trim()) {
+        errors.push('Client first name is required');
+      }
+      if (!formData.client.lastName?.trim()) {
+        errors.push('Client last name is required');
+      }
+      if (!formData.client.email?.trim() || !this.isValidEmail(formData.client.email)) {
+        errors.push('Valid client email is required');
+      }
+      if (!formData.client.phone?.trim()) {
+        errors.push('Client phone number is required');
+      }
+      if (!formData.client.address?.trim()) {
+        errors.push('Client address is required');
+      }
+    }
+
+    // Validate project information
+    if (!formData.project) {
+      errors.push('Project information is required');
+    } else {
+      if (!formData.project.aduType) {
+        errors.push('ADU type must be selected');
+      }
+      if (!formData.project.squareFootage || formData.project.squareFootage <= 0) {
+        errors.push('Valid square footage is required');
+      }
+      if (!formData.project.bedrooms || formData.project.bedrooms <= 0) {
+        errors.push('Number of bedrooms is required');
+      }
+      if (!formData.project.bathrooms || formData.project.bathrooms <= 0) {
+        errors.push('Number of bathrooms is required');
+      }
+      if (!formData.project.utilities) {
+        errors.push('Utility configuration is required');
+      }
+    }
+
+    if (errors.length > 0) {
+      throw new Error(`Form validation failed: ${errors.join(', ')}`);
+    }
+  }
+
+  private isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   }
 
   private getAnchorLogoBase64(): string {
@@ -282,7 +381,4 @@ export class AnchorPDFTemplateGenerator {
     return template;
   }
 
-  private getFallbackTemplate(): string {
-    return this.getModernTemplate();
-  }
 }

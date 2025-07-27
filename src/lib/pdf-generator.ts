@@ -11,14 +11,6 @@ export class AnchorPDFGenerator {
   private rightMargin: number = 190;
   private pageWidth: number = 210;
 
-  // Color scheme
-  private colors = {
-    primary: '#1e40af', // Blue
-    secondary: '#64748b', // Slate gray
-    accent: '#f59e0b', // Amber
-    text: '#1f2937', // Dark gray
-    light: '#f8fafc', // Light gray
-  };
 
   constructor() {
     this.doc = new jsPDF();
