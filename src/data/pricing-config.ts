@@ -93,7 +93,7 @@ export const addOnOptions: AddOnOption[] = [
   {
     name: 'Driveway',
     price: 5000,
-    description: 'Dedicated driveway for ADU',
+    description: 'Dedicated driveway for ADU (does not include driveway approach - requires separate civil work)',
   },
   {
     name: 'Basic Landscaping',

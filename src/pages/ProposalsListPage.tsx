@@ -57,7 +57,7 @@ export function ProposalsListPage({
             <h1 className='text-2xl font-bold text-slate-800'>Saved Proposals</h1>
             <button
               onClick={onBack}
-              className='flex items-center space-x-2 text-slate-600 hover:text-blue-600 transition-colors px-4 py-2 bg-white border border-slate-200 rounded-lg'
+              className='flex items-center space-x-2 text-slate-600 hover:text-blue-600 transition-colors min-h-[44px] px-4 py-2 bg-white border border-slate-200 rounded-lg touch-manipulation'
             >
               <ArrowLeft className='w-4 h-4' />
               <span>Back to Home</span>
@@ -84,7 +84,7 @@ export function ProposalsListPage({
           </div>
           <button
             onClick={onBack}
-            className='flex items-center space-x-2 text-slate-600 hover:text-blue-600 transition-colors px-4 py-2 bg-white border border-slate-200 rounded-lg'
+            className='flex items-center space-x-2 text-slate-600 hover:text-blue-600 transition-colors min-h-[44px] px-4 py-2 bg-white border border-slate-200 rounded-lg touch-manipulation'
           >
             <ArrowLeft className='w-4 h-4' />
             <span>Back to Home</span>
@@ -120,33 +120,33 @@ export function ProposalsListPage({
                     </div>
                     <div>
                       <span className='text-slate-500'>Created:</span>
-                      <div className='font-medium text-slate-800'>{formatDate(proposal.createdAt)}</div>
+                      <div className='font-medium text-slate-800'>{formatDate(proposal.createdAt || '')}</div>
                     </div>
                     <div>
                       <span className='text-slate-500'>Modified:</span>
-                      <div className='font-medium text-slate-800'>{formatDate(proposal.lastModified)}</div>
+                      <div className='font-medium text-slate-800'>{formatDate(proposal.lastModified || '')}</div>
                     </div>
                   </div>
                 </div>
 
-                <div className='flex items-center space-x-2 ml-4'>
+                <div className='flex items-center space-x-3 ml-4'>
                   <button
                     onClick={() => onEdit(proposal)}
-                    className='p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors'
+                    className='min-h-[44px] min-w-[44px] p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors touch-manipulation'
                     title="Edit Proposal"
                   >
                     <Edit className='w-4 h-4' />
                   </button>
                   <button
                     onClick={() => duplicateProposal(proposal)}
-                    className='p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors'
+                    className='min-h-[44px] min-w-[44px] p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors touch-manipulation'
                     title="Duplicate Proposal"
                   >
                     <Copy className='w-4 h-4' />
                   </button>
                   <button
-                    onClick={() => deleteProposal(proposal.id || proposal.createdAt)}
-                    className='p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors'
+                    onClick={() => deleteProposal(proposal.id || proposal.createdAt || '')}
+                    className='min-h-[44px] min-w-[44px] p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors touch-manipulation'
                     title="Delete Proposal"
                   >
                     <Trash2 className='w-4 h-4' />

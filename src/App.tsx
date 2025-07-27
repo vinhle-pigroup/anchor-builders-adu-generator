@@ -1,12 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
-import { LoadingSpinner } from './components/LoadingSpinner';
-import { SuccessNotification } from './components/SuccessNotification';
-import { PDFProgressIndicator } from './components/PDFProgressIndicator';
-import { ErrorNotification } from './components/ErrorNotification';
-import { useErrorHandler } from './hooks/useErrorHandler';
-import { useFormValidation } from './hooks/useFormValidation';
-import { FormField } from './components/FormField';
-import { ValidatedInput } from './components/ValidatedInput';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   FileText,
   Users,
@@ -26,32 +18,10 @@ import {
   X,
 } from 'lucide-react';
 import type { AnchorProposalFormData, ClientInfo, ProjectInfo } from './types/proposal';
-
-// Lazy load large page components for better performance
-const LazyAdminPage = React.lazy(() => import('./pages/AdminPage').then(m => ({ default: m.AdminPage })));
-const LazyProposalsListPage = React.lazy(() => import('./pages/ProposalsListPage').then(m => ({ default: m.ProposalsListPage })));
+import { AnchorPDFGenerator } from './lib/pdf-generator';
 
 function App() {
-  // Error Handling
-  const { error, clearError, handleError } = useErrorHandler();
-  
-  // Form Validation
-  const {
-    // validationState,
-    validateForm,
-    validateSingleField,
-    markFieldTouched,
-    getFieldError,
-    isFieldTouched,
-    // getRequiredFields
-  } = useFormValidation();
-  
-  // UI State
   const [currentPage, setCurrentPage] = useState<'home' | 'proposal' | 'list' | 'admin'>('home');
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  
-  // Data State
   const [savedProposals, setSavedProposals] = useState<AnchorProposalFormData[]>([]);
   const [editingProposal, setEditingProposal] = useState<AnchorProposalFormData | null>(null);
   const [formData, setFormData] = useState<AnchorProposalFormData>({
@@ -144,53 +114,30 @@ function App() {
 
   const generatePDF = useCallback(async () => {
     try {
-      setIsGeneratingPDF(true);
-      console.log('🚀 Starting PDF generation process...');
-      
-      // Validate form before generating PDF
-      const validation = validateForm(formData);
-      if (!validation.isValid) {
-        const firstError = validation.errors[0];
-        handleError(new Error(`Validation failed: ${firstError.message}`), 'PDF Generation');
-        return;
-      }
-      
-      // Lazy load PDF generator for better performance
-      const { AnchorPDFGenerator } = await import('./lib/pdf-generator');
       const pdfGenerator = new AnchorPDFGenerator();
       await pdfGenerator.generateProposal(formData);
       
       // Save proposal to local storage for future editing
-      try {
-        const proposalId = Date.now().toString();
-        const proposalToSave = {
-          ...formData,
-          id: proposalId,
-          createdAt: new Date().toISOString(),
-          lastModified: new Date().toISOString()
-        };
-        
-        const saved = JSON.parse(localStorage.getItem('anchorProposals') || '[]');
-        saved.push(proposalToSave);
-        localStorage.setItem('anchorProposals', JSON.stringify(saved));
-        setSavedProposals(saved);
-        
-        console.log('✅ Proposal saved to local storage successfully');
-      } catch (storageError) {
-        console.warn('⚠️ Failed to save to local storage:', storageError);
-        // Don't fail the PDF generation if storage fails
-      }
+      const proposalId = Date.now().toString();
+      const proposalToSave = {
+        ...formData,
+        id: proposalId,
+        createdAt: new Date().toISOString(),
+        lastModified: new Date().toISOString()
+      };
       
-      // Show success message
-      setSuccessMessage('Proposal generated successfully! Check your downloads or the new browser window.');
-      console.log('✅ PDF generation completed successfully');
-    } catch (err) {
-      console.error('❌ PDF generation failed:', err);
-      handleError(err, 'PDF Generation');
-    } finally {
-      setIsGeneratingPDF(false);
+      const saved = JSON.parse(localStorage.getItem('anchorProposals') || '[]');
+      saved.push(proposalToSave);
+      localStorage.setItem('anchorProposals', JSON.stringify(saved));
+      setSavedProposals(saved);
+      
+      // Note: PDF generation now opens in a new window for printing
+      // No need to create download link as print dialog handles it
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      alert('Error generating PDF. Please try again.');
     }
-  }, [formData, handleError, validateForm]);
+  }, [formData]);
 
   // Calculate live pricing
   const liveCalculation = useMemo(() => {
@@ -242,47 +189,13 @@ function App() {
     };
   }, [pricingData]);
 
-  // Global UI Components that appear over pages
-  const GlobalUI = () => (
-    <>
-      {/* PDF Progress Indicator */}
-      <PDFProgressIndicator 
-        isGenerating={isGeneratingPDF}
-        onComplete={() => setIsGeneratingPDF(false)}
-        onError={(err) => {
-          setIsGeneratingPDF(false);
-          handleError(err, 'PDF Generation');
-        }}
-      />
-      
-      {/* Success Notification */}
-      {successMessage && (
-        <SuccessNotification
-          message={successMessage}
-          onDismiss={() => setSuccessMessage(null)}
-        />
-      )}
-      
-      {/* Error Notification */}
-      {error && (
-        <ErrorNotification
-          error={error}
-          onDismiss={clearError}
-          onRetry={generatePDF}
-        />
-      )}
-    </>
-  );
-
   if (currentPage === 'home') {
     return (
-      <>
-        <GlobalUI />
-        <div className='min-h-screen bg-gradient-to-br from-stone-100 to-blue-50 flex items-center justify-center px-4'>
-        <div className='text-center max-w-md mx-auto'>
+      <div className='min-h-screen bg-gradient-to-br from-stone-100 to-blue-50 flex items-center justify-center'>
+        <div className='text-center max-w-md mx-auto px-6'>
           {/* Large Logo Container */}
-          <div className='inline-flex items-center justify-center w-44 h-44 sm:w-52 sm:h-52 bg-white rounded-2xl mb-6 sm:mb-8 shadow-lg'>
-            <div className='flex items-center justify-center w-40 h-40 sm:w-48 sm:h-48'>
+          <div className='inline-flex items-center justify-center w-52 h-52 bg-white rounded-2xl mb-8 shadow-lg'>
+            <div className='flex items-center justify-center w-48 h-48'>
               <img
                 src='/anchor-logo-official.jpg'
                 alt='Anchor Builders Logo'
@@ -305,7 +218,7 @@ function App() {
             {/* Start New Proposal */}
             <button
               onClick={() => setCurrentPage('proposal')}
-              className='w-full bg-gradient-to-r from-blue-500 to-anchor-500 text-white px-6 sm:px-8 py-4 rounded-xl text-base sm:text-lg font-semibold hover:from-blue-600 hover:to-anchor-600 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center touch-manipulation'
+              className='w-full bg-gradient-to-r from-blue-500 to-anchor-500 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-blue-600 hover:to-anchor-600 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center'
             >
               <Plus className='w-5 h-5 mr-2' />
               Start New Proposal
@@ -314,7 +227,7 @@ function App() {
             {/* View and Edit Proposals */}
             <button
               onClick={() => setCurrentPage('list')}
-              className='w-full bg-white text-stone-700 px-6 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-semibold hover:bg-stone-50 transition-all shadow-lg border border-stone-200 flex items-center justify-center touch-manipulation'
+              className='w-full bg-white text-stone-700 px-6 py-3 rounded-xl text-base font-semibold hover:bg-stone-50 transition-all shadow-lg border border-stone-200 flex items-center justify-center'
             >
               <FileText className='w-4 h-4 mr-2' />
               View & Edit Proposals
@@ -323,7 +236,7 @@ function App() {
             {/* Admin Settings */}
             <button
               onClick={() => setCurrentPage('admin')}
-              className='w-full bg-slate-600 text-white px-6 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-semibold hover:bg-slate-700 transition-all shadow-lg flex items-center justify-center touch-manipulation'
+              className='w-full bg-slate-600 text-white px-6 py-3 rounded-xl text-base font-semibold hover:bg-slate-700 transition-all shadow-lg flex items-center justify-center'
             >
               <Users className='w-4 h-4 mr-2' />
               Admin Settings
@@ -337,16 +250,13 @@ function App() {
             </p>
           </div>
         </div>
-        </div>
-      </>
+      </div>
     );
   }
 
   if (currentPage === 'proposal') {
     return (
-      <>
-        <GlobalUI />
-        <ProposalFormPage
+      <ProposalFormPage
         formData={formData}
         pricingData={pricingData}
         liveCalculation={liveCalculation}
@@ -354,13 +264,6 @@ function App() {
         updateProjectData={updateProjectData}
         setPricingData={setPricingData}
         generatePDF={generatePDF}
-        isGeneratingPDF={isGeneratingPDF}
-        validationState={null}
-        validateSingleField={validateSingleField}
-        markFieldTouched={markFieldTouched}
-        getFieldError={getFieldError}
-        isFieldTouched={isFieldTouched}
-        getRequiredFields={() => []}
         onBack={() => {
           setCurrentPage('home');
           setEditingProposal(null);
@@ -400,7 +303,6 @@ function App() {
           });
         }}
       />
-      </>
     );
   }
 
@@ -677,13 +579,6 @@ interface ProposalFormPageProps {
   setPricingData: (data: any) => void;
   generatePDF: () => void;
   onBack: () => void;
-  isGeneratingPDF: boolean;
-  validationState: any;
-  validateSingleField: (fieldName: string, value: any) => any;
-  markFieldTouched: (fieldName: string) => void;
-  getFieldError: (fieldName: string) => any;
-  isFieldTouched: (fieldName: string) => boolean;
-  getRequiredFields: () => string[];
 }
 
 function ProposalFormPage({
@@ -695,11 +590,6 @@ function ProposalFormPage({
   setPricingData,
   generatePDF,
   onBack,
-  isGeneratingPDF,
-  validateSingleField,
-  markFieldTouched,
-  getFieldError,
-  isFieldTouched,
 }: ProposalFormPageProps) {
   // Check if form is complete
   const isFormComplete =
@@ -707,76 +597,67 @@ function ProposalFormPage({
     formData.client.lastName &&
     formData.client.email &&
     formData.client.phone &&
-    formData.client.address;
+    formData.client.address &&
+    formData.client.city &&
+    formData.client.state &&
+    formData.client.zipCode;
 
   return (
     <div
       className='min-h-screen'
       style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' }}
     >
-      <div className='max-w-7xl mx-auto p-4 sm:p-6 lg:p-8'>
+      <div className='max-w-7xl mx-auto p-8'>
         {/* Header */}
-        <div className='bg-white p-4 sm:p-6 rounded-xl shadow-sm mb-6 sm:mb-8'>
-          {/* Top row - Logo and Back button */}
-          <div className='flex items-center justify-between mb-4 sm:mb-0'>
-            <div className='flex items-center space-x-3 sm:space-x-4'>
-              <div className='w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center text-white font-bold text-sm sm:text-lg'>
-                AB
-              </div>
-              <div>
-                <h1 className='text-lg sm:text-xl font-bold text-slate-800'>Anchor Builders</h1>
-                <p className='text-xs sm:text-sm text-slate-600 hidden sm:block'>
-                  Licensed ADU Specialists • CA License #1234567
-                </p>
-              </div>
+        <div className='flex items-center justify-between mb-8 bg-white p-6 rounded-xl shadow-sm'>
+          <div className='flex items-center space-x-4'>
+            <div className='w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center text-white font-bold text-lg'>
+              AB
+            </div>
+            <div>
+              <h1 className='text-xl font-bold text-slate-800'>Anchor Builders</h1>
+              <p className='text-sm text-slate-600'>
+                Licensed ADU Specialists • CA License #1234567
+              </p>
+            </div>
+          </div>
+          <div className='flex items-center space-x-4'>
+            <div className='flex items-center space-x-2 text-xs text-slate-500'>
+              <CheckCircle className='w-4 h-4' />
+              <span>Complete all sections to generate proposal</span>
             </div>
             <button
               onClick={onBack}
-              className='flex items-center space-x-1 sm:space-x-2 text-slate-600 hover:text-blue-600 transition-colors px-3 sm:px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm'
+              className='flex items-center space-x-2 text-slate-600 hover:text-blue-600 transition-colors px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg'
             >
               <ArrowLeft className='w-4 h-4' />
-              <span className='hidden sm:inline'>Back to Home</span>
-              <span className='sm:hidden'>Back</span>
+              <span>Back to Home</span>
             </button>
-          </div>
-          
-          {/* Progress indicator - Mobile friendly */}
-          <div className='flex items-center justify-center space-x-2 text-xs text-slate-500 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-100'>
-            <CheckCircle className='w-4 h-4' />
-            <span className='text-center'>Complete all sections to generate proposal</span>
           </div>
         </div>
 
         {/* Generate Proposal Button - Top of Form */}
         <div className='mb-6'>
-          <div className='bg-white rounded-xl p-4 sm:p-6 shadow-md border border-slate-200'>
+          <div className='bg-white rounded-xl p-4 shadow-md border border-slate-200'>
             <button
               onClick={generatePDF}
-              disabled={!isFormComplete || isGeneratingPDF}
-              className='w-full px-6 py-4 sm:py-5 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg font-semibold text-base sm:text-lg flex items-center justify-center space-x-3 hover:from-blue-600 hover:to-blue-800 transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-lg touch-manipulation'
+              disabled={!isFormComplete}
+              className='w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg font-semibold text-base flex items-center justify-center space-x-3 hover:from-blue-600 hover:to-blue-800 transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-lg'
             >
-              {isGeneratingPDF ? (
-                <LoadingSpinner size="sm" className="text-white" />
-              ) : (
-                <FileText className='w-5 h-5 sm:w-6 sm:h-6' />
-              )}
-              <span>{isGeneratingPDF ? 'Generating...' : 'Generate Proposal'}</span>
+              <FileText className='w-5 h-5' />
+              <span>Generate Proposal</span>
             </button>
             {!isFormComplete && (
-              <p className='text-xs sm:text-sm text-slate-500 text-center mt-3'>
+              <p className='text-xs text-slate-500 text-center mt-2'>
                 Complete all required fields to generate proposal
               </p>
             )}
           </div>
         </div>
 
-        <div className='grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6'>
+        <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
           {/* Main Form */}
-          <main 
-            className='lg:col-span-2 space-y-4 sm:space-y-6'
-            role="main"
-            aria-label="Proposal form"
-          >
+          <div className='lg:col-span-2 space-y-6'>
             {/* Client Information */}
             <FormSection
               icon={<User className='w-5 h-5' />}
@@ -784,48 +665,20 @@ function ProposalFormPage({
               subtitle='Contact details and property address'
             >
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <FormField
-                  label='First Name'
-                  isRequired={true}
-                  error={getFieldError('client.firstName')}
-                  isTouched={isFieldTouched('client.firstName')}
-                  isValid={!getFieldError('client.firstName') && formData.client.firstName.length > 0}
-                >
-                  <ValidatedInput
-                    type='text'
-                    value={formData.client.firstName}
-                    onChange={(value) => {
-                      updateClientData({ firstName: value as string });
-                      validateSingleField('client.firstName', value);
-                    }}
-                    onBlur={() => markFieldTouched('client.firstName')}
-                    placeholder='John'
-                    error={getFieldError('client.firstName')}
-                    isTouched={isFieldTouched('client.firstName')}
-                    isValid={!getFieldError('client.firstName') && formData.client.firstName.length > 0}
-                  />
-                </FormField>
-                <FormField
-                  label='Last Name'
-                  isRequired={true}
-                  error={getFieldError('client.lastName')}
-                  isTouched={isFieldTouched('client.lastName')}
-                  isValid={!getFieldError('client.lastName') && formData.client.lastName.length > 0}
-                >
-                  <ValidatedInput
-                    type='text'
-                    value={formData.client.lastName}
-                    onChange={(value) => {
-                      updateClientData({ lastName: value as string });
-                      validateSingleField('client.lastName', value);
-                    }}
-                    onBlur={() => markFieldTouched('client.lastName')}
-                    placeholder='Smith'
-                    error={getFieldError('client.lastName')}
-                    isTouched={isFieldTouched('client.lastName')}
-                    isValid={!getFieldError('client.lastName') && formData.client.lastName.length > 0}
-                  />
-                </FormField>
+                <FormInput
+                  label='First Name *'
+                  value={formData.client.firstName}
+                  onChange={value => updateClientData({ firstName: value })}
+                  placeholder='John'
+                  required
+                />
+                <FormInput
+                  label='Last Name *'
+                  value={formData.client.lastName}
+                  onChange={value => updateClientData({ lastName: value })}
+                  placeholder='Smith'
+                  required
+                />
               </div>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <FormInput
@@ -916,14 +769,10 @@ function ProposalFormPage({
             >
               <AddOnsForm pricingData={pricingData} setPricingData={setPricingData} />
             </FormSection>
-          </main>
+          </div>
 
           {/* Sidebar */}
-          <aside 
-            className='space-y-6 sticky top-6'
-            role="complementary"
-            aria-label="Pricing and actions"
-          >
+          <div className='space-y-6 sticky top-6'>
             {/* Live Pricing */}
             <PricingCard liveCalculation={liveCalculation} pricingData={pricingData} />
 
@@ -931,11 +780,15 @@ function ProposalFormPage({
             <PaymentScheduleCard liveCalculation={liveCalculation} />
 
             {/* Actions */}
-            <ActionCard />
+            <ActionCard
+              formData={formData}
+              generatePDF={generatePDF}
+              isFormComplete={isFormComplete}
+            />
 
             {/* Trust Indicators */}
             <TrustIndicators />
-          </aside>
+          </div>
         </div>
       </div>
     </div>
@@ -951,41 +804,19 @@ interface FormSectionProps {
 }
 
 function FormSection({ icon, title, subtitle, children }: FormSectionProps) {
-  const sectionId = `section-${title.toLowerCase().replace(/\s+/g, '-')}`;
-  
   return (
-    <section 
-      className='bg-white rounded-xl p-4 sm:p-6 shadow-md border border-slate-200'
-      aria-labelledby={`${sectionId}-title`}
-      role="group"
-    >
-      <div className='flex items-center space-x-3 mb-4 sm:mb-6 pb-3 border-b-2 border-blue-100'>
-        <div 
-          className='w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center text-white'
-          aria-hidden="true"
-        >
+    <div className='bg-white rounded-xl p-6 shadow-md border border-slate-200'>
+      <div className='flex items-center space-x-3 mb-6 pb-3 border-b-2 border-blue-100'>
+        <div className='w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center text-white'>
           {icon}
         </div>
         <div>
-          <h2 
-            id={`${sectionId}-title`}
-            className='text-sm sm:text-base font-semibold text-slate-800'
-          >
-            {title}
-          </h2>
-          <p 
-            className='text-xs text-slate-600'
-            id={`${sectionId}-subtitle`}
-            aria-describedby={`${sectionId}-title`}
-          >
-            {subtitle}
-          </p>
+          <h2 className='text-base font-semibold text-slate-800'>{title}</h2>
+          <p className='text-xs text-slate-600'>{subtitle}</p>
         </div>
       </div>
-      <div role="group" aria-labelledby={`${sectionId}-title`}>
-        {children}
-      </div>
-    </section>
+      {children}
+    </div>
   );
 }
 
@@ -1009,14 +840,14 @@ function FormInput({
 }: FormInputProps) {
   return (
     <div className='flex flex-col'>
-      <label className='text-xs sm:text-sm font-medium text-slate-700 mb-2'>{label}</label>
+      <label className='text-xs font-medium text-slate-700 mb-2'>{label}</label>
       <input
         type={type}
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
-        className='px-4 py-3 sm:py-3.5 border-2 border-slate-200 rounded-lg text-sm sm:text-base transition-all focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-100 touch-manipulation'
+        className='px-3 py-2.5 border-2 border-slate-200 rounded-lg text-xs transition-all focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-100'
       />
     </div>
   );
@@ -1055,12 +886,12 @@ function ADUConfigurationForm({ pricingData, setPricingData, updateProjectData }
           />
           <span className='text-sm text-slate-600'>sq ft (300-1200)</span>
         </div>
-        <div className='grid grid-cols-3 sm:grid-cols-5 gap-2'>
+        <div className='grid grid-cols-5 gap-2'>
           {[400, 600, 800, 1000, 1200].map(size => (
             <button
               key={size}
               onClick={() => handleSizeChange(size)}
-              className={`px-3 py-3 sm:py-2 text-xs sm:text-xs text-center rounded-lg border transition-all touch-manipulation ${
+              className={`px-2 py-2 text-xs text-center rounded-lg border transition-all ${
                 pricingData.sqft === size
                   ? 'border-blue-500 bg-blue-50 font-semibold'
                   : 'border-slate-200 hover:border-blue-300'
@@ -1121,10 +952,10 @@ function ADUConfigurationForm({ pricingData, setPricingData, updateProjectData }
       </div>
 
       {/* Bedrooms and Bathrooms */}
-      <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6'>
+      <div className='grid grid-cols-2 gap-6'>
         <div>
           <label className='text-xs font-medium text-slate-700 mb-2 block'>Bedrooms</label>
-          <div className='grid grid-cols-3 sm:grid-cols-5 gap-2'>
+          <div className='grid grid-cols-5 gap-2'>
             {[
               { value: 0, label: 'Studio' },
               { value: 1, label: '1' },
@@ -1135,7 +966,7 @@ function ADUConfigurationForm({ pricingData, setPricingData, updateProjectData }
               <button
                 key={option.value}
                 onClick={() => handleRoomChange('bedrooms', option.value)}
-                className={`px-3 py-3 sm:py-2 text-xs text-center rounded-lg border transition-all touch-manipulation ${
+                className={`px-2 py-2 text-xs text-center rounded-lg border transition-all ${
                   pricingData.bedrooms === option.value
                     ? 'border-blue-500 bg-blue-50 font-semibold'
                     : 'border-slate-200 hover:border-blue-300'
@@ -1154,7 +985,7 @@ function ADUConfigurationForm({ pricingData, setPricingData, updateProjectData }
               <button
                 key={num}
                 onClick={() => handleRoomChange('bathrooms', num)}
-                className={`px-3 py-3 sm:py-2 text-xs text-center rounded-lg border transition-all touch-manipulation ${
+                className={`px-2 py-2 text-xs text-center rounded-lg border transition-all ${
                   pricingData.bathrooms === num
                     ? 'border-blue-500 bg-blue-50 font-semibold'
                     : 'border-slate-200 hover:border-blue-300'
@@ -1209,14 +1040,14 @@ function UtilityConnectionsForm({ pricingData, setPricingData }: any) {
   return (
     <div className='space-y-3'>
       {utilities.map(utility => (
-        <div key={utility.key} className='space-y-2 sm:grid sm:grid-cols-4 sm:gap-3 sm:items-center sm:space-y-0'>
+        <div key={utility.key} className='grid grid-cols-4 gap-3 items-center'>
           <div className='text-xs font-medium text-slate-700'>{utility.label}</div>
-          <div className='sm:col-span-3 grid grid-cols-2 gap-2'>
+          <div className='col-span-3 grid grid-cols-2 gap-2'>
             {utility.options.map(option => (
               <button
                 key={`${utility.key}-${option.cost}`}
                 onClick={() => handleUtilityChange(utility.key, option.cost)}
-                className={`p-3 sm:p-2 rounded-lg border text-center text-xs transition-all touch-manipulation ${
+                className={`p-2 rounded-lg border text-center text-xs transition-all ${
                   pricingData.utilities[utility.key] === option.cost
                     ? 'border-blue-500 bg-blue-50 font-semibold'
                     : 'border-slate-200 hover:border-blue-300'
@@ -1399,22 +1230,22 @@ function AddOnsForm({ pricingData, setPricingData }: any) {
         <label className='text-xs font-medium text-slate-700 mb-2 block'>Custom Add-ons</label>
         <div className='space-y-2'>
           {pricingData.manualAddons.map((cost: number, index: number) => (
-            <div key={index} className='space-y-2 sm:grid sm:grid-cols-12 sm:gap-2 sm:items-center sm:space-y-0'>
+            <div key={index} className='grid grid-cols-12 gap-2 items-center'>
               <input
                 type='text'
                 placeholder='Description (e.g., Premium flooring)'
-                className='sm:col-span-8 px-3 py-3 sm:px-2 sm:py-2 border border-slate-200 rounded-lg text-sm sm:text-xs touch-manipulation'
+                className='col-span-8 px-2 py-2 border border-slate-200 rounded-lg text-xs'
               />
               <input
                 type='number'
                 value={cost || ''}
                 onChange={e => handleManualAddonChange(index, e.target.value)}
                 placeholder='0'
-                className='sm:col-span-3 px-3 py-3 sm:px-2 sm:py-2 border border-slate-200 rounded-lg text-sm sm:text-xs text-right touch-manipulation'
+                className='col-span-3 px-2 py-2 border border-slate-200 rounded-lg text-xs text-right'
               />
               <button
                 onClick={() => removeManualAddon(index)}
-                className='sm:col-span-1 w-full sm:w-7 h-10 sm:h-7 border border-slate-200 rounded-lg bg-white text-slate-500 hover:bg-red-50 hover:text-red-600 hover:border-red-200 flex items-center justify-center text-xs transition-all touch-manipulation'
+                className='col-span-1 w-7 h-7 border border-slate-200 rounded-lg bg-white text-slate-500 hover:bg-red-50 hover:text-red-600 hover:border-red-200 flex items-center justify-center text-xs transition-all'
               >
                 <X className='w-3 h-3' />
               </button>
@@ -1543,7 +1374,7 @@ function PaymentScheduleCard({ liveCalculation }: any) {
 }
 
 // Action Card Component
-function ActionCard() {
+function ActionCard({ formData, generatePDF, isFormComplete }: any) {
   return (
     <div className='bg-white rounded-xl p-4 shadow-md border border-slate-200'>
       <button className='w-full px-4 py-3 bg-white text-slate-700 border border-slate-200 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 hover:bg-slate-50 transition-colors'>

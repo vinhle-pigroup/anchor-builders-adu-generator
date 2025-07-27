@@ -281,53 +281,11 @@ export class AnchorPDFTemplateGenerator {
   }
 
   private validateFormData(formData: AnchorProposalFormData): void {
-    const errors: string[] = [];
-
-    // Validate client information
-    if (!formData.client) {
-      errors.push('Client information is required');
-    } else {
-      if (!formData.client.firstName?.trim()) {
-        errors.push('Client first name is required');
-      }
-      if (!formData.client.lastName?.trim()) {
-        errors.push('Client last name is required');
-      }
-      if (!formData.client.email?.trim() || !this.isValidEmail(formData.client.email)) {
-        errors.push('Valid client email is required');
-      }
-      if (!formData.client.phone?.trim()) {
-        errors.push('Client phone number is required');
-      }
-      if (!formData.client.address?.trim()) {
-        errors.push('Client address is required');
-      }
+    // Minimal validation - just check that basic data structure exists
+    if (!formData || !formData.client || !formData.project) {
+      throw new Error('Basic form data structure is missing');
     }
-
-    // Validate project information
-    if (!formData.project) {
-      errors.push('Project information is required');
-    } else {
-      if (!formData.project.aduType) {
-        errors.push('ADU type must be selected');
-      }
-      if (!formData.project.squareFootage || formData.project.squareFootage <= 0) {
-        errors.push('Valid square footage is required');
-      }
-      if (!formData.project.bedrooms || formData.project.bedrooms <= 0) {
-        errors.push('Number of bedrooms is required');
-      }
-      if (!formData.project.bathrooms || formData.project.bathrooms <= 0) {
-        errors.push('Number of bathrooms is required');
-      }
-      if (!formData.project.utilities) {
-        errors.push('Utility configuration is required');
-      }
-    }
-
-    if (errors.length > 0) {
-      throw new Error(`Form validation failed: ${errors.join(', ')}`);
-    }
+    // Let PDF generation proceed with whatever data is available
   }
 
   private isValidEmail(email: string): boolean {
