@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ValidationError } from '../hooks/useFormValidation';
+import { autoFormatField } from '../lib/field-formatters';
 
 interface ValidatedInputProps {
   type?: 'text' | 'email' | 'tel' | 'number';
@@ -15,6 +16,8 @@ interface ValidatedInputProps {
   min?: number;
   max?: number;
   step?: number;
+  fieldName?: string; // For auto-formatting (firstName, lastName, phone, email, etc.)
+  autoFormat?: boolean; // Enable/disable auto-formatting
 }
 
 export function ValidatedInput({
@@ -30,7 +33,9 @@ export function ValidatedInput({
   disabled = false,
   min,
   max,
-  step
+  step,
+  fieldName,
+  autoFormat = true
 }: ValidatedInputProps) {
   const hasError = error && isTouched;
   const showValid = isTouched && isValid && !error;
@@ -60,6 +65,21 @@ export function ValidatedInput({
     onChange(newValue);
   };
 
+  const handleBlur = () => {
+    // Apply auto-formatting if enabled and fieldName is provided
+    if (autoFormat && fieldName && type === 'text' && typeof value === 'string') {
+      const formattedValue = autoFormatField(fieldName, value);
+      if (formattedValue !== value) {
+        onChange(formattedValue);
+      }
+    }
+    
+    // Call the original onBlur handler
+    if (onBlur) {
+      onBlur();
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // Improve keyboard navigation
     if (e.key === 'Enter') {
@@ -82,7 +102,7 @@ export function ValidatedInput({
       type={type}
       value={value}
       onChange={handleChange}
-      onBlur={onBlur}
+      onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       placeholder={placeholder}
       className={`${inputStyles} ${className}`}

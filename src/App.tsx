@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { logConfigStatus } from './lib/env-config';
 import {
   FileText,
   Users,
@@ -19,11 +20,39 @@ import {
 } from 'lucide-react';
 import type { AnchorProposalFormData, ClientInfo, ProjectInfo } from './types/proposal';
 import { AnchorPDFGenerator } from './lib/pdf-generator';
+import { useFormValidation } from './hooks/useFormValidation';
+import { useErrorHandler } from './hooks/useErrorHandler';
+import { ValidatedInput } from './components/ValidatedInput';
+import { FormField } from './components/FormField';
+import { SuccessNotification } from './components/SuccessNotification';
+import { ErrorNotification } from './components/ErrorNotification';
+import { PDFProgressIndicator } from './components/PDFProgressIndicator';
+import { LoadingSpinner } from './components/LoadingSpinner';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<'home' | 'proposal' | 'list' | 'admin'>('home');
   const [savedProposals, setSavedProposals] = useState<AnchorProposalFormData[]>([]);
   const [editingProposal, setEditingProposal] = useState<AnchorProposalFormData | null>(null);
+  
+  // Error Handling
+  const { error, clearError, handleError } = useErrorHandler();
+  
+  // Form Validation
+  const {} = useFormValidation();
+
+  // Debug configuration on app startup
+  useEffect(() => {
+    console.log('🚀 APP STARTING - DEBUG MODE ACTIVE');
+    console.log('🔍 Environment variables:', {
+      VITE_GOOGLE_MAPS_API_KEY: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+      VITE_ENABLE_GOOGLE_MAPS: import.meta.env.VITE_ENABLE_GOOGLE_MAPS
+    });
+    logConfigStatus();
+  }, []);
+  
+  // UI State
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState<AnchorProposalFormData>({
     client: {
       firstName: '',
@@ -114,30 +143,46 @@ function App() {
 
   const generatePDF = useCallback(async () => {
     try {
+      setIsGeneratingPDF(true);
+      console.log('🚀 Starting PDF generation process...');
+      
+      // Skip strict validation - allow PDF generation with minimal data
+      console.log('📋 Generating PDF with current form data...');
+      
       const pdfGenerator = new AnchorPDFGenerator();
       await pdfGenerator.generateProposal(formData);
       
       // Save proposal to local storage for future editing
-      const proposalId = Date.now().toString();
-      const proposalToSave = {
-        ...formData,
-        id: proposalId,
-        createdAt: new Date().toISOString(),
-        lastModified: new Date().toISOString()
-      };
+      try {
+        const proposalId = Date.now().toString();
+        const proposalToSave = {
+          ...formData,
+          id: proposalId,
+          createdAt: new Date().toISOString(),
+          lastModified: new Date().toISOString()
+        };
+        
+        const saved = JSON.parse(localStorage.getItem('anchorProposals') || '[]');
+        saved.push(proposalToSave);
+        localStorage.setItem('anchorProposals', JSON.stringify(saved));
+        setSavedProposals(saved);
+        
+        console.log('✅ Proposal saved to local storage successfully');
+      } catch (storageError) {
+        console.warn('⚠️ Failed to save to local storage:', storageError);
+        // Don't fail the PDF generation if storage fails
+      }
       
-      const saved = JSON.parse(localStorage.getItem('anchorProposals') || '[]');
-      saved.push(proposalToSave);
-      localStorage.setItem('anchorProposals', JSON.stringify(saved));
-      setSavedProposals(saved);
-      
-      // Note: PDF generation now opens in a new window for printing
-      // No need to create download link as print dialog handles it
-    } catch (error) {
-      console.error('PDF generation failed:', error);
-      alert('Error generating PDF. Please try again.');
+      // Show success message
+      setSuccessMessage('Proposal generated successfully! Check your downloads or the new browser window.');
+      console.log('✅ PDF generation completed successfully');
+    } catch (err) {
+      console.error('❌ PDF generation failed:', err);
+      handleError(err, 'PDF Generation');
+    } finally {
+      setIsGeneratingPDF(false);
     }
-  }, [formData]);
+  }, [formData, handleError]);
 
   // Calculate live pricing
   const liveCalculation = useMemo(() => {
@@ -189,9 +234,43 @@ function App() {
     };
   }, [pricingData]);
 
+  // Global UI Components that appear over pages
+  const GlobalUI = () => (
+    <>
+      {/* PDF Progress Indicator */}
+      <PDFProgressIndicator 
+        isGenerating={isGeneratingPDF}
+        onComplete={() => setIsGeneratingPDF(false)}
+        onError={(err) => {
+          setIsGeneratingPDF(false);
+          handleError(err, 'PDF Generation');
+        }}
+      />
+      
+      {/* Success Notification */}
+      {successMessage && (
+        <SuccessNotification
+          message={successMessage}
+          onDismiss={() => setSuccessMessage(null)}
+        />
+      )}
+      
+      {/* Error Notification */}
+      {error && (
+        <ErrorNotification
+          error={error}
+          onDismiss={clearError}
+          onRetry={generatePDF}
+        />
+      )}
+    </>
+  );
+
   if (currentPage === 'home') {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-stone-100 to-blue-50 flex items-center justify-center'>
+      <>
+        <GlobalUI />
+        <div className='min-h-screen bg-gradient-to-br from-stone-100 to-blue-50 flex items-center justify-center'>
         <div className='text-center max-w-md mx-auto px-6'>
           {/* Large Logo Container */}
           <div className='inline-flex items-center justify-center w-52 h-52 bg-white rounded-2xl mb-8 shadow-lg'>
@@ -250,13 +329,16 @@ function App() {
             </p>
           </div>
         </div>
-      </div>
+        </div>
+      </>
     );
   }
 
   if (currentPage === 'proposal') {
     return (
-      <ProposalFormPage
+      <>
+        <GlobalUI />
+        <ProposalFormPage
         formData={formData}
         pricingData={pricingData}
         liveCalculation={liveCalculation}
@@ -264,6 +346,7 @@ function App() {
         updateProjectData={updateProjectData}
         setPricingData={setPricingData}
         generatePDF={generatePDF}
+        isGeneratingPDF={isGeneratingPDF}
         onBack={() => {
           setCurrentPage('home');
           setEditingProposal(null);
@@ -303,6 +386,7 @@ function App() {
           });
         }}
       />
+      </>
     );
   }
 
@@ -579,6 +663,7 @@ interface ProposalFormPageProps {
   setPricingData: (data: any) => void;
   generatePDF: () => void;
   onBack: () => void;
+  isGeneratingPDF: boolean;
 }
 
 function ProposalFormPage({
@@ -590,6 +675,7 @@ function ProposalFormPage({
   setPricingData,
   generatePDF,
   onBack,
+  isGeneratingPDF,
 }: ProposalFormPageProps) {
   // Check if form is complete
   const isFormComplete =
@@ -636,28 +722,44 @@ function ProposalFormPage({
           </div>
         </div>
 
-        {/* Generate Proposal Button - Top of Form */}
+        {/* Compact Generate Button with Live Pricing - Top of Form */}
         <div className='mb-6'>
           <div className='bg-white rounded-xl p-4 shadow-md border border-slate-200'>
-            <button
-              onClick={generatePDF}
-              disabled={!isFormComplete}
-              className='w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg font-semibold text-base flex items-center justify-center space-x-3 hover:from-blue-600 hover:to-blue-800 transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-lg'
-            >
-              <FileText className='w-5 h-5' />
-              <span>Generate Proposal</span>
-            </button>
-            {!isFormComplete && (
-              <p className='text-xs text-slate-500 text-center mt-2'>
-                Complete all required fields to generate proposal
-              </p>
-            )}
+            <div className='flex items-center justify-between gap-4'>
+              {/* Live Price Display */}
+              <div className='flex items-center space-x-4'>
+                <div className='text-right'>
+                  <div className='text-sm text-slate-600'>Total Project Cost</div>
+                  <div className='text-2xl font-bold text-blue-600'>
+                    ${liveCalculation.finalTotal.toLocaleString()}
+                  </div>
+                  <div className='text-xs text-slate-500'>
+                    {pricingData.sqft ? `${pricingData.sqft} sq ft • ` : ''}
+                    {isFormComplete ? 'Ready to generate' : 'Complete form to generate'}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Compact Generate Button */}
+              <button
+                onClick={generatePDF}
+                disabled={!isFormComplete || isGeneratingPDF}
+                className='px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg font-semibold text-sm flex items-center space-x-2 hover:from-blue-600 hover:to-blue-800 transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-lg whitespace-nowrap'
+              >
+                {isGeneratingPDF ? (
+                  <LoadingSpinner size="sm" className="text-white" />
+                ) : (
+                  <FileText className='w-4 h-4' />
+                )}
+                <span>{isGeneratingPDF ? 'Generating...' : 'Generate Proposal'}</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-          {/* Main Form */}
-          <div className='lg:col-span-2 space-y-6'>
+        <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-screen'>
+          {/* Main Form - Scrollable */}
+          <div className='lg:col-span-2 space-y-6 lg:max-h-screen lg:overflow-y-auto lg:pr-4'>
             {/* Client Information */}
             <FormSection
               icon={<User className='w-5 h-5' />}
@@ -665,68 +767,132 @@ function ProposalFormPage({
               subtitle='Contact details and property address'
             >
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <FormInput
-                  label='First Name *'
-                  value={formData.client.firstName}
-                  onChange={value => updateClientData({ firstName: value })}
-                  placeholder='John'
-                  required
-                />
-                <FormInput
-                  label='Last Name *'
-                  value={formData.client.lastName}
-                  onChange={value => updateClientData({ lastName: value })}
-                  placeholder='Smith'
-                  required
-                />
+                <FormField
+                  label='First Name'
+                  isRequired
+                  isValid={!!formData.client.firstName?.trim()}
+                  isTouched={true}
+                >
+                  <ValidatedInput
+                    value={formData.client.firstName}
+                    onChange={value => updateClientData({ firstName: value as string })}
+                    placeholder='John'
+                    isValid={!!formData.client.firstName?.trim()}
+                    fieldName='firstName'
+                    autoFormat
+                  />
+                </FormField>
+                <FormField
+                  label='Last Name'
+                  isRequired
+                  isValid={!!formData.client.lastName?.trim()}
+                  isTouched={true}
+                >
+                  <ValidatedInput
+                    value={formData.client.lastName}
+                    onChange={value => updateClientData({ lastName: value as string })}
+                    placeholder='Smith'
+                    isValid={!!formData.client.lastName?.trim()}
+                    fieldName='lastName'
+                    autoFormat
+                  />
+                </FormField>
               </div>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <FormInput
-                  label='Email *'
-                  type='email'
-                  value={formData.client.email}
-                  onChange={value => updateClientData({ email: value })}
-                  placeholder='john@example.com'
-                  required
-                />
-                <FormInput
-                  label='Phone *'
-                  type='tel'
-                  value={formData.client.phone}
-                  onChange={value => updateClientData({ phone: value })}
-                  placeholder='(714) 555-0123'
-                  required
-                />
+                <FormField
+                  label='Email'
+                  isRequired
+                  isValid={!!formData.client.email?.trim() && formData.client.email.includes('@')}
+                  isTouched={true}
+                >
+                  <ValidatedInput
+                    type='email'
+                    value={formData.client.email}
+                    onChange={value => updateClientData({ email: value as string })}
+                    placeholder='john@example.com'
+                    isValid={!!formData.client.email?.trim() && formData.client.email.includes('@')}
+                    fieldName='email'
+                    autoFormat
+                  />
+                </FormField>
+                <FormField
+                  label='Phone'
+                  isRequired
+                  isValid={!!formData.client.phone?.trim() && formData.client.phone.length >= 10}
+                  isTouched={true}
+                >
+                  <ValidatedInput
+                    type='tel'
+                    value={formData.client.phone}
+                    onChange={value => updateClientData({ phone: value as string })}
+                    placeholder='(714) 555-0123'
+                    isValid={!!formData.client.phone?.trim() && formData.client.phone.length >= 10}
+                    fieldName='phone'
+                    autoFormat
+                  />
+                </FormField>
               </div>
-              <FormInput
-                label='Property Address *'
-                value={formData.client.address}
-                onChange={value => updateClientData({ address: value })}
-                placeholder='123 Main Street'
-                required
-              />
+              <FormField
+                label='Property Address'
+                isRequired
+                isValid={!!formData.client.address?.trim()}
+                isTouched={true}
+              >
+                <ValidatedInput
+                  value={formData.client.address}
+                  onChange={value => updateClientData({ address: value as string })}
+                  placeholder='123 Main Street'
+                  isValid={!!formData.client.address?.trim()}
+                  fieldName='address'
+                  autoFormat
+                />
+              </FormField>
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                <FormInput
-                  label='City *'
-                  value={formData.client.city}
-                  onChange={value => updateClientData({ city: value })}
-                  placeholder='Garden Grove'
-                  required
-                />
-                <FormInput
-                  label='State *'
-                  value={formData.client.state}
-                  onChange={value => updateClientData({ state: value })}
-                  placeholder='CA'
-                  required
-                />
-                <FormInput
-                  label='ZIP Code *'
-                  value={formData.client.zipCode}
-                  onChange={value => updateClientData({ zipCode: value })}
-                  placeholder='92683'
-                  required
-                />
+                <FormField
+                  label='City'
+                  isRequired
+                  isValid={!!formData.client.city?.trim()}
+                  isTouched={true}
+                >
+                  <ValidatedInput
+                    value={formData.client.city}
+                    onChange={value => updateClientData({ city: value as string })}
+                    placeholder='Garden Grove'
+                    isValid={!!formData.client.city?.trim()}
+                    fieldName='city'
+                    autoFormat
+                  />
+                </FormField>
+                <FormField
+                  label='State'
+                  isRequired
+                  isValid={!!formData.client.state?.trim()}
+                  isTouched={true}
+                >
+                  <ValidatedInput
+                    value={formData.client.state}
+                    onChange={value => updateClientData({ state: value as string })}
+                    placeholder='CA'
+                    isValid={!!formData.client.state?.trim()}
+                    fieldName='state'
+                    autoFormat
+                  />
+                </FormField>
+                <FormField
+                  label='ZIP Code'
+                  isRequired
+                  isValid={!!formData.client.zipCode?.trim() && formData.client.zipCode.length >= 5}
+                  isTouched={true}
+                >
+                  <ValidatedInput
+                    value={formData.client.zipCode}
+                    onChange={value => updateClientData({ zipCode: value as string })}
+                    placeholder='92683'
+                    isValid={!!formData.client.zipCode?.trim() && formData.client.zipCode.length >= 5}
+                    fieldName='zipCode'
+                    autoFormat
+                  />
+                </FormField>
               </div>
             </FormSection>
 
@@ -771,8 +937,8 @@ function ProposalFormPage({
             </FormSection>
           </div>
 
-          {/* Sidebar */}
-          <div className='space-y-6 sticky top-6'>
+          {/* Sidebar - Fixed Position on Desktop */}
+          <div className='space-y-6 lg:sticky lg:top-6 lg:h-fit lg:max-h-screen lg:overflow-y-auto'>
             {/* Live Pricing */}
             <PricingCard liveCalculation={liveCalculation} pricingData={pricingData} />
 
@@ -780,11 +946,7 @@ function ProposalFormPage({
             <PaymentScheduleCard liveCalculation={liveCalculation} />
 
             {/* Actions */}
-            <ActionCard
-              formData={formData}
-              generatePDF={generatePDF}
-              isFormComplete={isFormComplete}
-            />
+            <ActionCard />
 
             {/* Trust Indicators */}
             <TrustIndicators />
@@ -820,38 +982,6 @@ function FormSection({ icon, title, subtitle, children }: FormSectionProps) {
   );
 }
 
-// Form Input Component
-interface FormInputProps {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  type?: string;
-  required?: boolean;
-}
-
-function FormInput({
-  label,
-  value,
-  onChange,
-  placeholder,
-  type = 'text',
-  required,
-}: FormInputProps) {
-  return (
-    <div className='flex flex-col'>
-      <label className='text-xs font-medium text-slate-700 mb-2'>{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        required={required}
-        className='px-3 py-2.5 border-2 border-slate-200 rounded-lg text-xs transition-all focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-100'
-      />
-    </div>
-  );
-}
 
 // ADU Configuration Form Component
 function ADUConfigurationForm({ pricingData, setPricingData, updateProjectData }: any) {
@@ -1374,7 +1504,7 @@ function PaymentScheduleCard({ liveCalculation }: any) {
 }
 
 // Action Card Component
-function ActionCard({ formData, generatePDF, isFormComplete }: any) {
+function ActionCard() {
   return (
     <div className='bg-white rounded-xl p-4 shadow-md border border-slate-200'>
       <button className='w-full px-4 py-3 bg-white text-slate-700 border border-slate-200 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 hover:bg-slate-50 transition-colors'>
