@@ -9,7 +9,7 @@
  */
 export function formatName(name: string): string {
   if (!name) return '';
-  
+
   return name
     .toLowerCase()
     .split(' ')
@@ -24,10 +24,10 @@ export function formatName(name: string): string {
  */
 export function formatPhoneNumber(phone: string): string {
   if (!phone) return '';
-  
+
   // Remove all non-digit characters
   const digits = phone.replace(/\D/g, '');
-  
+
   // Handle different input lengths
   if (digits.length === 10) {
     return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
@@ -41,7 +41,7 @@ export function formatPhoneNumber(phone: string): string {
     const suffix = digits.slice(6, 10);
     return `(${area}) ${prefix}-${suffix}`;
   }
-  
+
   // Return original if can't format
   return phone;
 }
@@ -61,37 +61,37 @@ export function formatEmail(email: string): string {
  */
 export function formatAddress(address: string): string {
   if (!address) return '';
-  
+
   // Common abbreviations mapping
   const abbreviations: Record<string, string> = {
-    'st': 'Street',
-    'ave': 'Avenue',
-    'blvd': 'Boulevard',
-    'dr': 'Drive',
-    'ln': 'Lane',
-    'rd': 'Road',
-    'ct': 'Court',
-    'pl': 'Place',
-    'way': 'Way',
-    'cir': 'Circle',
-    'ter': 'Terrace',
-    'pkwy': 'Parkway',
-    'hwy': 'Highway',
-    'apt': 'Apt',
-    'ste': 'Suite',
-    'unit': 'Unit',
-    'bldg': 'Building',
-    'fl': 'Floor',
-    'n': 'N',
-    'e': 'E',
-    's': 'S',
-    'w': 'W',
-    'ne': 'NE',
-    'nw': 'NW',
-    'se': 'SE',
-    'sw': 'SW'
+    st: 'Street',
+    ave: 'Avenue',
+    blvd: 'Boulevard',
+    dr: 'Drive',
+    ln: 'Lane',
+    rd: 'Road',
+    ct: 'Court',
+    pl: 'Place',
+    way: 'Way',
+    cir: 'Circle',
+    ter: 'Terrace',
+    pkwy: 'Parkway',
+    hwy: 'Highway',
+    apt: 'Apt',
+    ste: 'Suite',
+    unit: 'Unit',
+    bldg: 'Building',
+    fl: 'Floor',
+    n: 'N',
+    e: 'E',
+    s: 'S',
+    w: 'W',
+    ne: 'NE',
+    nw: 'NW',
+    se: 'SE',
+    sw: 'SW',
   };
-  
+
   return address
     .toLowerCase()
     .split(' ')
@@ -114,7 +114,7 @@ export function formatAddress(address: string): string {
  */
 export function formatCity(city: string): string {
   if (!city) return '';
-  
+
   return city
     .toLowerCase()
     .split(' ')
@@ -130,35 +130,72 @@ export function formatCity(city: string): string {
  */
 export function formatState(state: string): string {
   if (!state) return '';
-  
+
   const stateMap: Record<string, string> = {
-    'alabama': 'AL', 'alaska': 'AK', 'arizona': 'AZ', 'arkansas': 'AR',
-    'california': 'CA', 'colorado': 'CO', 'connecticut': 'CT', 'delaware': 'DE',
-    'florida': 'FL', 'georgia': 'GA', 'hawaii': 'HI', 'idaho': 'ID',
-    'illinois': 'IL', 'indiana': 'IN', 'iowa': 'IA', 'kansas': 'KS',
-    'kentucky': 'KY', 'louisiana': 'LA', 'maine': 'ME', 'maryland': 'MD',
-    'massachusetts': 'MA', 'michigan': 'MI', 'minnesota': 'MN', 'mississippi': 'MS',
-    'missouri': 'MO', 'montana': 'MT', 'nebraska': 'NE', 'nevada': 'NV',
-    'new hampshire': 'NH', 'new jersey': 'NJ', 'new mexico': 'NM', 'new york': 'NY',
-    'north carolina': 'NC', 'north dakota': 'ND', 'ohio': 'OH', 'oklahoma': 'OK',
-    'oregon': 'OR', 'pennsylvania': 'PA', 'rhode island': 'RI', 'south carolina': 'SC',
-    'south dakota': 'SD', 'tennessee': 'TN', 'texas': 'TX', 'utah': 'UT',
-    'vermont': 'VT', 'virginia': 'VA', 'washington': 'WA', 'west virginia': 'WV',
-    'wisconsin': 'WI', 'wyoming': 'WY'
+    alabama: 'AL',
+    alaska: 'AK',
+    arizona: 'AZ',
+    arkansas: 'AR',
+    california: 'CA',
+    colorado: 'CO',
+    connecticut: 'CT',
+    delaware: 'DE',
+    florida: 'FL',
+    georgia: 'GA',
+    hawaii: 'HI',
+    idaho: 'ID',
+    illinois: 'IL',
+    indiana: 'IN',
+    iowa: 'IA',
+    kansas: 'KS',
+    kentucky: 'KY',
+    louisiana: 'LA',
+    maine: 'ME',
+    maryland: 'MD',
+    massachusetts: 'MA',
+    michigan: 'MI',
+    minnesota: 'MN',
+    mississippi: 'MS',
+    missouri: 'MO',
+    montana: 'MT',
+    nebraska: 'NE',
+    nevada: 'NV',
+    'new hampshire': 'NH',
+    'new jersey': 'NJ',
+    'new mexico': 'NM',
+    'new york': 'NY',
+    'north carolina': 'NC',
+    'north dakota': 'ND',
+    ohio: 'OH',
+    oklahoma: 'OK',
+    oregon: 'OR',
+    pennsylvania: 'PA',
+    'rhode island': 'RI',
+    'south carolina': 'SC',
+    'south dakota': 'SD',
+    tennessee: 'TN',
+    texas: 'TX',
+    utah: 'UT',
+    vermont: 'VT',
+    virginia: 'VA',
+    washington: 'WA',
+    'west virginia': 'WV',
+    wisconsin: 'WI',
+    wyoming: 'WY',
   };
-  
+
   const cleanState = state.toLowerCase().trim();
-  
+
   // If it's already a valid abbreviation
   if (Object.values(stateMap).includes(state.toUpperCase())) {
     return state.toUpperCase();
   }
-  
+
   // If it's a full state name
   if (stateMap[cleanState]) {
     return stateMap[cleanState];
   }
-  
+
   // Return original if not found
   return state.toUpperCase();
 }
@@ -169,30 +206,30 @@ export function formatState(state: string): string {
  */
 export function formatZipCode(zip: string): string {
   if (!zip) return '';
-  
+
   // Remove all non-digit/hyphen characters
   const cleaned = zip.replace(/[^\d-]/g, '');
-  
+
   // Handle 5-digit ZIP
   if (cleaned.length === 5) {
     return cleaned;
   }
-  
+
   // Handle 9-digit ZIP (add hyphen if missing)
   if (cleaned.length === 9 && !cleaned.includes('-')) {
     return `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`;
   }
-  
+
   // Handle ZIP+4 format
   if (cleaned.includes('-') && cleaned.length === 10) {
     return cleaned;
   }
-  
+
   // Return first 5 digits if longer
   if (cleaned.length > 5) {
     return cleaned.slice(0, 5);
   }
-  
+
   return cleaned;
 }
 

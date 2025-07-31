@@ -35,14 +35,15 @@ export function ValidatedInput({
   max,
   step,
   fieldName,
-  autoFormat = true
+  autoFormat = true,
 }: ValidatedInputProps) {
   const hasError = error && isTouched;
   const showValid = isTouched && isValid && !error;
 
   // Dynamic styling based on validation state
-  let inputStyles = 'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200';
-  
+  let inputStyles =
+    'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200';
+
   if (hasError) {
     inputStyles += ' border-red-300 focus:border-red-500 focus:ring-red-200 bg-red-50';
   } else if (showValid) {
@@ -73,7 +74,7 @@ export function ValidatedInput({
         onChange(formattedValue);
       }
     }
-    
+
     // Call the original onBlur handler
     if (onBlur) {
       onBlur();
@@ -113,11 +114,15 @@ export function ValidatedInput({
       aria-invalid={hasError}
       aria-describedby={hasError ? `${placeholder}-error` : undefined}
       autoComplete={
-        type === 'email' ? 'email' :
-        type === 'tel' ? 'tel' :
-        type === 'text' && placeholder?.toLowerCase().includes('name') ? 'name' :
-        type === 'text' && placeholder?.toLowerCase().includes('address') ? 'address' :
-        undefined
+        type === 'email'
+          ? 'email'
+          : type === 'tel'
+            ? 'tel'
+            : type === 'text' && placeholder?.toLowerCase().includes('name')
+              ? 'name'
+              : type === 'text' && placeholder?.toLowerCase().includes('address')
+                ? 'address'
+                : undefined
       }
     />
   );

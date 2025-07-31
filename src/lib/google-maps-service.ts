@@ -1,4 +1,4 @@
-import { googleMapsConfig } from "./env-config";
+import { googleMapsConfig } from './env-config';
 
 /**
  * Google Maps Static API Service
@@ -9,7 +9,7 @@ interface SatelliteImageOptions {
   address: string;
   zoom?: number;
   size?: string;
-  mapType?: "satellite" | "hybrid" | "roadmap";
+  mapType?: 'satellite' | 'hybrid' | 'roadmap';
 }
 
 interface GoogleMapsConfig {
@@ -23,7 +23,7 @@ export class GoogleMapsService {
   constructor(apiKey: string) {
     this.config = {
       apiKey,
-      baseUrl: 'https://maps.googleapis.com/maps/api/staticmap'
+      baseUrl: 'https://maps.googleapis.com/maps/api/staticmap',
     };
   }
 
@@ -37,7 +37,7 @@ export class GoogleMapsService {
         address,
         zoom = googleMapsConfig.defaultZoom,
         size = googleMapsConfig.imageSize,
-        mapType = 'hybrid'
+        mapType = 'hybrid',
       } = options;
 
       console.log('🗺️ [DEBUG] Google Maps request with size:', size);
@@ -50,14 +50,14 @@ export class GoogleMapsService {
         maptype: mapType,
         key: this.config.apiKey,
         format: 'png',
-        markers: 'color:red|' + address
+        markers: 'color:red|' + address,
       });
 
       const imageUrl = this.config.baseUrl + '?' + params.toString();
 
       // Fetch image from Google Maps
       const response = await fetch(imageUrl);
-      
+
       if (!response.ok) {
         console.error('Google Maps API error:', response.status, response.statusText);
         return null;
@@ -74,7 +74,6 @@ export class GoogleMapsService {
       const dataUri = 'data:image/png;base64,' + base64String;
 
       return dataUri;
-
     } catch (error) {
       console.error('Error fetching satellite image:', error);
       return null;
@@ -89,7 +88,7 @@ export class GoogleMapsService {
       address,
       zoom: googleMapsConfig.defaultZoom,
       size: '200x150', // Force smaller size (50% of 400x300)
-      mapType: 'hybrid'
+      mapType: 'hybrid',
     });
   }
 
@@ -101,7 +100,7 @@ export class GoogleMapsService {
       address,
       zoom: googleMapsConfig.defaultZoom - 1,
       size: googleMapsConfig.imageSize,
-      mapType: 'hybrid'
+      mapType: 'hybrid',
     });
   }
 
@@ -112,7 +111,11 @@ export class GoogleMapsService {
     try {
       const testAddress = '1600 Amphitheatre Parkway, Mountain View, CA';
       const response = await fetch(
-        this.config.baseUrl + '?center=' + encodeURIComponent(testAddress) + '&zoom=15&size=100x100&key=' + this.config.apiKey
+        this.config.baseUrl +
+          '?center=' +
+          encodeURIComponent(testAddress) +
+          '&zoom=15&size=100x100&key=' +
+          this.config.apiKey
       );
       return response.ok;
     } catch {
@@ -126,13 +129,13 @@ export class GoogleMapsService {
  */
 export function createGoogleMapsService(): GoogleMapsService | null {
   const apiKey = googleMapsConfig.apiKey;
-  
+
   console.log('🔧 [DEBUG] Google Maps config check:', {
     hasApiKey: !!apiKey,
     enabled: googleMapsConfig.enabled,
-    apiKeyLength: apiKey?.length || 0
+    apiKeyLength: apiKey?.length || 0,
   });
-  
+
   if (!apiKey || !googleMapsConfig.enabled) {
     console.warn('❌ [DEBUG] Google Maps service not available - API key missing or disabled');
     return null;
@@ -147,7 +150,7 @@ export function createGoogleMapsService(): GoogleMapsService | null {
  */
 export async function getSafePropertyImage(address: string): Promise<string | null> {
   const mapsService = createGoogleMapsService();
-  
+
   if (!mapsService) {
     console.warn('Google Maps service not available - API key missing');
     return null;

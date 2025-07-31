@@ -93,7 +93,8 @@ export const addOnOptions: AddOnOption[] = [
   {
     name: 'Driveway',
     price: 5000,
-    description: 'Dedicated driveway for ADU (does not include driveway approach - requires separate civil work)',
+    description:
+      'Dedicated driveway for ADU (does not include driveway approach - requires separate civil work)',
   },
   {
     name: 'Basic Landscaping',
@@ -113,7 +114,14 @@ export const businessSettings = {
 export const finishLevels = ['Standard']; // Only standard finish level used
 
 // HVAC Options - From Excel
-export const hvacOptions = ['Central AC']; // Central AC is standard
+export const hvacOptions = [
+  {
+    name: 'Central AC',
+    value: 'central-ac',
+    description: 'Ducted central air conditioning system',
+  },
+  { name: 'Mini-Split', value: 'mini-split', description: 'Ductless mini-split heat pump system' },
+]; // Central AC is standard, Mini-split available
 
 // Connection Types - From Excel
 export const connectionTypes = {

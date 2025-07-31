@@ -1,9 +1,4 @@
-import {
-  Building2,
-  FileText,
-  ArrowLeft,
-  Calculator,
-} from 'lucide-react';
+import { Building2, FileText, ArrowLeft, Calculator } from 'lucide-react';
 import type { ProjectInfo } from '../types/proposal';
 import { AnchorPricingEngine } from '../lib/pricing-engine';
 import { AnchorPDFGenerator } from '../lib/pdf-generator';
@@ -52,7 +47,6 @@ export function ProjectDetailsForm({
       },
     });
   };
-
 
   const updateAddOnPriceOverride = (addOnName: string, newPrice: number) => {
     updateProjectData({
@@ -103,6 +97,7 @@ export function ProjectDetailsForm({
         },
         project: {
           aduType: 'detached' as const,
+          stories: 1 as const,
           squareFootage: 800,
           bedrooms: 2,
           bathrooms: 2,
@@ -118,7 +113,11 @@ export function ProjectDetailsForm({
           needsDesign: true,
           solarDesign: true,
           femaIncluded: false,
-          selectedAddOns: ['Extra Bathroom', 'Basic Landscaping'],
+          selectedAddOns: ['Extra Bathroom', 'Basic Landscaping', 'Driveway'],
+          priceOverrides: {
+            basePricePerSqFt: 220,
+            markupPercentage: 0.15,
+          },
         },
         additionalNotes:
           'Sample proposal showing typical 800 sq ft detached ADU with premium features.',
@@ -352,6 +351,46 @@ export function ProjectDetailsForm({
                     </button>
                   ))}
                 </div>
+              </div>
+            </div>
+
+            {/* HVAC System Selection - New Section */}
+            <div className='mt-6 pt-6 border-t border-slate-200'>
+              <label className='block text-sm font-medium text-slate-700 mb-2'>HVAC System *</label>
+              <div className='grid md:grid-cols-2 gap-4'>
+                <button
+                  onClick={() => updateProjectData({ hvacType: 'central-ac' })}
+                  className={`p-4 rounded-lg border-2 text-left transition-all ${
+                    formData.hvacType === 'central-ac'
+                      ? 'border-blue-500 bg-blue-50 shadow-md'
+                      : 'border-slate-200 hover:border-blue-300'
+                  }`}
+                >
+                  <div className='flex justify-between items-start mb-2'>
+                    <h4 className='font-medium text-slate-800'>Central AC</h4>
+                    <span className='text-blue-600 font-medium text-sm'>Standard</span>
+                  </div>
+                  <p className='text-sm text-slate-600'>
+                    Ducted central air conditioning system with thermostat control
+                  </p>
+                </button>
+
+                <button
+                  onClick={() => updateProjectData({ hvacType: 'mini-split' })}
+                  className={`p-4 rounded-lg border-2 text-left transition-all ${
+                    formData.hvacType === 'mini-split'
+                      ? 'border-blue-500 bg-blue-50 shadow-md'
+                      : 'border-slate-200 hover:border-blue-300'
+                  }`}
+                >
+                  <div className='flex justify-between items-start mb-2'>
+                    <h4 className='font-medium text-slate-800'>Mini-Split</h4>
+                    <span className='text-blue-600 font-medium text-sm'>Alternative</span>
+                  </div>
+                  <p className='text-sm text-slate-600'>
+                    Ductless mini-split heat pump system - efficient heating & cooling
+                  </p>
+                </button>
               </div>
             </div>
           </div>
@@ -827,7 +866,7 @@ export function ProjectDetailsForm({
             <div className='bg-white rounded-lg shadow-sm p-6'>
               <h3 className='font-semibold text-slate-800 mb-4'>Payment Milestones</h3>
               <div className='space-y-2 text-sm'>
-                {milestones.map((milestone) => (
+                {milestones.map(milestone => (
                   <div key={milestone.code} className='flex justify-between items-center'>
                     <div className='flex items-center space-x-2'>
                       <span className='w-6 h-6 bg-slate-100 text-slate-600 rounded-full text-xs flex items-center justify-center font-medium'>

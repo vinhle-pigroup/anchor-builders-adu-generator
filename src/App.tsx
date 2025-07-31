@@ -17,6 +17,7 @@ import {
   Clock,
   Eye,
   X,
+  Settings,
 } from 'lucide-react';
 import type { AnchorProposalFormData, ClientInfo, ProjectInfo } from './types/proposal';
 import { AnchorPDFGenerator } from './lib/pdf-generator';
@@ -28,15 +29,17 @@ import { SuccessNotification } from './components/SuccessNotification';
 import { ErrorNotification } from './components/ErrorNotification';
 import { PDFProgressIndicator } from './components/PDFProgressIndicator';
 import { LoadingSpinner } from './components/LoadingSpinner';
+import { AdminTextEditor } from './components/AdminTextEditor';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<'home' | 'proposal' | 'list' | 'admin'>('home');
   const [savedProposals, setSavedProposals] = useState<AnchorProposalFormData[]>([]);
   const [editingProposal, setEditingProposal] = useState<AnchorProposalFormData | null>(null);
-  
+  const [adminSection, setAdminSection] = useState<'data' | 'templates'>('data');
+
   // Error Handling
   const { error, clearError, handleError } = useErrorHandler();
-  
+
   // Form Validation
   const {} = useFormValidation();
 
@@ -45,14 +48,17 @@ function App() {
     console.log('🚀 APP STARTING - DEBUG MODE ACTIVE');
     console.log('🔍 Environment variables:', {
       VITE_GOOGLE_MAPS_API_KEY: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-      VITE_ENABLE_GOOGLE_MAPS: import.meta.env.VITE_ENABLE_GOOGLE_MAPS
+      VITE_ENABLE_GOOGLE_MAPS: import.meta.env.VITE_ENABLE_GOOGLE_MAPS,
     });
     logConfigStatus();
   }, []);
-  
+
   // UI State
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<
+    'historical' | 'modern' | 'premium' | 'classic' | 'enhanced'
+  >('historical');
   const [formData, setFormData] = useState<AnchorProposalFormData>({
     client: {
       firstName: '',
@@ -85,6 +91,11 @@ function App() {
     },
     additionalNotes: '',
     timeline: '6-8 months',
+    proposalDate: new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }), // Auto-populated with today's date
   });
 
   // Load saved proposals on app start
@@ -109,10 +120,11 @@ function App() {
     sqft: 600,
     bedrooms: 2,
     bathrooms: 2,
+    hvacType: 'central-ac',
     utilities: {
-      water: 0,
-      gas: 0,
-      electric: 2000,
+      water: null,
+      gas: null,
+      electric: null,
     },
     services: {
       design: 12500,
@@ -141,17 +153,44 @@ function App() {
     }));
   };
 
+  const updateFormData = (updates: Partial<AnchorProposalFormData>) => {
+    setFormData(prev => ({
+      ...prev,
+      ...updates,
+    }));
+  };
+
+  // Template switching function
+  const switchToTemplate = async (
+    templateName: 'historical' | 'modern' | 'premium' | 'classic' | 'enhanced'
+  ) => {
+    try {
+      // Just update the selected template state - the PDF generator will use this
+      console.log(`🎨 [TEMPLATE SWITCH] User clicked: ${templateName}`);
+      console.log(`🎨 [TEMPLATE SWITCH] Previous template: ${selectedTemplate}`);
+      setSelectedTemplate(templateName);
+      console.log(`🎨 [TEMPLATE SWITCH] Template state updated to: ${templateName}`);
+
+      // Show visual feedback to user
+      setSuccessMessage(`Switched to ${templateName} template design`);
+      setTimeout(() => setSuccessMessage(null), 2000);
+    } catch (error) {
+      console.error('❌ Template switching failed:', error);
+    }
+  };
+
   const generatePDF = useCallback(async () => {
     try {
       setIsGeneratingPDF(true);
       console.log('🚀 Starting PDF generation process...');
-      
+      console.log(`🎨 [PDF GENERATION] Using template: ${selectedTemplate}`);
+
       // Skip strict validation - allow PDF generation with minimal data
       console.log('📋 Generating PDF with current form data...');
-      
+
       const pdfGenerator = new AnchorPDFGenerator();
-      await pdfGenerator.generateProposal(formData);
-      
+      await pdfGenerator.generateProposal(formData, selectedTemplate);
+
       // Save proposal to local storage for future editing
       try {
         const proposalId = Date.now().toString();
@@ -159,22 +198,24 @@ function App() {
           ...formData,
           id: proposalId,
           createdAt: new Date().toISOString(),
-          lastModified: new Date().toISOString()
+          lastModified: new Date().toISOString(),
         };
-        
+
         const saved = JSON.parse(localStorage.getItem('anchorProposals') || '[]');
         saved.push(proposalToSave);
         localStorage.setItem('anchorProposals', JSON.stringify(saved));
         setSavedProposals(saved);
-        
+
         console.log('✅ Proposal saved to local storage successfully');
       } catch (storageError) {
         console.warn('⚠️ Failed to save to local storage:', storageError);
         // Don't fail the PDF generation if storage fails
       }
-      
+
       // Show success message
-      setSuccessMessage('Proposal generated successfully! Check your downloads or the new browser window.');
+      setSuccessMessage(
+        'Proposal generated successfully! Check your downloads or the new browser window.'
+      );
       console.log('✅ PDF generation completed successfully');
     } catch (err) {
       console.error('❌ PDF generation failed:', err);
@@ -182,7 +223,7 @@ function App() {
     } finally {
       setIsGeneratingPDF(false);
     }
-  }, [formData, handleError]);
+  }, [formData, handleError, selectedTemplate]);
 
   // Calculate live pricing
   const liveCalculation = useMemo(() => {
@@ -191,7 +232,7 @@ function App() {
 
     // Calculate utilities total
     const utilitiesTotal = Object.values(pricingData.utilities).reduce(
-      (sum, cost) => sum + cost,
+      (sum, cost) => sum + (cost || 0),
       0
     );
 
@@ -238,31 +279,22 @@ function App() {
   const GlobalUI = () => (
     <>
       {/* PDF Progress Indicator */}
-      <PDFProgressIndicator 
+      <PDFProgressIndicator
         isGenerating={isGeneratingPDF}
         onComplete={() => setIsGeneratingPDF(false)}
-        onError={(err) => {
+        onError={err => {
           setIsGeneratingPDF(false);
           handleError(err, 'PDF Generation');
         }}
       />
-      
+
       {/* Success Notification */}
       {successMessage && (
-        <SuccessNotification
-          message={successMessage}
-          onDismiss={() => setSuccessMessage(null)}
-        />
+        <SuccessNotification message={successMessage} onDismiss={() => setSuccessMessage(null)} />
       )}
-      
+
       {/* Error Notification */}
-      {error && (
-        <ErrorNotification
-          error={error}
-          onDismiss={clearError}
-          onRetry={generatePDF}
-        />
-      )}
+      {error && <ErrorNotification error={error} onDismiss={clearError} onRetry={generatePDF} />}
     </>
   );
 
@@ -271,64 +303,64 @@ function App() {
       <>
         <GlobalUI />
         <div className='min-h-screen bg-gradient-to-br from-stone-100 to-blue-50 flex items-center justify-center'>
-        <div className='text-center max-w-md mx-auto px-6'>
-          {/* Large Logo Container */}
-          <div className='inline-flex items-center justify-center w-52 h-52 bg-white rounded-2xl mb-8 shadow-lg'>
-            <div className='flex items-center justify-center w-48 h-48'>
-              <img
-                src='/anchor-logo-official.jpg'
-                alt='Anchor Builders Logo'
-                className='w-40 h-40 object-contain'
-              />
+          <div className='text-center max-w-md mx-auto px-6'>
+            {/* Large Logo Container */}
+            <div className='inline-flex items-center justify-center w-52 h-52 bg-white rounded-2xl mb-8 shadow-lg'>
+              <div className='flex items-center justify-center w-48 h-48'>
+                <img
+                  src='/anchor-builders-logo.png'
+                  alt='Anchor Builders Logo'
+                  className='w-40 h-40 object-contain'
+                />
+              </div>
+            </div>
+
+            {/* Brand Text */}
+            <h1 className='text-4xl font-bold text-stone-800 mb-2'>
+              Anchor{' '}
+              <span className='text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-anchor-600'>
+                Builders
+              </span>
+            </h1>
+            <p className='text-stone-600 mb-12'>ADU Proposal System</p>
+
+            {/* Action Buttons */}
+            <div className='space-y-4'>
+              {/* Start New Proposal */}
+              <button
+                onClick={() => setCurrentPage('proposal')}
+                className='w-full bg-gradient-to-r from-blue-500 to-anchor-500 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-blue-600 hover:to-anchor-600 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center'
+              >
+                <Plus className='w-5 h-5 mr-2' />
+                Start New Proposal
+              </button>
+
+              {/* View and Edit Proposals */}
+              <button
+                onClick={() => setCurrentPage('list')}
+                className='w-full bg-white text-stone-700 px-6 py-3 rounded-xl text-base font-semibold hover:bg-stone-50 transition-all shadow-lg border border-stone-200 flex items-center justify-center'
+              >
+                <FileText className='w-4 h-4 mr-2' />
+                View & Edit Proposals
+              </button>
+
+              {/* Admin Settings */}
+              <button
+                onClick={() => setCurrentPage('admin')}
+                className='w-full bg-slate-600 text-white px-6 py-3 rounded-xl text-base font-semibold hover:bg-slate-700 transition-all shadow-lg flex items-center justify-center'
+              >
+                <Users className='w-4 h-4 mr-2' />
+                Admin Settings
+              </button>
+            </div>
+
+            {/* Footer Info */}
+            <div className='mt-8 text-center'>
+              <p className='text-stone-500 text-sm'>
+                Professional ADU proposals with accurate California pricing • Licensed & Insured
+              </p>
             </div>
           </div>
-
-          {/* Brand Text */}
-          <h1 className='text-4xl font-bold text-stone-800 mb-2'>
-            Anchor{' '}
-            <span className='text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-anchor-600'>
-              Builders
-            </span>
-          </h1>
-          <p className='text-stone-600 mb-12'>ADU Proposal System</p>
-
-          {/* Action Buttons */}
-          <div className='space-y-4'>
-            {/* Start New Proposal */}
-            <button
-              onClick={() => setCurrentPage('proposal')}
-              className='w-full bg-gradient-to-r from-blue-500 to-anchor-500 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-blue-600 hover:to-anchor-600 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center'
-            >
-              <Plus className='w-5 h-5 mr-2' />
-              Start New Proposal
-            </button>
-
-            {/* View and Edit Proposals */}
-            <button
-              onClick={() => setCurrentPage('list')}
-              className='w-full bg-white text-stone-700 px-6 py-3 rounded-xl text-base font-semibold hover:bg-stone-50 transition-all shadow-lg border border-stone-200 flex items-center justify-center'
-            >
-              <FileText className='w-4 h-4 mr-2' />
-              View & Edit Proposals
-            </button>
-
-            {/* Admin Settings */}
-            <button
-              onClick={() => setCurrentPage('admin')}
-              className='w-full bg-slate-600 text-white px-6 py-3 rounded-xl text-base font-semibold hover:bg-slate-700 transition-all shadow-lg flex items-center justify-center'
-            >
-              <Users className='w-4 h-4 mr-2' />
-              Admin Settings
-            </button>
-          </div>
-
-          {/* Footer Info */}
-          <div className='mt-8 text-center'>
-            <p className='text-stone-500 text-sm'>
-              Professional ADU proposals with accurate California pricing • Licensed & Insured
-            </p>
-          </div>
-        </div>
         </div>
       </>
     );
@@ -339,53 +371,61 @@ function App() {
       <>
         <GlobalUI />
         <ProposalFormPage
-        formData={formData}
-        pricingData={pricingData}
-        liveCalculation={liveCalculation}
-        updateClientData={updateClientData}
-        updateProjectData={updateProjectData}
-        setPricingData={setPricingData}
-        generatePDF={generatePDF}
-        isGeneratingPDF={isGeneratingPDF}
-        onBack={() => {
-          setCurrentPage('home');
-          setEditingProposal(null);
-          // Reset form to defaults when going back
-          setFormData({
-            client: {
-              firstName: '',
-              lastName: '',
-              email: '',
-              phone: '',
-              address: '',
-              city: '',
-              state: '',
-              zipCode: '',
-            },
-            project: {
-              aduType: 'detached',
-              squareFootage: 600,
-              bedrooms: 2,
-              bathrooms: 2,
-              appliancesIncluded: true,
-              hvacType: 'central-ac',
-              finishLevel: 'standard',
-              utilities: {
-                waterMeter: 'shared',
-                gasMeter: 'shared',
-                electricMeter: 'separate',
+          formData={formData}
+          pricingData={pricingData}
+          liveCalculation={liveCalculation}
+          updateClientData={updateClientData}
+          updateProjectData={updateProjectData}
+          updateFormData={updateFormData}
+          setPricingData={setPricingData}
+          generatePDF={generatePDF}
+          isGeneratingPDF={isGeneratingPDF}
+          selectedTemplate={selectedTemplate}
+          switchToTemplate={switchToTemplate}
+          onBack={() => {
+            setCurrentPage('home');
+            setEditingProposal(null);
+            // Reset form to defaults when going back
+            setFormData({
+              client: {
+                firstName: '',
+                lastName: '',
+                email: '',
+                phone: '',
+                address: '',
+                city: '',
+                state: '',
+                zipCode: '',
               },
-              sewerConnection: 'existing-lateral',
-              needsDesign: true,
-              solarDesign: false,
-              femaIncluded: false,
-              selectedAddOns: [],
-            },
-            additionalNotes: '',
-            timeline: '6-8 months',
-          });
-        }}
-      />
+              project: {
+                aduType: 'detached',
+                squareFootage: 600,
+                bedrooms: 2,
+                bathrooms: 2,
+                appliancesIncluded: true,
+                hvacType: 'central-ac',
+                finishLevel: 'standard',
+                utilities: {
+                  waterMeter: 'shared',
+                  gasMeter: 'shared',
+                  electricMeter: 'separate',
+                },
+                sewerConnection: 'existing-lateral',
+                needsDesign: true,
+                solarDesign: false,
+                femaIncluded: false,
+                selectedAddOns: [],
+              },
+              additionalNotes: '',
+              timeline: '6-8 months',
+              proposalDate: new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              }), // Auto-populated with today's date
+            });
+          }}
+        />
       </>
     );
   }
@@ -412,7 +452,7 @@ function App() {
         client: {
           ...proposal.client,
           firstName: proposal.client.firstName + ' (Copy)',
-        }
+        },
       };
       const updated = [...savedProposals, duplicated];
       setSavedProposals(updated);
@@ -460,7 +500,10 @@ function App() {
           ) : (
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
               {savedProposals.map((proposal: any) => (
-                <div key={proposal.id} className='bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden'>
+                <div
+                  key={proposal.id}
+                  className='bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden'
+                >
                   <div className='p-6'>
                     <div className='flex items-start justify-between mb-4'>
                       <div>
@@ -468,7 +511,9 @@ function App() {
                           {proposal.client.firstName} {proposal.client.lastName}
                         </h3>
                         <p className='text-slate-600 text-sm'>{proposal.client.address}</p>
-                        <p className='text-slate-500 text-xs'>{proposal.client.city}, {proposal.client.state}</p>
+                        <p className='text-slate-500 text-xs'>
+                          {proposal.client.city}, {proposal.client.state}
+                        </p>
                       </div>
                       <div className='text-right'>
                         <div className='text-lg font-bold text-blue-600'>
@@ -479,11 +524,11 @@ function App() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className='text-xs text-slate-500 mb-4'>
                       Created: {new Date(proposal.createdAt).toLocaleDateString()}
                     </div>
-                    
+
                     <div className='flex space-x-2'>
                       <button
                         onClick={() => handleEditProposal(proposal)}
@@ -528,10 +573,10 @@ function App() {
 
     const exportProposals = () => {
       const dataStr = JSON.stringify(savedProposals, null, 2);
-      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-      
+      const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
       const exportFileDefaultName = `anchor-proposals-${new Date().toISOString().split('T')[0]}.json`;
-      
+
       const linkElement = document.createElement('a');
       linkElement.setAttribute('href', dataUri);
       linkElement.setAttribute('download', exportFileDefaultName);
@@ -542,7 +587,7 @@ function App() {
       const file = event.target.files?.[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = e => {
           try {
             const imported = JSON.parse(e.target?.result as string);
             if (Array.isArray(imported)) {
@@ -575,76 +620,117 @@ function App() {
             </button>
           </div>
 
-          <div className='space-y-6'>
-            {/* Data Management */}
-            <div className='bg-white rounded-lg shadow-sm p-6'>
-              <h2 className='text-xl font-semibold text-slate-800 mb-4 flex items-center'>
-                <FileText className='w-5 h-5 mr-2' />
-                Data Management
-              </h2>
-              <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                <div className='text-center p-4 border border-slate-200 rounded-lg'>
-                  <div className='text-2xl font-bold text-blue-600 mb-2'>
-                    {savedProposals.length}
-                  </div>
-                  <div className='text-sm text-slate-600'>Saved Proposals</div>
-                </div>
-                <button
-                  onClick={exportProposals}
-                  disabled={savedProposals.length === 0}
-                  className='p-4 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2'
-                >
-                  <Download className='w-4 h-4' />
-                  <span>Export Data</span>
-                </button>
-                <label className='p-4 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors cursor-pointer flex items-center justify-center space-x-2'>
-                  <input
-                    type='file'
-                    accept='.json'
-                    onChange={importProposals}
-                    className='hidden'
-                  />
-                  <Plus className='w-4 h-4' />
-                  <span>Import Data</span>
-                </label>
-              </div>
-            </div>
-
-            {/* Danger Zone */}
-            <div className='bg-white rounded-lg shadow-sm p-6 border-l-4 border-red-500'>
-              <h2 className='text-xl font-semibold text-red-600 mb-4'>Danger Zone</h2>
-              <p className='text-slate-600 mb-4'>
-                Permanently delete all saved proposals. This action cannot be undone.
-              </p>
+          {/* Admin Section Tabs */}
+          <div className='mb-6'>
+            <div className='flex space-x-1 bg-slate-100 rounded-lg p-1'>
               <button
-                onClick={clearAllProposals}
-                disabled={savedProposals.length === 0}
-                className='px-6 py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2'
+                onClick={() => setAdminSection('data')}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  adminSection === 'data'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-800'
+                }`}
               >
-                <X className='w-4 h-4' />
-                <span>Clear All Proposals</span>
+                <FileText className='w-4 h-4' />
+                <span>Data Management</span>
+              </button>
+              <button
+                onClick={() => setAdminSection('templates')}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  adminSection === 'templates'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-800'
+                }`}
+              >
+                <Settings className='w-4 h-4' />
+                <span>Template Text</span>
               </button>
             </div>
+          </div>
 
-            {/* System Info */}
-            <div className='bg-white rounded-lg shadow-sm p-6'>
-              <h2 className='text-xl font-semibold text-slate-800 mb-4'>System Information</h2>
-              <div className='space-y-2 text-sm'>
-                <div className='flex justify-between'>
-                  <span className='text-slate-600'>Version:</span>
-                  <span className='font-medium'>1.0.0</span>
+          {adminSection === 'data' && (
+            <div className='space-y-6'>
+              {/* Data Management */}
+              <div className='bg-white rounded-lg shadow-sm p-6'>
+                <h2 className='text-xl font-semibold text-slate-800 mb-4 flex items-center'>
+                  <FileText className='w-5 h-5 mr-2' />
+                  Data Management
+                </h2>
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                  <div className='text-center p-4 border border-slate-200 rounded-lg'>
+                    <div className='text-2xl font-bold text-blue-600 mb-2'>
+                      {savedProposals.length}
+                    </div>
+                    <div className='text-sm text-slate-600'>Saved Proposals</div>
+                  </div>
+                  <button
+                    onClick={exportProposals}
+                    disabled={savedProposals.length === 0}
+                    className='p-4 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2'
+                  >
+                    <Download className='w-4 h-4' />
+                    <span>Export Data</span>
+                  </button>
+                  <label className='p-4 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors cursor-pointer flex items-center justify-center space-x-2'>
+                    <input
+                      type='file'
+                      accept='.json'
+                      onChange={importProposals}
+                      className='hidden'
+                    />
+                    <Plus className='w-4 h-4' />
+                    <span>Import Data</span>
+                  </label>
                 </div>
-                <div className='flex justify-between'>
-                  <span className='text-slate-600'>Storage:</span>
-                  <span className='font-medium'>Local Browser Storage</span>
-                </div>
-                <div className='flex justify-between'>
-                  <span className='text-slate-600'>Last Updated:</span>
-                  <span className='font-medium'>{new Date().toLocaleDateString()}</span>
+              </div>
+
+              {/* Danger Zone */}
+              <div className='bg-white rounded-lg shadow-sm p-6 border-l-4 border-red-500'>
+                <h2 className='text-xl font-semibold text-red-600 mb-4'>Danger Zone</h2>
+                <p className='text-slate-600 mb-4'>
+                  Permanently delete all saved proposals. This action cannot be undone.
+                </p>
+                <button
+                  onClick={clearAllProposals}
+                  disabled={savedProposals.length === 0}
+                  className='px-6 py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2'
+                >
+                  <X className='w-4 h-4' />
+                  <span>Clear All Proposals</span>
+                </button>
+              </div>
+
+              {/* System Info */}
+              <div className='bg-white rounded-lg shadow-sm p-6'>
+                <h2 className='text-xl font-semibold text-slate-800 mb-4'>System Information</h2>
+                <div className='space-y-2 text-sm'>
+                  <div className='flex justify-between'>
+                    <span className='text-slate-600'>Version:</span>
+                    <span className='font-medium'>1.0.0</span>
+                  </div>
+                  <div className='flex justify-between'>
+                    <span className='text-slate-600'>Storage:</span>
+                    <span className='font-medium'>Local Browser Storage</span>
+                  </div>
+                  <div className='flex justify-between'>
+                    <span className='text-slate-600'>Last Updated:</span>
+                    <span className='font-medium'>{new Date().toLocaleDateString()}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {adminSection === 'templates' && (
+            <AdminTextEditor
+              onSave={() => {
+                setSuccessMessage(
+                  'Template text updated successfully! Changes will appear in all new PDFs.'
+                );
+                setTimeout(() => setSuccessMessage(null), 3000);
+              }}
+            />
+          )}
         </div>
       </div>
     );
@@ -660,10 +746,15 @@ interface ProposalFormPageProps {
   liveCalculation: any;
   updateClientData: (updates: Partial<ClientInfo>) => void;
   updateProjectData: (updates: Partial<ProjectInfo>) => void;
+  updateFormData: (updates: Partial<AnchorProposalFormData>) => void;
   setPricingData: (data: any) => void;
   generatePDF: () => void;
   onBack: () => void;
   isGeneratingPDF: boolean;
+  selectedTemplate: 'historical' | 'modern' | 'premium' | 'classic' | 'enhanced';
+  switchToTemplate: (
+    templateName: 'historical' | 'modern' | 'premium' | 'classic' | 'enhanced'
+  ) => void;
 }
 
 function ProposalFormPage({
@@ -672,10 +763,13 @@ function ProposalFormPage({
   liveCalculation,
   updateClientData,
   updateProjectData,
+  updateFormData,
   setPricingData,
   generatePDF,
   onBack,
   isGeneratingPDF,
+  selectedTemplate,
+  switchToTemplate,
 }: ProposalFormPageProps) {
   // Check if form is complete
   const isFormComplete =
@@ -686,7 +780,10 @@ function ProposalFormPage({
     formData.client.address &&
     formData.client.city &&
     formData.client.state &&
-    formData.client.zipCode;
+    formData.client.zipCode &&
+    pricingData.utilities.water !== null &&
+    pricingData.utilities.gas !== null &&
+    pricingData.utilities.electric !== null;
 
   return (
     <div
@@ -697,8 +794,12 @@ function ProposalFormPage({
         {/* Header */}
         <div className='flex items-center justify-between mb-8 bg-white p-6 rounded-xl shadow-sm'>
           <div className='flex items-center space-x-4'>
-            <div className='w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center text-white font-bold text-lg'>
-              AB
+            <div className='w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm border border-slate-200'>
+              <img
+                src='/anchor-builders-logo.png'
+                alt='Anchor Builders Logo'
+                className='w-10 h-10 object-contain'
+              />
             </div>
             <div>
               <h1 className='text-xl font-bold text-slate-800'>Anchor Builders</h1>
@@ -739,20 +840,71 @@ function ProposalFormPage({
                   </div>
                 </div>
               </div>
-              
-              {/* Compact Generate Button */}
-              <button
-                onClick={generatePDF}
-                disabled={!isFormComplete || isGeneratingPDF}
-                className='px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg font-semibold text-sm flex items-center space-x-2 hover:from-blue-600 hover:to-blue-800 transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-lg whitespace-nowrap'
-              >
-                {isGeneratingPDF ? (
-                  <LoadingSpinner size="sm" className="text-white" />
-                ) : (
-                  <FileText className='w-4 h-4' />
-                )}
-                <span>{isGeneratingPDF ? 'Generating...' : 'Generate Proposal'}</span>
-              </button>
+
+              {/* Template Selection & Generate Buttons */}
+              <div className='flex items-center space-x-3'>
+                {/* Template Selection Buttons */}
+                <div className='flex items-center space-x-1 bg-slate-100 rounded-lg p-1'>
+                  <button
+                    onClick={() => switchToTemplate('historical')}
+                    className={`px-3 py-2 rounded-md text-xs font-medium transition-all ${
+                      selectedTemplate === 'historical'
+                        ? 'bg-blue-500 text-white shadow-sm'
+                        : 'text-slate-600 hover:bg-white hover:text-blue-600'
+                    }`}
+                    title='Historical Design - Proven $713K+ template'
+                  >
+                    Classic
+                  </button>
+                  <button
+                    onClick={() => switchToTemplate('modern')}
+                    className={`px-3 py-2 rounded-md text-xs font-medium transition-all ${
+                      selectedTemplate === 'modern'
+                        ? 'bg-blue-500 text-white shadow-sm'
+                        : 'text-slate-600 hover:bg-white hover:text-blue-600'
+                    }`}
+                    title='Modern Enhanced - Complete pricing breakdown with all improvements'
+                  >
+                    Modern
+                  </button>
+                  <button
+                    onClick={() => switchToTemplate('premium')}
+                    className={`px-3 py-2 rounded-md text-xs font-medium transition-all ${
+                      selectedTemplate === 'premium'
+                        ? 'bg-blue-500 text-white shadow-sm'
+                        : 'text-slate-600 hover:bg-white hover:text-blue-600'
+                    }`}
+                    title='Premium Luxury - Elegant design with gold accents and premium styling'
+                  >
+                    Premium
+                  </button>
+                  <button
+                    onClick={() => switchToTemplate('enhanced')}
+                    className={`px-3 py-2 rounded-md text-xs font-medium transition-all ${
+                      selectedTemplate === 'enhanced'
+                        ? 'bg-blue-500 text-white shadow-sm'
+                        : 'text-slate-600 hover:bg-white hover:text-blue-600'
+                    }`}
+                    title='Enhanced Modern - Complete pricing breakdown with all latest improvements'
+                  >
+                    Enhanced
+                  </button>
+                </div>
+
+                {/* Generate Button */}
+                <button
+                  onClick={generatePDF}
+                  disabled={!isFormComplete || isGeneratingPDF}
+                  className='px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg font-semibold text-sm flex items-center space-x-2 hover:from-blue-600 hover:to-blue-800 transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-lg whitespace-nowrap'
+                >
+                  {isGeneratingPDF ? (
+                    <LoadingSpinner size='sm' className='text-white' />
+                  ) : (
+                    <FileText className='w-4 h-4' />
+                  )}
+                  <span>{isGeneratingPDF ? 'Generating...' : 'Generate Proposal'}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -888,12 +1040,29 @@ function ProposalFormPage({
                     value={formData.client.zipCode}
                     onChange={value => updateClientData({ zipCode: value as string })}
                     placeholder='92683'
-                    isValid={!!formData.client.zipCode?.trim() && formData.client.zipCode.length >= 5}
+                    isValid={
+                      !!formData.client.zipCode?.trim() && formData.client.zipCode.length >= 5
+                    }
                     fieldName='zipCode'
                     autoFormat
                   />
                 </FormField>
               </div>
+              <FormField
+                label='Proposal Date'
+                isRequired={false}
+                isValid={!!formData.proposalDate?.trim()}
+                isTouched={true}
+              >
+                <ValidatedInput
+                  value={formData.proposalDate || ''}
+                  onChange={value => updateFormData({ proposalDate: value as string })}
+                  placeholder='January 1, 2025'
+                  isValid={!!formData.proposalDate?.trim()}
+                  fieldName='proposalDate'
+                  autoFormat
+                />
+              </FormField>
             </FormSection>
 
             {/* ADU Configuration */}
@@ -912,8 +1081,8 @@ function ProposalFormPage({
             {/* Utility Connections */}
             <FormSection
               icon={<Zap className='w-5 h-5' />}
-              title='Utility Connections'
-              subtitle='Meter configurations'
+              title='Utility Connections *'
+              subtitle='Meter configurations (Required)'
             >
               <UtilityConnectionsForm pricingData={pricingData} setPricingData={setPricingData} />
             </FormSection>
@@ -933,7 +1102,11 @@ function ProposalFormPage({
               title='Optional Add-Ons'
               subtitle='Standard and custom upgrades'
             >
-              <AddOnsForm pricingData={pricingData} setPricingData={setPricingData} />
+              <AddOnsForm
+                pricingData={pricingData}
+                setPricingData={setPricingData}
+                updateProjectData={updateProjectData}
+              />
             </FormSection>
           </div>
 
@@ -981,7 +1154,6 @@ function FormSection({ icon, title, subtitle, children }: FormSectionProps) {
     </div>
   );
 }
-
 
 // ADU Configuration Form Component
 function ADUConfigurationForm({ pricingData, setPricingData, updateProjectData }: any) {
@@ -1127,6 +1299,46 @@ function ADUConfigurationForm({ pricingData, setPricingData, updateProjectData }
           </div>
         </div>
       </div>
+
+      {/* HVAC System */}
+      <div>
+        <label className='text-xs font-medium text-slate-700 mb-2 block'>HVAC System *</label>
+        <div className='grid grid-cols-2 gap-3'>
+          <button
+            onClick={() => {
+              setPricingData((prev: any) => ({ ...prev, hvacType: 'central-ac' }));
+              updateProjectData({ hvacType: 'central-ac' });
+            }}
+            className={`p-3 rounded-lg border-2 text-left transition-all ${
+              pricingData.hvacType === 'central-ac'
+                ? 'border-blue-500 bg-blue-50 font-semibold'
+                : 'border-slate-200 hover:border-blue-300'
+            }`}
+          >
+            <div className='mb-1'>
+              <h4 className='font-semibold text-xs text-slate-800'>Central Air/Heat</h4>
+            </div>
+            <p className='text-xs text-slate-600'>Ducted HVAC system</p>
+          </button>
+
+          <button
+            onClick={() => {
+              setPricingData((prev: any) => ({ ...prev, hvacType: 'mini-split' }));
+              updateProjectData({ hvacType: 'mini-split' });
+            }}
+            className={`p-3 rounded-lg border-2 text-left transition-all ${
+              pricingData.hvacType === 'mini-split'
+                ? 'border-blue-500 bg-blue-50 font-semibold'
+                : 'border-slate-200 hover:border-blue-300'
+            }`}
+          >
+            <div className='mb-1'>
+              <h4 className='font-semibold text-xs text-slate-800'>Mini-Split System</h4>
+            </div>
+            <p className='text-xs text-slate-600'>Ductless heat pump</p>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1180,7 +1392,9 @@ function UtilityConnectionsForm({ pricingData, setPricingData }: any) {
                 className={`p-2 rounded-lg border text-center text-xs transition-all ${
                   pricingData.utilities[utility.key] === option.cost
                     ? 'border-blue-500 bg-blue-50 font-semibold'
-                    : 'border-slate-200 hover:border-blue-300'
+                    : pricingData.utilities[utility.key] === null
+                      ? 'border-red-200 hover:border-blue-300'
+                      : 'border-slate-200 hover:border-blue-300'
                 }`}
               >
                 <span className='block font-medium text-slate-800 mb-1'>{option.title}</span>
@@ -1234,18 +1448,19 @@ function DesignServicesForm({ pricingData, setPricingData }: any) {
         <div
           key={service.key}
           className={`p-3 rounded-lg border cursor-pointer transition-all ${
-            pricingData.services[service.key] > 0
+            service.key === 'solar' || pricingData.services[service.key] > 0
               ? 'border-blue-500 bg-blue-50'
               : 'border-slate-200 hover:border-blue-300'
           }`}
-          onClick={() =>
-            handleServiceChange(service.key, service.cost, pricingData.services[service.key] === 0)
-          }
+          onClick={() => {
+            if (service.key === 'solar') return; // Solar is always included, can't be unchecked
+            handleServiceChange(service.key, service.cost, pricingData.services[service.key] === 0);
+          }}
         >
           <div className='flex items-start space-x-3'>
             <input
               type='checkbox'
-              checked={pricingData.services[service.key] > 0}
+              checked={service.key === 'solar' ? true : pricingData.services[service.key] > 0}
               onChange={() => {}}
               className='mt-0.5 w-4 h-4 text-blue-600'
             />
@@ -1266,12 +1481,24 @@ function DesignServicesForm({ pricingData, setPricingData }: any) {
 }
 
 // Add-Ons Form Component
-function AddOnsForm({ pricingData, setPricingData }: any) {
+function AddOnsForm({ pricingData, setPricingData, updateProjectData }: any) {
   const handleAddonChange = (addon: string, cost: number, checked: boolean) => {
     setPricingData((prev: any) => ({
       ...prev,
       addons: { ...prev.addons, [addon]: checked ? cost : 0 },
     }));
+
+    // Update formData.project.selectedAddOns for the template generator
+    const currentAddons = Object.keys(pricingData.addons).filter(
+      key => pricingData.addons[key] > 0
+    );
+    if (checked) {
+      currentAddons.push(addon);
+    } else {
+      const index = currentAddons.indexOf(addon);
+      if (index > -1) currentAddons.splice(index, 1);
+    }
+    updateProjectData({ selectedAddOns: currentAddons });
   };
 
   const handleManualAddonChange = (index: number, value: string) => {
@@ -1403,9 +1630,19 @@ function PricingCard({ liveCalculation, pricingData }: any) {
         <div className='text-2xl font-bold text-blue-600 transition-all duration-200'>
           ${liveCalculation.finalTotal.toLocaleString()}
         </div>
-        <div className='text-sm text-slate-600 space-y-1'>
-          <div>Base Construction: ${pricingData.pricePerSqFt} per sq ft</div>
-          <div>Total Project: ${liveCalculation.pricePerSqFt} per sq ft</div>
+        <div className='grid grid-cols-2 gap-3 mt-4'>
+          <div className='p-3 bg-slate-50 rounded-lg border border-slate-200'>
+            <div className='text-xs text-slate-600 font-medium mb-1'>Base Construction</div>
+            <div className='text-lg font-bold text-slate-700'>
+              ${pricingData.pricePerSqFt} per sq ft
+            </div>
+          </div>
+          <div className='p-3 bg-blue-50 rounded-lg border border-blue-200'>
+            <div className='text-xs text-blue-600 font-medium mb-1'>Total Project Cost</div>
+            <div className='text-lg font-bold text-blue-700'>
+              ${liveCalculation.pricePerSqFt} per sq ft
+            </div>
+          </div>
         </div>
       </div>
 

@@ -24,7 +24,7 @@ export interface PricingInputs {
   // Services
   needsDesign: boolean;
   appliancesIncluded: boolean;
-  hvacType: 'central-ac';
+  hvacType: 'central-ac' | 'mini-split';
 
   // Add-ons (array of add-on names)
   selectedAddOns: string[];

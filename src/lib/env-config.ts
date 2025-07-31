@@ -8,7 +8,7 @@ interface AppConfig {
   companyWebsite: string;
   supportEmail: string;
   supportPhone: string;
-  
+
   // Google Maps Configuration
   googleMaps: {
     apiKey: string | null;
@@ -17,11 +17,11 @@ interface AppConfig {
     headerSize: string;
     enabled: boolean;
   };
-  
+
   // API Configuration
   apiUrl: string | null;
   apiKey: string | null;
-  
+
   // Feature Flags
   features: {
     analytics: boolean;
@@ -29,7 +29,7 @@ interface AppConfig {
     pdfGeneration: boolean;
     googleMaps: boolean;
   };
-  
+
   // Environment
   isDevelopment: boolean;
   isProduction: boolean;
@@ -40,7 +40,7 @@ interface AppConfig {
  */
 function getEnvVar(key: string, defaultValue?: string): string | null {
   const value = import.meta.env[key];
-  return value !== undefined ? value : (defaultValue || null);
+  return value !== undefined ? value : defaultValue || null;
 }
 
 /**
@@ -71,7 +71,7 @@ export const appConfig: AppConfig = {
   companyWebsite: getEnvVar('VITE_COMPANY_WEBSITE') || 'https://www.anchorbuilders.io',
   supportEmail: getEnvVar('VITE_SUPPORT_EMAIL') || 'support@anchorbuilders.io',
   supportPhone: getEnvVar('VITE_SUPPORT_PHONE') || '(555) 123-4567',
-  
+
   // Google Maps Configuration
   googleMaps: {
     apiKey: getEnvVar('VITE_GOOGLE_MAPS_API_KEY'),
@@ -80,11 +80,11 @@ export const appConfig: AppConfig = {
     headerSize: getEnvVar('VITE_GOOGLE_MAPS_HEADER_SIZE') || '200x150',
     enabled: getBooleanEnv('VITE_ENABLE_GOOGLE_MAPS', true),
   },
-  
+
   // API Configuration
   apiUrl: getEnvVar('VITE_API_URL'),
   apiKey: getEnvVar('VITE_API_KEY'),
-  
+
   // Feature Flags
   features: {
     analytics: getBooleanEnv('VITE_ENABLE_ANALYTICS', false),
@@ -92,7 +92,7 @@ export const appConfig: AppConfig = {
     pdfGeneration: getBooleanEnv('VITE_ENABLE_PDF_GENERATION', true),
     googleMaps: getBooleanEnv('VITE_ENABLE_GOOGLE_MAPS', true),
   },
-  
+
   // Environment
   isDevelopment: import.meta.env.DEV,
   isProduction: import.meta.env.PROD,
@@ -103,21 +103,21 @@ export const appConfig: AppConfig = {
  */
 export function validateEnvironment(): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
-  
+
   // Check Google Maps configuration if enabled
   if (appConfig.features.googleMaps && appConfig.googleMaps.enabled) {
     if (!appConfig.googleMaps.apiKey) {
       errors.push('VITE_GOOGLE_MAPS_API_KEY is required when Google Maps is enabled');
     }
   }
-  
+
   // Check API configuration if PDF generation is enabled
   if (appConfig.features.pdfGeneration) {
     if (!appConfig.apiUrl) {
       console.warn('VITE_API_URL not set - PDF generation may not work');
     }
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors,
@@ -129,25 +129,32 @@ export function validateEnvironment(): { isValid: boolean; errors: string[] } {
  */
 export function logConfigStatus(): void {
   if (!appConfig.isDevelopment) return;
-  
+
   console.group('🔧 App Configuration');
   console.log('Environment:', appConfig.isProduction ? 'production' : 'development');
   console.log('Google Maps:', appConfig.googleMaps.enabled ? '✅ enabled' : '❌ disabled');
-  console.log('Google Maps API Key:', appConfig.googleMaps.apiKey ? `✅ present (${appConfig.googleMaps.apiKey.length} chars)` : '❌ missing');
+  console.log(
+    'Google Maps API Key:',
+    appConfig.googleMaps.apiKey
+      ? `✅ present (${appConfig.googleMaps.apiKey.length} chars)`
+      : '❌ missing'
+  );
   console.log('PDF Generation:', appConfig.features.pdfGeneration ? '✅ enabled' : '❌ disabled');
   console.log('API URL:', appConfig.apiUrl || 'not configured');
-  
+
   // Debug environment variables
   console.log('🔍 Debug - Raw env vars:', {
-    VITE_GOOGLE_MAPS_API_KEY: import.meta.env.VITE_GOOGLE_MAPS_API_KEY ? `present (${import.meta.env.VITE_GOOGLE_MAPS_API_KEY.length} chars)` : 'missing',
-    VITE_ENABLE_GOOGLE_MAPS: import.meta.env.VITE_ENABLE_GOOGLE_MAPS
+    VITE_GOOGLE_MAPS_API_KEY: import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+      ? `present (${import.meta.env.VITE_GOOGLE_MAPS_API_KEY.length} chars)`
+      : 'missing',
+    VITE_ENABLE_GOOGLE_MAPS: import.meta.env.VITE_ENABLE_GOOGLE_MAPS,
   });
-  
+
   const validation = validateEnvironment();
   if (!validation.isValid) {
     console.warn('Configuration errors:', validation.errors);
   }
-  
+
   console.groupEnd();
 }
 

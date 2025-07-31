@@ -20,7 +20,7 @@ const getErrorType = (error: unknown): ErrorState['type'] => {
   if (error instanceof TypeError && error.message.includes('fetch')) {
     return 'network';
   }
-  
+
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
     if (message.includes('pdf') || message.includes('template')) {
@@ -33,7 +33,7 @@ const getErrorType = (error: unknown): ErrorState['type'] => {
       return 'storage';
     }
   }
-  
+
   return 'unknown';
 };
 
@@ -68,7 +68,7 @@ export function useErrorHandler(): ErrorHandler {
 
   const handleError = useCallback((error: unknown, context?: string) => {
     console.error(`Error in ${context || 'unknown context'}:`, error);
-    
+
     const type = getErrorType(error);
     const message = getErrorMessage(error, type);
     const retryable = isRetryable(type);

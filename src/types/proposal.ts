@@ -19,7 +19,7 @@ export interface ProjectInfo {
 
   // Features - matching Excel form
   appliancesIncluded: boolean;
-  hvacType: 'central-ac';
+  hvacType: 'central-ac' | 'mini-split';
   finishLevel: 'standard'; // Only standard in real system
 
   // Utilities - simplified to separate/shared
@@ -74,6 +74,7 @@ export interface AnchorProposalFormData {
   project: ProjectInfo;
   additionalNotes: string;
   timeline: string;
+  proposalDate?: string; // Auto-populated but manually editable
   createdAt?: string;
   lastModified?: string;
 }

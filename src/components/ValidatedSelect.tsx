@@ -29,14 +29,15 @@ export function ValidatedSelect({
   isTouched = false,
   isValid = false,
   className = '',
-  disabled = false
+  disabled = false,
 }: ValidatedSelectProps) {
   const hasError = error && isTouched;
   const showValid = isTouched && isValid && !error;
 
   // Dynamic styling based on validation state
-  let selectStyles = 'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 bg-white';
-  
+  let selectStyles =
+    'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 bg-white';
+
   if (hasError) {
     selectStyles += ' border-red-300 focus:border-red-500 focus:ring-red-200';
   } else if (showValid) {
@@ -68,10 +69,10 @@ export function ValidatedSelect({
       aria-invalid={hasError}
       aria-describedby={hasError ? `${placeholder}-error` : undefined}
     >
-      <option value="" disabled>
+      <option value='' disabled>
         {placeholder}
       </option>
-      {options.map((option) => (
+      {options.map(option => (
         <option key={option.value} value={option.value}>
           {option.label}
         </option>

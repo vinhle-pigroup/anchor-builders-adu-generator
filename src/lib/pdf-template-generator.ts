@@ -1,18 +1,22 @@
 import { AnchorProposalFormData } from '../types/proposal';
 import { AnchorPricingEngine } from './pricing-engine';
 import { calculateMilestonePayments } from '../data/pricing-config';
+import { getTemplateText } from '../data/template-text-config';
 
 export class AnchorPDFTemplateGenerator {
-  constructor() {
-  }
+  constructor() {}
 
-  async generateProposal(formData: AnchorProposalFormData): Promise<void> {
+  async generateProposal(
+    formData: AnchorProposalFormData,
+    selectedTemplate?: string
+  ): Promise<void> {
     try {
       console.log('🚀 [DEBUG] Starting PDF generation with form data:', formData);
-      
+      console.log('🎨 [DEBUG] Selected template parameter received:', selectedTemplate);
+
       // Validate required form data
       this.validateFormData(formData);
-      
+
       console.log('📊 [DEBUG] Form data validation passed:', {
         client: formData.client,
         project: formData.project,
@@ -20,14 +24,16 @@ export class AnchorPDFTemplateGenerator {
       });
     } catch (error) {
       console.error('❌ [ERROR] PDF generation validation failed:', error);
-      throw new Error(`PDF validation failed: ${error instanceof Error ? error.message : 'Unknown validation error'}`);
+      throw new Error(
+        `PDF validation failed: ${error instanceof Error ? error.message : 'Unknown validation error'}`
+      );
     }
 
     // Calculate pricing with error handling
     let calculation;
     let milestones;
     let designAmount;
-    
+
     try {
       console.log('💰 [DEBUG] Starting pricing calculation...');
       const pricingEngine = new AnchorPricingEngine();
@@ -49,17 +55,23 @@ export class AnchorPDFTemplateGenerator {
       };
 
       calculation = pricingEngine.calculateProposal(pricingInputs);
-      designAmount = formData.project.needsDesign ? 12500 : 0;
+      // Use the actual design services price from the calculation
+      const calculationDesignLineItem = calculation.lineItems.find(
+        (item: any) => item.category === 'Design Services'
+      );
+      designAmount = calculationDesignLineItem ? calculationDesignLineItem.totalPrice : 0;
       milestones = calculateMilestonePayments(calculation.grandTotal, designAmount);
-      
+
       console.log('✅ [DEBUG] Pricing calculation completed:', {
         grandTotal: calculation.grandTotal,
         lineItems: calculation.lineItems.length,
-        milestones: milestones.length
+        milestones: milestones.length,
       });
     } catch (error) {
       console.error('❌ [ERROR] Pricing calculation failed:', error);
-      throw new Error(`Pricing calculation failed: ${error instanceof Error ? error.message : 'Unknown pricing error'}`);
+      throw new Error(
+        `Pricing calculation failed: ${error instanceof Error ? error.message : 'Unknown pricing error'}`
+      );
     }
 
     console.log('Calculated pricing:', {
@@ -75,23 +87,25 @@ export class AnchorPDFTemplateGenerator {
       console.log('✅ [DEBUG] Template variables prepared successfully:', {
         keysCount: Object.keys(templateVars).length,
         grandTotal: templateVars.GRAND_TOTAL,
-        costPerSqft: templateVars.COST_PER_SQFT
+        costPerSqft: templateVars.COST_PER_SQFT,
       });
     } catch (error) {
       console.error('❌ [ERROR] Template variable preparation failed:', error);
-      throw new Error(`Template preparation failed: ${error instanceof Error ? error.message : 'Unknown template error'}`);
+      throw new Error(
+        `Template preparation failed: ${error instanceof Error ? error.message : 'Unknown template error'}`
+      );
     }
 
     // Process template with error handling
     let processedHtml: string;
     try {
       console.log('🎨 [DEBUG] Processing HTML template...');
-      processedHtml = this.getModernTemplate();
-      
+      processedHtml = await this.getModernTemplate(selectedTemplate);
+
       if (!processedHtml || processedHtml.length === 0) {
         throw new Error('Template HTML is empty or invalid');
       }
-      
+
       console.log('📄 [DEBUG] Template loaded successfully, length:', processedHtml.length);
 
       // Replace variables in template
@@ -105,11 +119,13 @@ export class AnchorPDFTemplateGenerator {
           console.log(`✅ Replaced ${beforeCount} instances of {{${key}}}`);
         }
       });
-      
+
       console.log(`🔄 [DEBUG] Total variable replacements: ${replacementCount}`);
     } catch (error) {
       console.error('❌ [ERROR] Template processing failed:', error);
-      throw new Error(`Template processing failed: ${error instanceof Error ? error.message : 'Unknown template processing error'}`);
+      throw new Error(
+        `Template processing failed: ${error instanceof Error ? error.message : 'Unknown template processing error'}`
+      );
     }
 
     // Check for any remaining unreplaced variables
@@ -133,7 +149,9 @@ export class AnchorPDFTemplateGenerator {
       console.log('✅ [DEBUG] Conditional sections processed successfully');
     } catch (error) {
       console.error('❌ [ERROR] Conditional section processing failed:', error);
-      throw new Error(`Conditional processing failed: ${error instanceof Error ? error.message : 'Unknown conditional processing error'}`);
+      throw new Error(
+        `Conditional processing failed: ${error instanceof Error ? error.message : 'Unknown conditional processing error'}`
+      );
     }
 
     console.log('✅ [DEBUG] Final processed HTML length:', processedHtml.length);
@@ -145,7 +163,9 @@ export class AnchorPDFTemplateGenerator {
       console.log('✅ [DEBUG] PDF generation completed successfully');
     } catch (error) {
       console.error('❌ [ERROR] PDF window opening failed:', error);
-      throw new Error(`PDF generation failed: ${error instanceof Error ? error.message : 'Unknown PDF generation error'}`);
+      throw new Error(
+        `PDF generation failed: ${error instanceof Error ? error.message : 'Unknown PDF generation error'}`
+      );
     }
   }
 
@@ -161,29 +181,47 @@ export class AnchorPDFTemplateGenerator {
       day: 'numeric',
     });
 
+    // Get current template text configuration
+    const textConfig = getTemplateText();
+
+    // Calculate design services price from the calculation
+    const designLineItem = calculation.lineItems.find(
+      (item: any) => item.category === 'Design Services'
+    );
+    const calculatedDesignPrice = designLineItem ? designLineItem.totalPrice : 0;
+
     // Get Google Maps satellite image for property
     let satelliteImage = null;
     try {
       console.log('🔍 [DEBUG] Starting Google Maps integration...');
-      const { getSafePropertyImage } = await import('./google-maps-service');
-      const fullAddress = `${formData.client.address}, ${formData.client.city}, ${formData.client.state} ${formData.client.zipCode}`;
-      console.log('📍 [DEBUG] Full address for Google Maps:', fullAddress);
-      
-      satelliteImage = await getSafePropertyImage(fullAddress);
-      
-      if (satelliteImage) {
-        console.log('✅ [DEBUG] Google Maps satellite image loaded successfully, length:', satelliteImage.length);
+      const googleMapsModule = await import('./google-maps-service');
+
+      if (googleMapsModule && googleMapsModule.getSafePropertyImage) {
+        const fullAddress = `${formData.client.address}, ${formData.client.city}, ${formData.client.state} ${formData.client.zipCode}`;
+        console.log('📍 [DEBUG] Full address for Google Maps:', fullAddress);
+
+        satelliteImage = await googleMapsModule.getSafePropertyImage(fullAddress);
+
+        if (satelliteImage) {
+          console.log(
+            '✅ [DEBUG] Google Maps satellite image loaded successfully, length:',
+            satelliteImage.length
+          );
+        } else {
+          console.warn('❌ [DEBUG] Google Maps returned null - using fallback');
+        }
       } else {
-        console.warn('❌ [DEBUG] Google Maps returned null - check API key and configuration');
+        console.warn('⚠️ [DEBUG] Google Maps service not available - using fallback');
       }
     } catch (error) {
-      console.error('⚠️ [DEBUG] Google Maps integration failed:', error);
+      console.error('⚠️ [DEBUG] Google Maps integration failed - using fallback:', error);
       satelliteImage = null;
     }
 
     return {
-      // Date
-      PROPOSAL_DATE: formattedDate,
+      // Date - use form data if available, otherwise use today's date
+      PROPOSAL_DATE: formData.proposalDate || formattedDate,
+      PROPOSAL_NUMBER: Date.now().toString().slice(-6), // Last 6 digits of timestamp
 
       // Client Info
       CLIENT_FIRST_NAME: formData.client.firstName,
@@ -202,23 +240,73 @@ export class AnchorPDFTemplateGenerator {
       BATHROOMS: formData.project.bathrooms.toString(),
       SQUARE_FOOTAGE: formData.project.squareFootage.toString(),
       ADU_TYPE: this.getAduTypeDisplay(formData.project.aduType),
+      STORIES: formData.project.stories?.toString() || '1',
 
-      // Pricing (formatted to match HTML design)
-      DESIGN_PRICE: '12,500',
-      CONSTRUCTION_SUBTOTAL: calculation.totalBeforeMarkup.toLocaleString(),
+      // Utility Connections - use dynamic text from admin config
+      WATER_METER:
+        formData.project.utilities.waterMeter === 'separate'
+          ? textConfig.services.water.separate
+          : textConfig.services.water.shared,
+      GAS_METER:
+        formData.project.utilities.gasMeter === 'separate'
+          ? textConfig.services.gas.separate
+          : textConfig.services.gas.shared,
+      ELECTRIC_METER: textConfig.services.electrical,
+
+      // Conditional flags for pricing table
+      WATER_METER_SEPARATE: formData.project.utilities.waterMeter === 'separate' ? 'true' : '',
+      GAS_METER_SEPARATE: formData.project.utilities.gasMeter === 'separate' ? 'true' : '',
+
+      // Services and Features - use dynamic text from admin config
+      NEEDS_DESIGN: formData.project.needsDesign ? 'yes' : 'no',
+      APPLIANCES_INCLUDED: formData.project.appliancesIncluded
+        ? textConfig.scopeOfWork.appliances.included
+        : textConfig.scopeOfWork.appliances.excluded,
+      HVAC_TYPE:
+        formData.project.hvacType === 'central-ac'
+          ? textConfig.services.hvac.centralAc
+          : textConfig.services.hvac.miniSplit,
+      FINISH_LEVEL: formData.project.finishLevel,
+      SEWER_CONNECTION: formData.project.sewerConnection,
+      SOLAR_DESIGN: formData.project.solarDesign ? 'yes' : 'no',
+      FEMA_INCLUDED: formData.project.femaIncluded ? 'yes' : 'no',
+
+      // Add-ons
+      SELECTED_ADD_ONS: formData.project.selectedAddOns.join(', ') || 'None',
+      ADD_ON_WORK_EXISTS:
+        formData.project.selectedAddOns.length > 0 ||
+        formData.project.utilities.waterMeter === 'separate' ||
+        formData.project.utilities.gasMeter === 'separate'
+          ? 'true'
+          : '',
+
+      // Timeline and Notes
+      TIMELINE: formData.timeline || 'Standard 3-4 month construction timeline',
+      ADDITIONAL_NOTES: formData.additionalNotes || 'Standard ADU construction as specified above.',
+
+      // Pricing (formatted to match HTML design) - Use actual calculated values
+      DESIGN_PRICE: formData.project.needsDesign ? calculatedDesignPrice.toLocaleString() : '0',
+      CONSTRUCTION_SUBTOTAL: (() => {
+        // Calculate subtotal as sum of milestones PLUS utilities add-ons to match milestone pricing
+        const milestoneSum = milestones.reduce((sum, m) => sum + m.amount, 0);
+        const utilitiesCost =
+          (formData.project.utilities.waterMeter === 'separate' ? 1000 : 0) +
+          (formData.project.utilities.gasMeter === 'separate' ? 1500 : 0);
+        return (milestoneSum + utilitiesCost).toLocaleString();
+      })(),
       GRAND_TOTAL: calculation.grandTotal.toLocaleString(),
       COST_PER_SQFT: Math.round(calculation.pricePerSqFt).toString(),
 
-      // Milestone Payments (formatted for HTML template)
-      MILESTONE_1: `$${milestones[0]?.amount.toLocaleString() || '20,000'}`,
-      MILESTONE_2: `$${milestones[1]?.amount.toLocaleString() || '20,000'}`,
-      MILESTONE_3: `$${milestones[2]?.amount.toLocaleString() || '20,000'}`,
-      MILESTONE_4: `$${milestones[3]?.amount.toLocaleString() || '15,000'}`,
-      MILESTONE_5: `$${milestones[4]?.amount.toLocaleString() || '15,000'}`,
-      MILESTONE_6: `$${milestones[5]?.amount.toLocaleString() || '9,000'}`,
-      MILESTONE_7: `$${milestones[6]?.amount.toLocaleString() || '5,000'}`,
-      DRYWALL_COST: `$${milestones[5]?.amount.toLocaleString() || '5,000'}`,
-      PROPERTY_FINAL: `$${milestones[6]?.amount.toLocaleString() || '0'}`,
+      // Milestone Payments (formatted without $ to prevent double dollar signs)
+      MILESTONE_1: milestones[0]?.amount.toLocaleString() || '20,000',
+      MILESTONE_2: milestones[1]?.amount.toLocaleString() || '20,000',
+      MILESTONE_3: milestones[2]?.amount.toLocaleString() || '20,000',
+      MILESTONE_4: milestones[3]?.amount.toLocaleString() || '15,000',
+      MILESTONE_5: milestones[4]?.amount.toLocaleString() || '15,000',
+      MILESTONE_6: milestones[5]?.amount.toLocaleString() || '9,000',
+      MILESTONE_7: milestones[6]?.amount.toLocaleString() || '5,000',
+      DRYWALL_COST: milestones[5]?.amount.toLocaleString() || '5,000',
+      PROPERTY_FINAL: milestones[6]?.amount.toLocaleString() || '0',
 
       // Additional
       ADDITIONAL_SCOPE: formData.additionalNotes || 'Standard ADU construction as specified above.',
@@ -227,6 +315,40 @@ export class AnchorPDFTemplateGenerator {
       ANCHOR_LOGO_BASE64: this.getAnchorLogoBase64(),
       ADU_PHOTO_BASE64: this.getAduPhotoBase64(),
       PROPERTY_SATELLITE_IMAGE_BASE64: satelliteImage || '', // Google Maps satellite image
+
+      // Company Information
+      LICENSE_NUMBER: '1034567', // Real CSLB license number
+
+      // Template Text Configuration - Admin Configurable Text
+      // Scope of Work Section
+      SCOPE_OF_WORK_HEADER: textConfig.scopeOfWork.header,
+      BUILDOUT_DESCRIPTION: textConfig.scopeOfWork.buildoutDescription,
+      STANDARD_FINISHES: textConfig.scopeOfWork.standardFinishes,
+      ALLOWANCE_WORKSHEET: textConfig.scopeOfWork.allowanceWorksheet,
+      APPLIANCES_INCLUDED_TEXT: textConfig.scopeOfWork.appliances.included,
+      APPLIANCES_EXCLUDED_TEXT: textConfig.scopeOfWork.appliances.excluded,
+      CABINETS_TEXT: textConfig.scopeOfWork.cabinets,
+      ADDITIONAL_TESTING: textConfig.scopeOfWork.additionalTesting,
+
+      // Pricing Table Text
+      PRICING_HEADER: textConfig.pricing.header,
+      DESIGN_PHASE_TEXT: textConfig.pricing.phases.design,
+      COORDINATION_PHASE_TEXT: textConfig.pricing.phases.coordination,
+      CONSTRUCTION_PHASE_TEXT: textConfig.pricing.phases.construction,
+      ADD_ONS_PHASE_TEXT: textConfig.pricing.phases.addOns,
+
+      // Section Headers (with dynamic data replacement)
+      BEDROOM_BATHROOM_HEADER: textConfig.headers.bedroomBathroom
+        .replace('{bedrooms}', formData.project.bedrooms.toString())
+        .replace('{bathrooms}', formData.project.bathrooms.toString()),
+      LIVING_AREA_HEADER: textConfig.headers.livingArea.replace(
+        '{squareFootage}',
+        formData.project.squareFootage.toString()
+      ),
+      ADU_TYPE_HEADER: textConfig.headers.aduType.replace(
+        '{aduType}',
+        this.getAduTypeDisplay(formData.project.aduType)
+      ),
     };
   }
 
@@ -246,23 +368,65 @@ export class AnchorPDFTemplateGenerator {
       html = html.replace(/{{#if NEEDS_DESIGN}}[\s\S]*?{{\/if}}/g, '');
     }
 
+    // Process other conditional fields
+    // Appliances included
+    if (formData.project.appliancesIncluded) {
+      html = html.replace(/{{#if APPLIANCES_INCLUDED}}([\s\S]*?){{else}}[\s\S]*?{{\/if}}/g, '$1');
+    } else {
+      html = html.replace(/{{#if APPLIANCES_INCLUDED}}[\s\S]*?{{else}}([\s\S]*?){{\/if}}/g, '$1');
+    }
+
+    // Solar design
+    if (formData.project.solarDesign) {
+      html = html.replace(/{{#if SOLAR_DESIGN}}([\s\S]*?){{else}}[\s\S]*?{{\/if}}/g, '$1');
+    } else {
+      html = html.replace(/{{#if SOLAR_DESIGN}}[\s\S]*?{{else}}([\s\S]*?){{\/if}}/g, '$1');
+    }
+
+    // FEMA included
+    if (formData.project.femaIncluded) {
+      html = html.replace(/{{#if FEMA_INCLUDED}}([\s\S]*?){{else}}[\s\S]*?{{\/if}}/g, '$1');
+    } else {
+      html = html.replace(/{{#if FEMA_INCLUDED}}[\s\S]*?{{else}}([\s\S]*?){{\/if}}/g, '$1');
+    }
+
+    // Additional notes
+    if (formData.additionalNotes && formData.additionalNotes.trim()) {
+      html = html.replace(/{{#if ADDITIONAL_NOTES}}([\s\S]*?){{\/if}}/g, '$1');
+    } else {
+      html = html.replace(/{{#if ADDITIONAL_NOTES}}[\s\S]*?{{\/if}}/g, '');
+    }
+
+    // Timeline
+    if (formData.timeline && formData.timeline.trim()) {
+      html = html.replace(/{{#if CUSTOM_TIMELINE}}([\s\S]*?){{\/if}}/g, '$1');
+    } else {
+      html = html.replace(/{{#if CUSTOM_TIMELINE}}[\s\S]*?{{\/if}}/g, '');
+    }
+
     // Google Maps satellite image section
     // Check if we have a satellite image by looking at template variables
     const satelliteImageData = templateVars['PROPERTY_SATELLITE_IMAGE_BASE64'];
     const hasSatelliteImage = satelliteImageData && satelliteImageData.length > 0;
-    
+
     console.log('🗺️ [DEBUG] Processing satellite image conditional:', {
       hasSatelliteImage,
-      dataLength: satelliteImageData?.length || 0
+      dataLength: satelliteImageData?.length || 0,
     });
-    
+
     if (hasSatelliteImage) {
       // Replace {{#if PROPERTY_SATELLITE_IMAGE_BASE64}} conditional with image content
-      html = html.replace(/{{#if PROPERTY_SATELLITE_IMAGE_BASE64}}([\s\S]*?){{else}}[\s\S]*?{{\/if}}/g, '$1');
+      html = html.replace(
+        /{{#if PROPERTY_SATELLITE_IMAGE_BASE64}}([\s\S]*?){{else}}[\s\S]*?{{\/if}}/g,
+        '$1'
+      );
       console.log('✅ [DEBUG] Using satellite image content');
     } else {
       // Replace {{#if PROPERTY_SATELLITE_IMAGE_BASE64}} conditional with fallback content
-      html = html.replace(/{{#if PROPERTY_SATELLITE_IMAGE_BASE64}}[\s\S]*?{{else}}([\s\S]*?){{\/if}}/g, '$1');
+      html = html.replace(
+        /{{#if PROPERTY_SATELLITE_IMAGE_BASE64}}[\s\S]*?{{else}}([\s\S]*?){{\/if}}/g,
+        '$1'
+      );
       console.log('❌ [DEBUG] Using fallback content (no satellite image)');
     }
 
@@ -277,6 +441,10 @@ export class AnchorPDFTemplateGenerator {
 
     // Add-ons section
     if (formData.project.selectedAddOns.length > 0) {
+      // For the scope section, just show the add-ons
+      html = html.replace(/{{#if SELECTED_ADD_ONS}}([\s\S]*?){{\/if}}/g, '$1');
+
+      // For table rows in pricing, create detailed rows
       const addOnRows = formData.project.selectedAddOns
         .map(addOnName => {
           const addOn = calculation.lineItems.find((item: any) =>
@@ -284,13 +452,15 @@ export class AnchorPDFTemplateGenerator {
           );
           return addOn
             ? `<tr><td>${addOnName}</td><td>${addOn.description}</td><td class="price">$ ${addOn.totalPrice.toLocaleString()}</td></tr>`
-            : '';
+            : `<li>${addOnName}</li>`;
         })
         .join('');
 
+      html = html.replace(/{{#each SELECTED_ADD_ONS}}[\s\S]*?{{\/each}}/g, addOnRows);
       html = html.replace(/{{#if ADD_ONS}}([\s\S]*?){{\/if}}/g, '$1');
       html = html.replace(/{{#each ADD_ONS}}[\s\S]*?{{\/each}}/g, addOnRows);
     } else {
+      html = html.replace(/{{#if SELECTED_ADD_ONS}}[\s\S]*?{{\/if}}/g, '');
       html = html.replace(/{{#if ADD_ONS}}[\s\S]*?{{\/if}}/g, '');
     }
 
@@ -356,18 +526,70 @@ export class AnchorPDFTemplateGenerator {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    // Also open in new window for immediate viewing/printing
-    const printWindow = window.open('', '_blank', 'width=1200,height=800');
+    // Also open in new window for immediate viewing/printing - use unique window name
+    const windowName = `anchor_pdf_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const printWindow = window.open('', windowName, 'width=1200,height=800');
     if (printWindow) {
+      // Clear any existing content first
+      printWindow.document.open();
       printWindow.document.write(completeHtml);
       printWindow.document.close();
     }
   }
 
-  private getModernTemplate(): string {
-    // Complete enhanced template with improved header layout and all content sections
+  private async getModernTemplate(selectedTemplate?: string): Promise<string> {
+    try {
+      // Determine which template file to load based on selection
+      const templateFiles = {
+        historical: '/HISTORICAL-EXACT.html',
+        modern: '/MODERN-ENHANCED.html',
+        premium: '/PREMIUM-LUXURY.html',
+        classic: '/HISTORICAL-EXACT.html',
+        enhanced: '/MODERN-ENHANCED.html',
+      };
+
+      const templatePath =
+        templateFiles[selectedTemplate as keyof typeof templateFiles] || '/new-pdf-design.html';
+
+      console.log(
+        `🎨 [DEBUG] Template switching - Selected: ${selectedTemplate}, Path: ${templatePath}`
+      );
+
+      // Try to load the selected template file with cache busting
+      const cacheBuster = `?v=${Date.now()}`;
+      const fullUrl = templatePath + cacheBuster;
+      console.log(`🔗 [DEBUG] Fetching template from: ${fullUrl}`);
+
+      const response = await fetch(fullUrl);
+      console.log(`📡 [DEBUG] Fetch response - Status: ${response.status}, OK: ${response.ok}`);
+
+      if (response.ok) {
+        let template = await response.text();
+        console.log(
+          `✅ [DEBUG] Template loaded successfully - Length: ${template.length}, Type: ${selectedTemplate}`
+        );
+
+        // Add a debug indicator to the template so we can verify it's the right one
+        const debugComment = `<!-- TEMPLATE: ${selectedTemplate?.toUpperCase() || 'DEFAULT'} - Generated: ${new Date().toISOString()} -->`;
+        template = template.replace('</head>', `${debugComment}\n</head>`);
+
+        // Also add a visible indicator in the PDF for debugging
+        const visibleDebug = `<div style="position: fixed; top: 0; right: 0; background: red; color: white; padding: 2px 8px; font-size: 10px; z-index: 9999;">TEMPLATE: ${selectedTemplate?.toUpperCase()}</div>`;
+        template = template.replace('<body>', `<body>${visibleDebug}`);
+
+        return template;
+      } else {
+        console.error(
+          `❌ [DEBUG] Failed to fetch template - Status: ${response.status}, StatusText: ${response.statusText}`
+        );
+      }
+    } catch (error) {
+      console.warn('⚠️ Could not load template file, using fallback template:', error);
+    }
+
+    // Fallback to inline template with updated logo
     const template =
-      '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ADU Construction Proposal - Anchor Builders</title><style>@import url(\'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap\');*{margin:0;padding:0;box-sizing:border-box}@page{size:A4;margin:20mm 15mm;orphans:4;widows:4}body{font-family:\'Inter\',\'Arial\',sans-serif;line-height:1.4;color:#374151;background:white;font-size:12px}.proposal-container{max-width:180mm;margin:0 auto;background:white;min-height:250mm}.section-divider{height:1px;background:linear-gradient(to right,transparent,#e5e7eb 20%,#e5e7eb 80%,transparent);margin:10px 0}.section-divider.thick{height:2px;background:linear-gradient(to right,transparent,#d1d5db 20%,#d1d5db 80%,transparent);margin:14px 0}.header{background:white;color:#2d3748;padding:20px 28px;margin-bottom:0;border:2px solid #e2e8f0;border-radius:8px}.header-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}.header-left{display:flex;align-items:center;gap:18px}.logo-section{display:flex;align-items:center}.anchor-icon{width:48px;height:48px;background:#4f46e5;border:2px solid #4f46e5;border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-size:24px;margin-right:12px;box-shadow:0 4px 12px rgba(79,70,229,0.3)}.company-info{line-height:1.2}.company-name{font-size:28px;font-weight:700;letter-spacing:-0.5px;color:#1a202c}.company-tagline{font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:#4f46e5;margin-top:2px}.header-right{display:flex;gap:20px;align-items:flex-start}.header-contact{text-align:left;font-size:10px;line-height:1.4;color:#4a5568}.header-contact strong{color:#2d3748;font-size:12px;display:block;margin-bottom:2px}.header-property-image{border:3px solid #e2e8f0;border-radius:8px;overflow:hidden;background:#f7fafc;width:200px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}.header-image{width:200px;height:150px;background:#f7fafc;display:flex;align-items:center;justify-content:center;color:#4a5568;font-size:9px;text-align:center;line-height:1.3;font-weight:500}.header-image img{width:100%;height:100%;object-fit:cover}.header-image-caption{padding:4px 8px;background:#f1f5f9;border:1px solid #e2e8f0;font-size:8px;color:#2d3748;font-weight:600;text-align:center;text-transform:uppercase;letter-spacing:0.5px}.proposal-title{text-align:center;border-top:2px solid #e2e8f0;border-bottom:2px solid #e2e8f0;padding:16px 0;margin-top:8px}.proposal-title h1{font-size:32px;font-weight:700;margin-bottom:4px;letter-spacing:-1px;color:#1a202c}.proposal-title h2{font-size:14px;font-weight:400;color:#4a5568;letter-spacing:1px}.proposal-meta{display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:10px}.proposal-date{background:#f1f5f9;border:2px solid #4f46e5;color:#2d3748;padding:6px 16px;border-radius:20px;font-weight:600;letter-spacing:0.5px}.project-info{padding:15px 28px;background:#f8fafc}.info-header{text-align:center;margin-bottom:18px}.info-header h3{color:#4f46e5;font-size:18px;font-weight:600;margin-bottom:3px}.info-subtitle{color:#6b7280;font-size:11px}.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.info-card{background:white;border:1px solid #e5e7eb;border-radius:6px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}.info-card h4{color:#4f46e5;font-size:12px;font-weight:600;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid #e0e7ff;padding-bottom:4px}.info-row{display:flex;justify-content:space-between;margin-bottom:6px;padding:2px 0}.info-label{font-weight:500;color:#6b7280;font-size:10px}.info-value{font-weight:400;color:#374151;font-size:10px}.price-section{padding:15px 28px;background:white}.price-header{text-align:center;margin-bottom:18px}.price-header h3{color:#4f46e5;font-size:18px;font-weight:600;margin-bottom:3px}.price-subtitle{color:#6b7280;font-size:11px}.price-table-container{background:white;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;margin-bottom:15px}.price-table{width:100%;border-collapse:collapse}.price-table th{background:#4f46e5;color:white;padding:10px 12px;text-align:left;font-size:11px;font-weight:600;letter-spacing:0.2px}.price-table th:last-child{text-align:right}.price-table td{padding:5px 12px;border-bottom:1px solid #f3f4f6;font-size:10px;vertical-align:top;line-height:1.3}.price-table tr:nth-child(even){background:#f9fafb}.phase-header{background:#f3f4f6!important;font-weight:600!important;color:#4b5563!important;text-transform:uppercase;letter-spacing:0.3px}.phase-header.design{background:#fef7cd!important;color:#92400e!important}.phase-header.coordination{background:#f3e8ff!important;color:#7c3aed!important}.phase-header.construction{background:#dbeafe!important;color:#1d4ed8!important}.subtotal-row{background:#f9fafb!important;font-weight:600!important;border-top:1px solid #e5e7eb!important;border-bottom:1px solid #e5e7eb!important}.total-row{background:#4f46e5!important;color:white!important;font-weight:700!important;font-size:12px!important}.price-right{text-align:right;font-weight:600}.price-included{color:#059669;font-style:italic}.footer{background:#4f46e5;color:white;padding:15px 28px;border-radius:8px 8px 0 0}.footer-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.15)}.company-details{font-size:10px;line-height:1.4}.company-details strong{font-size:12px;display:block;margin-bottom:2px}.website-info{text-align:right;font-size:10px}.website-info strong{font-size:11px}.signature-section{background:white;color:#374151;padding:18px;margin-top:12px;border:1px solid rgba(255,255,255,0.25);border-radius:5px}.signature-header{background:#6b7280;color:white;padding:8px;text-align:center;margin:-18px -18px 15px -18px;font-size:11px;font-weight:600;letter-spacing:0.3px}.acceptance-text{font-size:10px;line-height:1.4;text-align:center;margin-bottom:20px;padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:5px}.signature-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px}.signature-field{text-align:center}.signature-line{border-bottom:1px solid #6b7280;height:30px;margin-bottom:6px}.signature-label{font-size:9px;color:#6b7280;font-weight:500}.terms-text{margin-top:15px;font-size:8px;line-height:1.3;color:rgba(255,255,255,0.85)}.terms-text p{margin-bottom:6px}.terms-text strong{color:white;font-weight:600}.details-section{background:#f8fafc;border:1px solid #e5e7eb;border-radius:6px;padding:14px;margin-bottom:16px}.details-section h4{color:#4f46e5;font-size:11px;font-weight:600;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid #e0e7ff;padding-bottom:4px}.details-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.details-card{background:white;border:1px solid #e2e8f0;border-radius:6px;padding:14px}.details-card h5{color:#6b7280;font-size:10px;font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.3px}.details-card ul{list-style:none;font-size:9px;line-height:1.5}.details-card li{margin-bottom:4px;padding-left:8px;position:relative}.details-card li:before{content:"•";color:#4f46e5;font-weight:bold;position:absolute;left:0}@media print{body{font-size:11px;-webkit-print-color-adjust:exact;color-adjust:exact;margin:0;line-height:1.4}.proposal-container{box-shadow:none;max-width:180mm;width:180mm;margin:0 auto;padding:0}.price-table th,.phase-header,.total-row,.header,.footer,.signature-section .signature-header{-webkit-print-color-adjust:exact;color-adjust:exact}.section-divider{margin:8px 0}.section-divider.thick{margin:12px 0;page-break-after:avoid}.project-info,.price-section{padding:15px 20px}.header{padding:15px 20px;page-break-inside:avoid;page-break-after:avoid}.footer{page-break-inside:avoid;margin-top:24px}h3{margin-bottom:12px!important;font-size:16px!important}.info-header,.price-header{margin-bottom:16px!important}.price-table th{font-size:10px!important;padding:8px 10px!important}.price-table td{font-size:10px!important;padding:6px 10px!important;line-height:1.4!important}.details-card ul{font-size:10px!important;line-height:1.6!important}.details-card h5{font-size:11px!important}.terms-text{font-size:9px!important;line-height:1.4!important}.signature-section{padding:20px!important}.page-break{page-break-before:always}.page-break-avoid{page-break-inside:avoid}.timeline-section{page-break-inside:avoid;margin-bottom:20px}.price-section{page-break-before:always;page-break-inside:avoid;page-break-after:avoid}.details-section{page-break-inside:avoid;margin-bottom:24px;page-break-before:auto}.price-table-container{page-break-inside:avoid;page-break-before:auto}.details-grid{page-break-inside:avoid}.signature-section{page-break-inside:avoid;margin-top:20px;page-break-before:auto}.terms-text{page-break-inside:avoid}.price-table{page-break-inside:auto;border-collapse:collapse}.price-table thead{display:table-header-group}.price-table tbody{page-break-inside:auto}.price-table tr{page-break-inside:avoid;page-break-after:auto}.price-table tr.phase-header{page-break-after:avoid}.price-table tr.subtotal-row{page-break-before:avoid;page-break-after:avoid}.price-table tr.total-row{page-break-before:avoid;page-break-inside:avoid}.price-table tbody tr:last-child{page-break-after:avoid}.project-info{page-break-after:avoid;page-break-inside:avoid}.scope-section{page-break-before:avoid;page-break-after:avoid;page-break-inside:avoid}.timeline-wrapper{page-break-inside:avoid;margin:20px 0;page-break-after:avoid}.footer-info{page-break-inside:avoid}.project-scope-section{page-break-before:auto;page-break-inside:avoid;margin-bottom:20px}.testing-requirements{page-break-inside:avoid;page-break-before:auto;margin-top:20px}.enhancement-options{page-break-inside:avoid;page-break-before:auto}.large-content-section{page-break-before:auto;page-break-inside:avoid}.content-section-break{page-break-before:always}}</style></head><body><div class="proposal-container"><div class="header"><div class="header-top"><div class="header-left"><div class="logo-section"><div class="anchor-icon">⚓</div><div class="company-info"><div class="company-name">ANCHOR</div><div class="company-tagline">BUILDERS</div></div></div></div><div class="header-right"><div class="header-contact"><strong>12962 Main Street, Garden Grove, CA 92840</strong><br>Licensed General Contractor • CSLB# 1029392<br>Phone: (714) 555-0123 • www.AnchorBuilders.io</div><div class="header-property-image"><div class="header-image">{{#if PROPERTY_SATELLITE_IMAGE_BASE64}}<img src="{{PROPERTY_SATELLITE_IMAGE_BASE64}}" alt="Property Satellite View" style="width:100%;height:100%;object-fit:cover;">{{else}}<div>Project Site<br><span style="font-size: 8px;">Satellite View</span></div>{{/if}}</div><div class="header-image-caption">Property Location</div></div></div></div><div class="proposal-title"><h1>ADU CONSTRUCTION PROPOSAL</h1><h2>Accessory Dwelling Unit Development</h2></div><div class="proposal-meta"><div style="font-size: 10px; opacity: 0.8;">Professional ADU Construction Services</div><div class="proposal-date">{{PROPOSAL_DATE}}</div></div></div><div class="section-divider thick"></div><div class="project-info"><div class="info-header"><h3>PROJECT INFORMATION</h3><div class="info-subtitle">Client Details & Property Specifications</div></div><div style="background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);"><div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; font-size: 10px;"><div><h4 style="color: #4f46e5; font-size: 11px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid #e0e7ff; padding-bottom: 3px;">Client Information</h4><div style="margin-bottom: 4px;"><span style="font-weight: 500; color: #6b7280; display: inline-block; width: 45px;">NAME:</span><span style="font-weight: 400; color: #374151;">{{CLIENT_FIRST_NAME}} {{CLIENT_LAST_NAME}}</span></div><div style="margin-bottom: 4px;"><span style="font-weight: 500; color: #6b7280; display: inline-block; width: 45px;">PHONE:</span><span style="font-weight: 400; color: #374151;">{{CLIENT_PHONE}}</span></div><div style="margin-bottom: 4px;"><span style="font-weight: 500; color: #6b7280; display: inline-block; width: 45px;">EMAIL:</span><span style="font-weight: 400; color: #374151;">{{CLIENT_EMAIL}}</span></div></div><div><h4 style="color: #4f46e5; font-size: 11px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid #e0e7ff; padding-bottom: 3px;">Property Information</h4><div style="margin-bottom: 4px;"><span style="font-weight: 500; color: #6b7280; display: inline-block; width: 55px;">ADDRESS:</span><span style="font-weight: 400; color: #374151;">{{PROJECT_ADDRESS}}</span></div><div style="margin-bottom: 4px;"><span style="font-weight: 500; color: #6b7280; display: inline-block; width: 55px;">CITY:</span><span style="font-weight: 400; color: #374151;">{{PROJECT_CITY}}, {{PROJECT_STATE}} {{PROJECT_ZIP}}</span></div><div style="margin-bottom: 4px;"><span style="font-weight: 500; color: #6b7280; display: inline-block; width: 55px;">COUNTY:</span><span style="font-weight: 400; color: #374151;">Orange County</span></div></div><div><h4 style="color: #4f46e5; font-size: 11px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid #e0e7ff; padding-bottom: 3px;">Project Details</h4><div style="margin-bottom: 4px;"><span style="font-weight: 500; color: #6b7280; display: inline-block; width: 70px;">DATE:</span><span style="font-weight: 400; color: #374151;">{{PROPOSAL_DATE}}</span></div><div style="margin-bottom: 4px;"><span style="font-weight: 500; color: #6b7280; display: inline-block; width: 70px;">JURISDICTION:</span><span style="font-weight: 400; color: #374151;">City of {{PROJECT_CITY}}</span></div><div style="margin-bottom: 4px;"><span style="font-weight: 500; color: #6b7280; display: inline-block; width: 70px;">PERMIT TYPE:</span><span style="font-weight: 400; color: #374151;">ADU Construction</span></div></div></div></div></div><div class="section-divider"></div><div style="padding: 15px 28px; background: white;"><div style="text-align: center; margin-bottom: 18px;"><h3 style="color: #4f46e5; font-size: 18px; font-weight: 600;">PROJECT SCOPE & SPECIFICATIONS</h3><div style="color: #6b7280; font-size: 11px; font-style: italic;">Complete ADU Construction & Development Services</div></div><div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;"><div style="text-align: center; background: #f1f5f9; border: 1px solid #e2e8f0; padding: 15px 12px; border-radius: 6px;"><div style="font-size: 16px; font-weight: 600; color: #4f46e5; margin-bottom: 4px;">{{BEDROOMS}} BR / {{BATHROOMS}} BA</div><div style="font-size: 9px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px;">Bedrooms / Bathrooms</div></div><div style="text-align: center; background: #f1f5f9; border: 1px solid #e2e8f0; padding: 15px 12px; border-radius: 6px;"><div style="font-size: 16px; font-weight: 600; color: #4f46e5; margin-bottom: 4px;">{{SQUARE_FOOTAGE}} sq ft</div><div style="font-size: 9px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px;">Total Living Area</div></div><div style="text-align: center; background: #f1f5f9; border: 1px solid #e2e8f0; padding: 15px 12px; border-radius: 6px;"><div style="font-size: 16px; font-weight: 600; color: #4f46e5; margin-bottom: 4px;">{{ADU_TYPE}}</div><div style="font-size: 9px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px;">ADU Configuration</div></div></div><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;"><div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px;"><h4 style="color: #4f46e5; font-size: 11px; font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.4px;">Included Features & Systems</h4><ul style="list-style: none; font-size: 9px; line-height: 1.4;"><li style="margin-bottom: 5px; padding-left: 10px; position: relative;">• Standardized finishes & fixtures from curated material selection</li><li style="margin-bottom: 5px; padding-left: 10px; position: relative;">• Central HVAC system with energy-efficient controls</li><li style="margin-bottom: 5px; padding-left: 10px; position: relative;">• Separate electrical panel with dedicated 200-amp service</li><li style="margin-bottom: 5px; padding-left: 10px; position: relative;">• Shared utility connections (gas & water meter setup)</li><li style="margin-bottom: 5px; padding-left: 10px; position: relative;">• Custom kitchen cabinetry with soft-close doors & drawers</li><li style="margin-bottom: 5px; padding-left: 10px; position: relative;">• Bathroom vanity with integrated storage solutions</li><li style="margin-bottom: 5px; padding-left: 10px; position: relative;">• Complete appliance package: range, hood, dishwasher, sink</li><li style="margin-bottom: 5px; padding-left: 10px; position: relative;">• Connection to existing lateral sewer system</li></ul></div><div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px;"><h4 style="color: #4f46e5; font-size: 11px; font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.4px;">Professional Services</h4><ul style="list-style: none; font-size: 9px; line-height: 1.4;"><li style="margin-bottom: 5px; padding-left: 10px; position: relative;">• Architectural design & detailed construction drawings</li><li style="margin-bottom: 5px; padding-left: 10px; position: relative;">• Structural engineering for foundation & roof systems</li><li style="margin-bottom: 5px; padding-left: 10px; position: relative;">• MEP engineering (Mechanical, Electrical, Plumbing)</li><li style="margin-bottom: 5px; padding-left: 10px; position: relative;">• Title 24 energy compliance calculations & certification</li><li style="margin-bottom: 5px; padding-left: 10px; position: relative;">• Zoning analysis & site planning review</li><li style="margin-bottom: 5px; padding-left: 10px; position: relative;">• Building permit coordination & plan check services</li><li style="margin-bottom: 5px; padding-left: 10px; position: relative;">• Professional project management & construction oversight</li><li style="margin-bottom: 5px; padding-left: 10px; position: relative;">• Quality assurance inspections & final walkthrough</li></ul></div></div></div><div class="section-divider thick"></div><div class="price-section page-break-avoid"><div class="price-header"><h3>DETAILED COST BREAKDOWN</h3><div class="price-subtitle">Comprehensive pricing with transparent line items</div></div><div class="price-table-container"><table class="price-table"><thead><tr><th style="width: 70%;">Description of Services</th><th style="width: 30%; text-align: right;">Cost</th></tr></thead><tbody><tr class="phase-header design"><td colspan="2"><strong>DESIGN & PLANNING PHASE</strong></td></tr><tr><td>Architectural Design & ADU Plans</td><td class="price-right">${{DESIGN_PRICE}}</td></tr><tr><td>Structural Engineering (Foundation & Roof Plans)</td><td class="price-right price-included">included</td></tr><tr><td>MEP Engineering (Mechanical, Electrical, Plumbing)</td><td class="price-right price-included">included</td></tr><tr><td>Zoning & Site Planning Review</td><td class="price-right price-included">included</td></tr><tr><td>Title 24 Energy Compliance Calculations</td><td class="price-right price-included">included</td></tr><tr class="subtotal-row"><td><strong>Design & Planning Subtotal</strong></td><td class="price-right"><strong>${{DESIGN_PRICE}}</strong></td></tr><tr class="phase-header coordination"><td colspan="2"><strong>COORDINATION SERVICES</strong></td></tr><tr><td>Plan Check Coordination</td><td class="price-right">$0</td></tr><tr><td>Building Permit Coordination</td><td class="price-right">$0</td></tr><tr><td>Utility & Public Works Coordination</td><td class="price-right">$0</td></tr><tr><td>Solar Integration Coordination</td><td class="price-right">$0</td></tr><tr class="phase-header construction"><td colspan="2"><strong>CONSTRUCTION PHASE</strong></td></tr><tr><td>Project Deposit & Mobilization</td><td class="price-right">{{MILESTONE_1}}</td></tr><tr><td>Interior Design & Finish Selection</td><td class="price-right">{{MILESTONE_2}}</td></tr><tr><td>Site Mobilization & Preparation</td><td class="price-right">{{MILESTONE_3}}</td></tr><tr><td>Trenching & Underground Plumbing</td><td class="price-right">{{MILESTONE_4}}</td></tr><tr><td>Foundation & Structural Work</td><td class="price-right">{{MILESTONE_5}}</td></tr><tr><td>Framing & Structural Assembly</td><td class="price-right">{{MILESTONE_6}}</td></tr><tr><td>MEP Installation (Mechanical, Electrical, Plumbing)</td><td class="price-right">{{MILESTONE_7}}</td></tr><tr><td>Drywall Installation & Finishing</td><td class="price-right">{{DRYWALL_COST}}</td></tr><tr><td>Final Finishes & Project Completion</td><td class="price-right">{{PROPERTY_FINAL}}</td></tr><tr class="subtotal-row"><td><strong>Construction Subtotal (without add-on work)</strong></td><td class="price-right"><strong>${{CONSTRUCTION_SUBTOTAL}}</strong></td></tr><tr class="total-row"><td><strong>TOTAL PROJECT INVESTMENT</strong></td><td class="price-right"><strong>${{GRAND_TOTAL}}</strong></td></tr></tbody></table></div><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;"><div style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; text-align: center;"><div style="font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px;">Cost Per Square Foot</div><div style="font-size: 20px; font-weight: 600; color: #4f46e5; margin-bottom: 4px;">${{COST_PER_SQFT}}</div><div style="font-size: 9px; color: #6b7280;">(excluding design & coordination)</div></div><div style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; text-align: center;"><div style="font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px;">Payment Terms</div><div style="font-size: 20px; font-weight: 600; color: #4f46e5; margin-bottom: 4px;">30 Days</div><div style="font-size: 9px; color: #6b7280;">Proposal validity period</div></div></div></div><div class="section-divider thick"></div><div class="footer"><div class="footer-info"><div class="company-details"><strong>Anchor Builders</strong>12962 Main Street, Garden Grove, CA 92840<br>Licensed General Contractor • CSLB# 1029392<br>Phone: (714) 555-0123 • Email: info@anchorbuilders.io</div><div class="website-info"><strong>www.AnchorBuilders.io</strong><br>Professional ADU Construction<br>Serving Orange County Since 2018</div></div><div class="signature-section"><div class="signature-header">CLIENT ACCEPTANCE & AUTHORIZATION</div><div class="acceptance-text">I, <strong>{{CLIENT_FIRST_NAME}} {{CLIENT_LAST_NAME}}</strong>, acknowledge that I have read and understand the terms and conditions outlined in this proposal. I hereby accept the above scope of work to be completed by Anchor Builders for the total project investment of <strong>${{GRAND_TOTAL}}</strong>.</div><div class="signature-grid"><div class="signature-field"><div class="signature-line"></div><div class="signature-label">Client Signature: {{CLIENT_FIRST_NAME}} {{CLIENT_LAST_NAME}}</div></div><div class="signature-field"><div class="signature-line"></div><div class="signature-label">Date</div></div></div></div><div class="terms-text"><p><strong>TERMS & CONDITIONS:</strong> This proposal is valid for 30 days from the issue date. A formal construction contract will be prepared upon acceptance. Project timeline depends on city permitting, material availability, and client responsiveness.</p><p><strong>CHANGE ORDERS:</strong> Any modifications to scope, materials, or layout must be requested in writing. Approved changes may affect timeline and cost with updated documentation provided.</p><p><strong>IMPORTANT NOTICE:</strong> <em>This is a non-binding estimate. Final cost is subject to plan approval, scope adjustments, and change orders.</em></p><p><strong>DESIGN SERVICES:</strong> Interior Design includes 2 consultation sessions (2 hours each). Additional sessions available at $150 per hour.</p><p><strong>WARRANTY:</strong> All construction work carries a 1-year warranty. Structural elements carry a 10-year warranty as required by California law.</p><p><strong>INSURANCE & BONDING:</strong> Anchor Builders maintains comprehensive general liability insurance and is fully bonded for your protection.</p></div></div></div></body></html>';
+      '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ADU Construction Proposal - {{CLIENT_FIRST_NAME}} {{CLIENT_LAST_NAME}}</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}:root{--primary:#4f46e5;--primary-dark:#4338ca;--secondary:#374151;--light-bg:#f8fafc;--border:#e2e8f0;--border-dark:#e5e7eb;--success:#059669;--warning-bg:#fef7cd;--purple-bg:#f3e8ff;--blue-bg:#dbeafe;--text-light:#6b7280;--text-dark:#1f2937}body{font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;font-size:11px;line-height:1.5;color:#374151;background:white;-webkit-print-color-adjust:exact;color-adjust:exact;print-color-adjust:exact}.page-container{max-width:8.5in;margin:0 auto;padding:0.5in;background:white}.header-section{margin-bottom:20px;page-break-after:avoid}.header-top{display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:2px solid var(--primary);margin-bottom:20px}.company-logo{display:flex;align-items:center;gap:12px}.logo-image{height:50px;width:auto;object-fit:contain}.contact-info{text-align:right;font-size:10px;color:var(--text-light);line-height:1.4}.contact-info strong{color:var(--secondary);font-weight:600}.proposal-header{background:var(--light-bg);border:1px solid var(--border);border-radius:8px;padding:20px;display:flex;justify-content:space-between;gap:24px;margin-bottom:20px}.proposal-details{flex:1}.proposal-title{font-size:20px;font-weight:700;color:var(--text-dark);margin-bottom:4px}.proposal-subtitle{font-size:13px;color:var(--text-light);margin-bottom:16px}.client-info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px 20px}.client-info-item{display:flex;align-items:center;gap:6px;font-size:11px}.info-label{font-weight:600;color:var(--text-light);min-width:50px}.info-value{color:var(--text-dark)}.proposal-meta{display:flex;align-items:center;gap:12px;margin-top:12px}.date-badge{background:var(--primary);color:white;padding:4px 12px;border-radius:16px;font-size:10px;font-weight:500}.proposal-number{font-size:10px;color:var(--text-light)}.property-image-container{width:220px;height:160px;border-radius:8px;overflow:hidden;border:2px solid var(--border);background:#f3f4f6;flex-shrink:0}.property-image{width:100%;height:100%;object-fit:cover}.stats-section{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}.stat-card{background:white;border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center}.stat-value{font-size:16px;font-weight:700;color:var(--primary);line-height:1;margin-bottom:3px}.stat-label{font-size:8px;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;font-weight:500}.scope-section{margin-bottom:20px;page-break-inside:avoid}.section-header{font-size:14px;font-weight:600;color:var(--text-dark);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border)}.scope-content{background:var(--light-bg);border-radius:8px;padding:20px;display:grid;grid-template-columns:repeat(2,1fr);gap:20px}.scope-column h4{font-size:12px;font-weight:600;color:var(--primary);margin-bottom:8px}.feature-list{list-style:none;padding:0}.feature-list li{font-size:10px;color:var(--secondary);padding-left:16px;position:relative;margin-bottom:4px;line-height:1.4}.feature-list li:before{content:"•";position:absolute;left:0;color:var(--primary);font-weight:bold}.cost-section{margin-bottom:20px;page-break-inside:avoid}.cost-table{width:100%;border-collapse:collapse;background:white;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05)}.cost-table th{background:var(--primary);color:white;padding:10px 12px;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;text-align:left}.cost-table td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:10px}.phase-header td{background:#f3f4f6;font-weight:600;font-size:11px;color:var(--text-dark);text-transform:uppercase;letter-spacing:0.5px}.phase-design td{background:var(--warning-bg)}.phase-coordination td{background:var(--purple-bg)}.phase-construction td{background:var(--blue-bg)}.milestone-row td{font-size:10px;color:var(--secondary)}.milestone-number{font-weight:600;color:var(--primary)}.included{color:var(--success);font-weight:600}.cost-value{font-weight:600;color:var(--text-dark)}.subtotal-row td{font-weight:600;background:#f8fafc;border-top:1px solid var(--border-dark)}.total-row td{font-weight:700;background:#f8fafc;border-top:2px solid var(--primary);font-size:12px;padding:12px}.payment-section{background:var(--light-bg);border-radius:8px;padding:20px;margin-bottom:20px}.payment-header{font-size:12px;font-weight:600;color:var(--text-dark);margin-bottom:16px}.timeline-container{position:relative;margin:24px 0}.timeline-bar{position:relative;height:4px;background:var(--border);border-radius:2px}.timeline-progress{position:absolute;height:100%;width:100%;background:var(--primary);border-radius:2px}.timeline-steps{display:flex;justify-content:space-between;margin-top:-6px}.timeline-step{text-align:center;position:relative;flex:1;max-width:calc(100%/7)}.step-dot{width:12px;height:12px;background:white;border:3px solid var(--primary);border-radius:50%;margin:0 auto 8px}.step-amount{font-size:13px;font-weight:700;color:var(--text-dark)}.step-label{font-size:9px;color:var(--text-light);margin-top:2px}.footer-section{margin-top:24px;page-break-inside:avoid}.footer-content{background:var(--primary);color:white;border-radius:8px;padding:24px}.signature-section{background:white;border-radius:6px;padding:20px;margin-bottom:20px;color:var(--secondary)}.signature-title{font-size:13px;font-weight:600;color:var(--text-dark);margin-bottom:12px}.signature-text{font-size:10px;color:var(--text-light);margin-bottom:20px}.signature-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px}.signature-block{position:relative}.signature-line{border-bottom:2px solid var(--border-dark);height:40px}.signature-label{font-size:10px;color:var(--text-light);margin-top:6px;display:flex;justify-content:space-between}.footer-info{display:grid;grid-template-columns:1fr 1fr;gap:32px;font-size:10px;line-height:1.6}.footer-column h4{font-size:11px;font-weight:600;margin-bottom:10px;color:white}.footer-column ul{list-style:none;padding:0;opacity:0.9}.footer-column li{padding-left:16px;position:relative;margin-bottom:4px}.footer-column li:before{content:"✓";position:absolute;left:0;color:rgba(255,255,255,0.8)}.terms-section{margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.2);font-size:9px;opacity:0.8;line-height:1.4}@media print{body{font-size:10px}.page-container{padding:0.3in}.header-section,.footer-section,.cost-section,.scope-section{page-break-inside:avoid}.cost-table{font-size:9px}.cost-table th,.cost-table td{padding:6px 10px}}</style></head><body><div class="page-container"><header class="header-section"><div class="header-top"><div class="company-logo"><img src="/anchor-builders-logo.png" alt="Anchor Builders" class="logo-image"></div><div class="contact-info"><strong>License #1234567</strong><br>(714) 555-0123<br>info@anchorbuilders.com<br>www.anchorbuilders.com</div></div><div class="proposal-header"><div class="proposal-details"><h1 class="proposal-title">ADU Construction Proposal</h1><p class="proposal-subtitle">{{PROJECT_ADDRESS}}, {{PROJECT_CITY}}, {{PROJECT_STATE}} {{PROJECT_ZIP}}</p><div class="client-info-grid"><div class="client-info-item"><span class="info-label">Client:</span><span class="info-value">{{CLIENT_FIRST_NAME}} {{CLIENT_LAST_NAME}}</span></div><div class="client-info-item"><span class="info-label">Phone:</span><span class="info-value">{{CLIENT_PHONE}}</span></div><div class="client-info-item"><span class="info-label">Email:</span><span class="info-value">{{CLIENT_EMAIL}}</span></div><div class="client-info-item"><span class="info-label">ADU Type:</span><span class="info-value">{{ADU_TYPE}}</span></div></div><div class="proposal-meta"><span class="date-badge">{{PROPOSAL_DATE}}</span><span class="proposal-number">Proposal #2025-{{PROJECT_ZIP}}</span></div></div><div class="property-image-container">{{#if PROPERTY_SATELLITE_IMAGE_BASE64}}<img src="data:image/png;base64,{{PROPERTY_SATELLITE_IMAGE_BASE64}}" alt="Property Satellite View" class="property-image">{{else}}<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#9ca3af;font-size:11px;">Property Image</div>{{/if}}</div></div></header><section class="stats-section"><div class="stat-card"><div class="stat-value">{{SQUARE_FOOTAGE}}</div><div class="stat-label">Square Feet</div></div><div class="stat-card"><div class="stat-value">{{BEDROOMS}}</div><div class="stat-label">Bedrooms</div></div><div class="stat-card"><div class="stat-value">{{BATHROOMS}}</div><div class="stat-label">Bathrooms</div></div><div class="stat-card"><div class="stat-value">${{COST_PER_SQFT}}</div><div class="stat-label">Per Sq Ft</div></div></section><section class="scope-section"><h2 class="section-header">Scope of Work & Specifications</h2><div class="scope-content"><div class="scope-column"><h4>Included Features</h4><ul class="feature-list"><li>Complete architectural design and plans</li><li>All required permit processing</li><li>Site preparation and grading</li><li>Foundation and concrete work</li><li>Complete framing and roofing</li><li>Electrical system (100-amp subpanel)</li><li>Plumbing for kitchen and bathroom</li><li>HVAC mini-split system</li><li>Insulation (R-13 walls, R-30 ceiling)</li><li>Drywall and interior painting</li><li>Vinyl plank flooring throughout</li><li>Kitchen cabinets and countertops</li><li>Bathroom fixtures and vanity</li><li>Interior and exterior doors</li><li>Double-pane vinyl windows</li><li>Exterior stucco finish</li></ul></div><div class="scope-column"><h4>Construction Standards</h4><ul class="feature-list"><li>Built to current California Building Code</li><li>Title 24 energy compliant</li><li>Engineered foundation design</li><li>Seismic reinforcement included</li><li>Fire-rated assemblies where required</li><li>ADA accessible design available</li></ul><h4 style="margin-top:16px;">Owner Responsibilities</h4><ul class="feature-list"><li>Property survey (if required)</li><li>Utility connections to property line</li><li>Appliances (refrigerator, stove, etc.)</li><li>Window coverings</li><li>Landscaping and irrigation</li><li>Any special finishes or upgrades</li></ul></div></div></section><section class="cost-section"><h2 class="section-header">Project Breakdown</h2><table class="cost-table"><thead><tr><th style="width:10%">Phase</th><th style="width:70%">Scope of Work</th><th style="width:20%">Investment</th></tr></thead><tbody><tr class="phase-header phase-design"><td colspan="4">Phase 1: Design & Planning</td></tr><tr class="milestone-row"><td class="milestone-number">1.1</td><td>Site assessment, measurements, and initial consultation</td><td rowspan="3" style="vertical-align:middle;text-align:center;" class="cost-value">${{DESIGN_PRICE}}</td></tr><tr class="milestone-row"><td class="milestone-number">1.2</td><td>Architectural design, floor plans, and 3D renderings</td></tr><tr class="milestone-row"><td class="milestone-number">1.3</td><td>Construction drawings and engineering calculations</td></tr><tr class="phase-header phase-coordination"><td colspan="4">Phase 2: Permits & Coordination</td></tr><tr class="milestone-row"><td class="milestone-number">2.1</td><td>Building permit application and plan check</td><td class="included">INCLUDED</td></tr><tr class="milestone-row"><td class="milestone-number">2.2</td><td>Utility coordination and approvals</td><td class="included">INCLUDED</td></tr><tr class="phase-header phase-construction"><td colspan="4">Phase 3: Construction</td></tr><tr class="milestone-row"><td class="milestone-number">3.1</td><td>Site prep, excavation, and foundation</td><td class="cost-value">${{MILESTONE_1}}</td></tr><tr class="milestone-row"><td class="milestone-number">3.2</td><td>Framing, roofing, and exterior sheathing</td><td class="cost-value">${{MILESTONE_2}}</td></tr><tr class="milestone-row"><td class="milestone-number">3.3</td><td>Rough electrical, plumbing, and HVAC</td><td class="cost-value">${{MILESTONE_3}}</td></tr><tr class="milestone-row"><td class="milestone-number">3.4</td><td>Insulation, drywall, and interior finishes</td><td class="cost-value">${{MILESTONE_4}}</td></tr><tr class="milestone-row"><td class="milestone-number">3.5</td><td>Flooring, cabinets, and fixtures</td><td class="cost-value">${{MILESTONE_5}}</td></tr><tr class="milestone-row"><td class="milestone-number">3.6</td><td>Exterior finishes and final details</td><td class="cost-value">${{MILESTONE_6}}</td></tr><tr class="milestone-row"><td class="milestone-number">3.7</td><td>Final inspections and certificate of occupancy</td><td class="cost-value">${{MILESTONE_7}}</td></tr><tr class="subtotal-row"><td colspan="2">Construction Subtotal</td><td class="cost-value">${{CONSTRUCTION_SUBTOTAL}}</td></tr><tr class="total-row"><td colspan="2">TOTAL PROJECT COST</td><td style="font-size:14px;">${{GRAND_TOTAL}}</td></tr></tbody></table></section><section class="payment-section"><h3 class="payment-header">Payment Schedule</h3><div class="timeline-container"><div class="timeline-bar"><div class="timeline-progress"></div></div><div class="timeline-steps"><div class="timeline-step"><div class="step-dot"></div><div class="step-amount">M1</div><div class="step-label">Foundation</div></div><div class="timeline-step"><div class="step-dot"></div><div class="step-amount">M2</div><div class="step-label">Framing</div></div><div class="timeline-step"><div class="step-dot"></div><div class="step-amount">M3</div><div class="step-label">MEP Rough</div></div><div class="timeline-step"><div class="step-dot"></div><div class="step-amount">M4</div><div class="step-label">Drywall</div></div><div class="timeline-step"><div class="step-dot"></div><div class="step-amount">M5</div><div class="step-label">Finishes</div></div><div class="timeline-step"><div class="step-dot"></div><div class="step-amount">M6</div><div class="step-label">Exterior</div></div><div class="timeline-step"><div class="step-dot"></div><div class="step-amount">M7</div><div class="step-label">Final</div></div></div></div></section><footer class="footer-section"><div class="footer-content"><div class="signature-section"><h3 class="signature-title">Agreement & Authorization</h3><p class="signature-text">By signing below, you acknowledge that you have reviewed and agree to the terms of this proposal.</p><div class="signature-grid"><div class="signature-block"><div class="signature-line"></div><div class="signature-label"><span>Client Signature</span><span>Date</span></div></div><div class="signature-block"><div class="signature-line"></div><div class="signature-label"><span>Anchor Builders Representative</span><span>Date</span></div></div></div></div><div class="footer-info"><div class="footer-column"><h4>What\'s Included</h4><ul><li>Complete project management</li><li>All permit coordination (permits to be paid by owner)</li><li>Quality materials and craftsmanship</li><li>Licensed and insured contractor</li><li>1-year comprehensive warranty</li></ul></div><div class="footer-column"><h4>Next Steps</h4><ul><li>Review this proposal thoroughly</li><li>Contact us with any questions</li><li>Sign and return this agreement</li><li>Submit initial deposit</li><li>Begin your ADU project</li></ul></div></div><div class="terms-section"><strong>Terms & Conditions:</strong> This proposal is valid for 30 days from the date shown above. Prices are subject to change based on final specifications and site conditions. Payment schedule: 10% upon signing, progress payments as outlined above. All work performed according to California Building Code and local ordinances. Additional terms and conditions apply as outlined in the full contract agreement. Anchor Builders License #1234567.</div></div></footer></div></body></html>';
 
     return template;
   }

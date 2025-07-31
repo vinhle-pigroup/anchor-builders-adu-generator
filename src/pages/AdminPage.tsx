@@ -1,5 +1,14 @@
 import { useState } from 'react';
-import { ArrowLeft, Download, Upload, Settings, Trash2, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  ArrowLeft,
+  Download,
+  Upload,
+  Settings,
+  Trash2,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import type { AnchorProposalFormData } from '../types/proposal';
 
 interface AdminPageProps {
@@ -12,7 +21,7 @@ export function AdminPage({ savedProposals, setSavedProposals, onBack }: AdminPa
   const [showReadme, setShowReadme] = useState(false);
   const exportProposals = () => {
     const dataStr = JSON.stringify(savedProposals, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
     const exportFileDefaultName = `anchor-proposals-${new Date().toISOString().split('T')[0]}.json`;
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
@@ -70,7 +79,7 @@ export function AdminPage({ savedProposals, setSavedProposals, onBack }: AdminPa
             <span>Back to Home</span>
           </button>
         </div>
-        
+
         <div className='space-y-6'>
           {/* Data Management */}
           <div className='bg-white rounded-lg shadow-sm p-6'>
@@ -86,7 +95,7 @@ export function AdminPage({ savedProposals, setSavedProposals, onBack }: AdminPa
                 <Download className='w-5 h-5 text-green-600' />
                 <span className='font-medium text-green-700'>Export Proposals</span>
               </button>
-              
+
               <button
                 onClick={importProposals}
                 className='flex items-center justify-center space-x-2 min-h-[44px] p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition-colors touch-manipulation'
@@ -94,7 +103,7 @@ export function AdminPage({ savedProposals, setSavedProposals, onBack }: AdminPa
                 <Upload className='w-5 h-5 text-blue-600' />
                 <span className='font-medium text-blue-700'>Import Proposals</span>
               </button>
-              
+
               <button
                 onClick={clearAllProposals}
                 className='flex items-center justify-center space-x-2 min-h-[44px] p-4 border-2 border-red-200 rounded-lg hover:bg-red-50 transition-colors touch-manipulation'
@@ -113,14 +122,17 @@ export function AdminPage({ savedProposals, setSavedProposals, onBack }: AdminPa
                 <div className='text-2xl font-bold text-blue-600'>{savedProposals.length}</div>
                 <div className='text-sm text-blue-700'>Total Proposals</div>
               </div>
-              
+
               <div className='text-center p-4 bg-green-50 rounded-lg'>
                 <div className='text-2xl font-bold text-green-600'>
-                  {Math.round(savedProposals.reduce((sum, p) => sum + (p.project?.squareFootage || 0), 0) / savedProposals.length) || 0}
+                  {Math.round(
+                    savedProposals.reduce((sum, p) => sum + (p.project?.squareFootage || 0), 0) /
+                      savedProposals.length
+                  ) || 0}
                 </div>
                 <div className='text-sm text-green-700'>Avg. Square Footage</div>
               </div>
-              
+
               <div className='text-center p-4 bg-purple-50 rounded-lg'>
                 <div className='text-2xl font-bold text-purple-600'>
                   {new Set(savedProposals.map(p => p.client?.city)).size}
@@ -146,29 +158,36 @@ export function AdminPage({ savedProposals, setSavedProposals, onBack }: AdminPa
                 <ChevronDown className='w-5 h-5 text-slate-500' />
               )}
             </button>
-            
+
             {showReadme && (
               <div className='mt-4 prose prose-sm max-w-none text-slate-700'>
                 <div className='bg-slate-50 rounded-lg p-6 border'>
                   <h3 className='text-lg font-semibold text-slate-800 mb-4'>
                     Anchor Builders ADU Proposal Generator v2.0
                   </h3>
-                  
+
                   <div className='space-y-6'>
                     <div>
                       <h4 className='font-medium text-slate-800 mb-2'>Recent Improvements</h4>
                       <ul className='space-y-1 text-sm'>
                         <li className='flex items-center space-x-2'>
                           <span className='text-green-600'>✓</span>
-                          <span>Critical PDF validation fix - Resolved "State is required" error</span>
+                          <span>
+                            Critical PDF validation fix - Resolved "State is required" error
+                          </span>
                         </li>
                         <li className='flex items-center space-x-2'>
                           <span className='text-green-600'>✓</span>
-                          <span>Mobile touch targets - All elements meet 44px accessibility requirements</span>
+                          <span>
+                            Mobile touch targets - All elements meet 44px accessibility requirements
+                          </span>
                         </li>
                         <li className='flex items-center space-x-2'>
                           <span className='text-green-600'>✓</span>
-                          <span>Professional color palette - Navy blue header with construction orange accents</span>
+                          <span>
+                            Professional color palette - Navy blue header with construction orange
+                            accents
+                          </span>
                         </li>
                         <li className='flex items-center space-x-2'>
                           <span className='text-green-600'>✓</span>
@@ -176,7 +195,9 @@ export function AdminPage({ savedProposals, setSavedProposals, onBack }: AdminPa
                         </li>
                         <li className='flex items-center space-x-2'>
                           <span className='text-green-600'>✓</span>
-                          <span>Production testing - Comprehensive quality assurance (8.5/10 score)</span>
+                          <span>
+                            Production testing - Comprehensive quality assurance (8.5/10 score)
+                          </span>
                         </li>
                       </ul>
                     </div>
@@ -215,7 +236,10 @@ export function AdminPage({ savedProposals, setSavedProposals, onBack }: AdminPa
                       <h4 className='font-medium text-slate-800 mb-2'>Pricing Configuration</h4>
                       <div className='bg-blue-50 rounded p-3 text-sm'>
                         <p className='mb-2'>
-                          <strong>Base Pricing:</strong> Located in <code className='bg-white px-1 rounded text-xs'>/src/data/pricing-config.ts</code>
+                          <strong>Base Pricing:</strong> Located in{' '}
+                          <code className='bg-white px-1 rounded text-xs'>
+                            /src/data/pricing-config.ts
+                          </code>
                         </p>
                         <ul className='space-y-1 text-xs'>
                           <li>• Detached ADU: $240/sq ft</li>
@@ -228,16 +252,24 @@ export function AdminPage({ savedProposals, setSavedProposals, onBack }: AdminPa
                     <div>
                       <h4 className='font-medium text-slate-800 mb-2'>Technical Support</h4>
                       <div className='bg-orange-50 rounded p-3 text-sm'>
-                        <p className='mb-1'><strong>Quality Score:</strong> 8.5/10 (Production Ready)</p>
-                        <p className='mb-1'><strong>Technology:</strong> React 18 + TypeScript + Tailwind CSS</p>
-                        <p className='mb-1'><strong>Deployment:</strong> Railway (Port 5000)</p>
-                        <p><strong>Last Updated:</strong> July 27, 2025</p>
+                        <p className='mb-1'>
+                          <strong>Quality Score:</strong> 8.5/10 (Production Ready)
+                        </p>
+                        <p className='mb-1'>
+                          <strong>Technology:</strong> React 18 + TypeScript + Tailwind CSS
+                        </p>
+                        <p className='mb-1'>
+                          <strong>Deployment:</strong> Railway (Port 5000)
+                        </p>
+                        <p>
+                          <strong>Last Updated:</strong> July 27, 2025
+                        </p>
                       </div>
                     </div>
 
                     <div className='border-t pt-4 mt-4'>
                       <p className='text-xs text-slate-500'>
-                        For technical support or feature requests, contact the development team. 
+                        For technical support or feature requests, contact the development team.
                         Complete documentation available in the project repository.
                       </p>
                     </div>

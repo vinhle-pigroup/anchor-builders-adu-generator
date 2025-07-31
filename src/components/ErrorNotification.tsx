@@ -10,15 +10,15 @@ interface ErrorNotificationProps {
 const getErrorIcon = (type: ErrorState['type']) => {
   switch (type) {
     case 'network':
-      return <Wifi className="w-5 h-5" />;
+      return <Wifi className='w-5 h-5' />;
     case 'pdf':
-      return <FileX className="w-5 h-5" />;
+      return <FileX className='w-5 h-5' />;
     case 'validation':
-      return <AlertCircle className="w-5 h-5" />;
+      return <AlertCircle className='w-5 h-5' />;
     case 'storage':
-      return <AlertTriangle className="w-5 h-5" />;
+      return <AlertTriangle className='w-5 h-5' />;
     default:
-      return <AlertTriangle className="w-5 h-5" />;
+      return <AlertTriangle className='w-5 h-5' />;
   }
 };
 
@@ -42,36 +42,34 @@ export function ErrorNotification({ error, onDismiss, onRetry }: ErrorNotificati
   const icon = getErrorIcon(error.type);
 
   return (
-    <div className={`fixed top-4 right-4 max-w-md p-4 border rounded-lg shadow-lg z-50 ${colorClasses}`}>
-      <div className="flex items-start space-x-3">
-        <div className="flex-shrink-0">
-          {icon}
-        </div>
-        
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium">
+    <div
+      className={`fixed top-4 right-4 max-w-md p-4 border rounded-lg shadow-lg z-50 ${colorClasses}`}
+    >
+      <div className='flex items-start space-x-3'>
+        <div className='flex-shrink-0'>{icon}</div>
+
+        <div className='flex-1 min-w-0'>
+          <p className='text-sm font-medium'>
             Error: {error.type.charAt(0).toUpperCase() + error.type.slice(1)}
           </p>
-          <p className="text-sm opacity-90 mt-1">
-            {error.message}
-          </p>
-          
+          <p className='text-sm opacity-90 mt-1'>{error.message}</p>
+
           {error.retryable && onRetry && (
             <button
               onClick={onRetry}
-              className="mt-2 inline-flex items-center space-x-1 text-xs font-medium hover:underline"
+              className='mt-2 inline-flex items-center space-x-1 text-xs font-medium hover:underline'
             >
-              <RefreshCw className="w-3 h-3" />
+              <RefreshCw className='w-3 h-3' />
               <span>Try Again</span>
             </button>
           )}
         </div>
-        
+
         <button
           onClick={onDismiss}
-          className="flex-shrink-0 p-1 hover:bg-black/10 rounded transition-colors"
+          className='flex-shrink-0 p-1 hover:bg-black/10 rounded transition-colors'
         >
-          <X className="w-4 h-4" />
+          <X className='w-4 h-4' />
         </button>
       </div>
     </div>

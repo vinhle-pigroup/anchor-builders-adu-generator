@@ -11,17 +11,19 @@ export class AnchorPDFGenerator {
   private rightMargin: number = 190;
   private pageWidth: number = 210;
 
-
   constructor() {
     this.doc = new jsPDF();
     // Add some custom fonts if available
   }
 
-  async generateProposal(formData: AnchorProposalFormData): Promise<void> {
+  async generateProposal(
+    formData: AnchorProposalFormData,
+    selectedTemplate?: string
+  ): Promise<void> {
     // Try to use the new template generator first
     try {
       const templateGenerator = new AnchorPDFTemplateGenerator();
-      await templateGenerator.generateProposal(formData);
+      await templateGenerator.generateProposal(formData, selectedTemplate);
     } catch (error) {
       console.warn('Template generator failed, falling back to jsPDF:', error);
       // Fallback to jsPDF generation - create download for this case
