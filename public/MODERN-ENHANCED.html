@@ -924,7 +924,11 @@
             <div class="header-top">
                 <!-- Logo and Company Info on Left -->
                 <div class="company-logo">
-                    <img src="/anchor-builders-logo.jpg" alt="Anchor Builders Logo" />
+                    {{#if ANCHOR_LOGO_BASE64}}
+                    <img src="data:image/png;base64,{{ANCHOR_LOGO_BASE64}}" alt="Anchor Builders Logo" />
+                    {{else}}
+                    <img src="../../anchor logo main (1).jpg" alt="Anchor Builders Logo" />
+                    {{/if}}
                     <div class="company-info">
                         <div class="details">ANCHOR BUILDERS<br>License #1029392 | (408) 836-2534<br>info@anchorbuilders.com<br>12962 Main Street, Garden Grove, CA 92840</div>
                     </div>
