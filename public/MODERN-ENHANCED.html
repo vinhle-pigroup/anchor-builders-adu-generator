@@ -68,7 +68,7 @@
             page-break-after: avoid;
             background: white;
             border-bottom: 3px solid #357abd;
-            padding: 20px 0;
+            padding: 10px 0;
         }
 
         .header-top {
@@ -135,15 +135,21 @@
             text-align: right;
         }
 
-        .proposal-date-box,
-        .proposal-number-box {
+        .proposal-info-box {
             background: #f8fafc;
             color: #1e293b;
             padding: 8px 12px;
             border-radius: 6px;
-            text-align: center;
             border: 1px solid #e2e8f0;
-            min-width: 100px;
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            min-width: 200px;
+        }
+        
+        .proposal-info-item {
+            text-align: center;
+            flex: 1;
         }
 
         .date-label,
@@ -170,11 +176,11 @@
         }
 
         .proposal-title h2 {
-            font-size: 30px;
+            font-size: 18px;
             font-weight: 900;
             color: white;
             text-transform: uppercase;
-            letter-spacing: 3.5px;
+            letter-spacing: 2px;
             margin: 0;
             text-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
             font-family: 'Arial Black', Arial, sans-serif;
@@ -936,13 +942,15 @@
                 
                 <!-- Proposal Info on Right -->
                 <div class="proposal-meta">
-                    <div class="proposal-date-box">
-                        <div class="date-label">PROPOSAL DATE</div>
-                        <div class="date-value">{{PROPOSAL_DATE}}</div>
-                    </div>
-                    <div class="proposal-number-box">
-                        <div class="number-label">PROPOSAL #</div>
-                        <div class="number-value">{{PROPOSAL_NUMBER}}</div>
+                    <div class="proposal-info-box">
+                        <div class="proposal-info-item">
+                            <div class="date-label">PROPOSAL DATE</div>
+                            <div class="date-value">{{PROPOSAL_DATE}}</div>
+                        </div>
+                        <div class="proposal-info-item">
+                            <div class="number-label">PROPOSAL #</div>
+                            <div class="number-value">{{PROPOSAL_NUMBER}}</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -951,7 +959,6 @@
             <div class="header-divider">
                 <div class="proposal-title">
                     <h2>ADU CONSTRUCTION PROPOSAL</h2>
-                    <div class="subtitle">Comprehensive Design & Build Services</div>
                 </div>
             </div>
         </header>
