@@ -288,7 +288,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 10px;
+            font-size: 9px;
         }
 
         .table-header {
@@ -1008,51 +1008,54 @@
         <div class="section-card">
             <h3 class="section-header">Scope of Work</h3>
             
-            <!-- Project Key Metrics -->
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;">
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center;">
-                    <div style="font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">Living Area</div>
-                    <div style="font-size: 16px; font-weight: 700; color: var(--primary-dark-blue);">{{SQUARE_FOOTAGE}} sqft</div>
+            <!-- Project Key Metrics and Included Services Side by Side -->
+            <div style="display: grid; grid-template-columns: 200px 1fr; gap: 16px; margin-bottom: 16px;">
+                <!-- Key Metrics - Vertical Layout (Left Side) -->
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; text-align: center;">
+                        <div style="font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 2px;">Living Area</div>
+                        <div style="font-size: 12px; font-weight: 700; color: var(--primary-dark-blue);">{{SQUARE_FOOTAGE}} sqft</div>
+                    </div>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; text-align: center;">
+                        <div style="font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 2px;">Bedrooms</div>
+                        <div style="font-size: 12px; font-weight: 700; color: var(--primary-dark-blue);">{{BEDROOMS}}</div>
+                    </div>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; text-align: center;">
+                        <div style="font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 2px;">Bathrooms</div>
+                        <div style="font-size: 12px; font-weight: 700; color: var(--primary-dark-blue);">{{BATHROOMS}}</div>
+                    </div>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; text-align: center;">
+                        <div style="font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 2px;">ADU Type</div>
+                        <div style="font-size: 10px; font-weight: 600; color: var(--primary-dark-blue);">{{ADU_TYPE}}</div>
+                    </div>
                 </div>
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center;">
-                    <div style="font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">Bedrooms</div>
-                    <div style="font-size: 16px; font-weight: 700; color: var(--primary-dark-blue);">{{BEDROOMS}}</div>
-                </div>
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center;">
-                    <div style="font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">Bathrooms</div>
-                    <div style="font-size: 16px; font-weight: 700; color: var(--primary-dark-blue);">{{BATHROOMS}}</div>
-                </div>
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center;">
-                    <div style="font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">ADU Type</div>
-                    <div style="font-size: 10px; font-weight: 600; color: var(--primary-dark-blue);">{{ADU_TYPE}}</div>
-                </div>
-            </div>
 
-            <!-- Included Services -->
-            <div style="background: var(--background-subtle); border-radius: 6px; padding: 12px;">
-                <h4 style="font-size: 10px; font-weight: 700; color: var(--primary-dark-blue); margin-bottom: 8px; text-transform: uppercase;">Included Services</h4>
-                <div class="overview-grid">
-                    <div class="overview-item">
-                        <label>Design Services</label>
-                        <div class="value">Complete architectural plans, structural engineering, MEP coordination, material selections for the ADU, and permitting assistance with professional construction documents and city plan check coordination</div>
-                    </div>
-                    <div class="overview-item">
-                        <label>Solar Preparation</label>
-                        <div class="value">Coordination with third-party solar vendors including electrical panel sizing, conduit pathways, and structural load calculations for seamless future solar integration</div>
-                    </div>
-                    {{#if FEMA_INCLUDED}}
-                    <div class="overview-item">
-                        <label>FEMA Compliance</label>
-                        <div class="value">Flood zone analysis, elevation certificates, and compliance documentation for properties in flood-prone areas with appropriate foundation design</div>
-                    </div>
-                    {{/if}}
-                    <div class="overview-item">
-                        <label>HVAC System</label>
-                        <div class="value">{{HVAC_TYPE}} installation with properly sized ductwork, energy-efficient equipment, thermostat controls, and ventilation per California Title 24 requirements</div>
-                    </div>
-                    <div class="overview-item">
-                        <label>Utility Connections</label>
-                        <div class="value">Water meter: {{WATER_METER}} • Gas meter: {{GAS_METER}} • Electric meter: {{ELECTRIC_METER}} • Sewer connection: {{SEWER_CONNECTION}}</div>
+                <!-- Included Services (Right Side) -->
+                <div style="background: var(--background-subtle); border-radius: 6px; padding: 12px;">
+                    <h4 style="font-size: 10px; font-weight: 700; color: var(--primary-dark-blue); margin-bottom: 8px; text-transform: uppercase;">Included Services</h4>
+                    <div class="overview-grid">
+                        <div class="overview-item">
+                            <label>Design Services</label>
+                            <div class="value">Complete architectural plans, structural engineering, MEP coordination, material selections for the ADU, and permitting assistance with professional construction documents and city plan check coordination</div>
+                        </div>
+                        <div class="overview-item">
+                            <label>Solar Preparation</label>
+                            <div class="value">Coordination with third-party solar vendors including electrical panel sizing, conduit pathways, and structural load calculations for seamless future solar integration</div>
+                        </div>
+                        {{#if FEMA_INCLUDED}}
+                        <div class="overview-item">
+                            <label>FEMA Compliance</label>
+                            <div class="value">Flood zone analysis, elevation certificates, and compliance documentation for properties in flood-prone areas with appropriate foundation design</div>
+                        </div>
+                        {{/if}}
+                        <div class="overview-item">
+                            <label>HVAC System</label>
+                            <div class="value">{{HVAC_TYPE}} installation with properly sized ductwork, energy-efficient equipment, thermostat controls, and ventilation per California Title 24 requirements</div>
+                        </div>
+                        <div class="overview-item">
+                            <label>Utility Connections</label>
+                            <div class="value">Water meter: {{WATER_METER}} • Gas meter: {{GAS_METER}} • Electric meter: {{ELECTRIC_METER}} • Sewer connection: {{SEWER_CONNECTION}}</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1190,7 +1193,7 @@
 
                     <!-- Construction Phase -->
                     <tr class="phase-header phase-construction">
-                        <td colspan="3">Phase 3: Construction Milestones</td>
+                        <td colspan="3">Phase 3: Construction Build Out</td>
                     </tr>
                     <tr class="milestone-row">
                         <td class="milestone-number">3.1</td>
