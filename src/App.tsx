@@ -113,6 +113,134 @@ function App() {
     }
   }, [editingProposal]);
 
+  // Test data generation function
+  const generateTestData = useCallback(() => {
+    const testClients = [
+      { firstName: 'John', lastName: 'Smith', email: 'john.smith@gmail.com' },
+      { firstName: 'Sarah', lastName: 'Johnson', email: 'sarah.johnson@yahoo.com' },
+      { firstName: 'Michael', lastName: 'Davis', email: 'mike.davis@outlook.com' },
+      { firstName: 'Emily', lastName: 'Chen', email: 'emily.chen@gmail.com' },
+      { firstName: 'David', lastName: 'Martinez', email: 'david.martinez@hotmail.com' },
+      { firstName: 'Lisa', lastName: 'Wilson', email: 'lisa.wilson@gmail.com' },
+    ];
+
+    const testAddresses = [
+      { address: '123 Oak Street', city: 'Garden Grove', state: 'CA', zipCode: '92840' },
+      { address: '456 Pine Avenue', city: 'Irvine', state: 'CA', zipCode: '92618' },
+      { address: '789 Maple Drive', city: 'Tustin', state: 'CA', zipCode: '92780' },
+      { address: '321 Cedar Lane', city: 'Orange', state: 'CA', zipCode: '92866' },
+      { address: '654 Elm Court', city: 'Costa Mesa', state: 'CA', zipCode: '92627' },
+      { address: '987 Birch Way', city: 'Fullerton', state: 'CA', zipCode: '92831' },
+    ];
+
+    const testPhones = [
+      '(714) 555-0123', '(949) 555-0456', '(714) 555-0789', 
+      '(949) 555-0321', '(714) 555-0654', '(949) 555-0987'
+    ];
+
+    const aduTypes = ['detached-1story', 'detached-2story', 'attached', 'junior-adu'];
+    const aduTypePrices = { 'detached-1story': 220, 'detached-2story': 240, 'attached': 200, 'junior-adu': 244 };
+    const squareFootages = [400, 600, 800, 1000, 1200];
+    const bedroomOptions = [0, 1, 2, 3];
+    const bathroomOptions = [1, 2, 3];
+    const hvacTypes = ['central-ac', 'mini-split'];
+
+    // Select random test data
+    const randomClient = testClients[Math.floor(Math.random() * testClients.length)];
+    const randomAddress = testAddresses[Math.floor(Math.random() * testAddresses.length)];
+    const randomPhone = testPhones[Math.floor(Math.random() * testPhones.length)];
+    const randomAduType = aduTypes[Math.floor(Math.random() * aduTypes.length)];
+    const randomSqft = squareFootages[Math.floor(Math.random() * squareFootages.length)];
+    const randomBedrooms = bedroomOptions[Math.floor(Math.random() * bedroomOptions.length)];
+    const randomBathrooms = bathroomOptions[Math.floor(Math.random() * bathroomOptions.length)];
+    const randomHvac = hvacTypes[Math.floor(Math.random() * hvacTypes.length)];
+
+    // Generate random utility costs
+    const waterCost = Math.random() > 0.5 ? 1000 : 0;
+    const gasCost = Math.random() > 0.5 ? 1500 : 0;
+
+    // Generate random add-ons
+    const randomBathroom = Math.random() > 0.7 ? 8000 : 0;
+    const randomDriveway = Math.random() > 0.6 ? 5000 : 0;
+    const randomLandscaping = Math.random() > 0.8 ? 10000 : 0;
+
+    // Generate random services
+    const randomFema = Math.random() > 0.8 ? 2000 : 0;
+
+    // Update form data
+    setFormData({
+      client: {
+        firstName: randomClient.firstName,
+        lastName: randomClient.lastName,
+        email: randomClient.email,
+        phone: randomPhone,
+        address: randomAddress.address,
+        city: randomAddress.city,
+        state: randomAddress.state,
+        zipCode: randomAddress.zipCode,
+      },
+      project: {
+        aduType: randomAduType === 'attached' ? 'attached' : 'detached',
+        squareFootage: randomSqft,
+        bedrooms: randomBedrooms,
+        bathrooms: randomBathrooms,
+        appliancesIncluded: true,
+        hvacType: randomHvac as 'central-ac' | 'mini-split',
+        finishLevel: 'standard',
+        utilities: {
+          waterMeter: waterCost > 0 ? 'separate' : 'shared',
+          gasMeter: gasCost > 0 ? 'separate' : 'shared',
+          electricMeter: 'separate', // Always separate per type definition
+        },
+        sewerConnection: 'existing-lateral',
+        needsDesign: true,
+        solarDesign: false,
+        femaIncluded: randomFema > 0,
+        selectedAddOns: [],
+      },
+      additionalNotes: 'This is a sample proposal generated with test data for demonstration purposes.',
+      timeline: '6-8 months',
+      proposalDate: new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }),
+    });
+
+    // Update pricing data to match
+    setPricingData((prev: any) => ({
+      ...prev,
+      aduType: randomAduType,
+      pricePerSqFt: aduTypePrices[randomAduType as keyof typeof aduTypePrices],
+      sqft: randomSqft,
+      bedrooms: randomBedrooms,
+      bathrooms: randomBathrooms,
+      hvacType: randomHvac,
+      utilities: {
+        water: waterCost,
+        gas: gasCost,
+        electric: 0, // Electric is always 0 cost since it's separate by default
+      },
+      services: {
+        design: 12500,
+        solar: 0,
+        fema: randomFema,
+      },
+      addons: {
+        bathroom: randomBathroom,
+        driveway: randomDriveway,
+        landscaping: randomLandscaping,
+      },
+      manualAddons: [],
+    }));
+
+    // Show success message
+    setSuccessMessage('Test data populated! All form fields have been filled with sample data.');
+    setTimeout(() => setSuccessMessage(null), 3000);
+    
+    console.log('🧪 Test data generated:', { randomClient, randomAddress, randomSqft, randomAduType });
+  }, []);
+
   // Pricing state for real-time updates
   const [pricingData, setPricingData] = useState({
     aduType: 'detached-1story',
@@ -379,6 +507,7 @@ function App() {
           updateFormData={updateFormData}
           setPricingData={setPricingData}
           generatePDF={generatePDF}
+          generateTestData={generateTestData}
           isGeneratingPDF={isGeneratingPDF}
           selectedTemplate={selectedTemplate}
           switchToTemplate={switchToTemplate}
@@ -749,6 +878,7 @@ interface ProposalFormPageProps {
   updateFormData: (updates: Partial<AnchorProposalFormData>) => void;
   setPricingData: (data: any) => void;
   generatePDF: () => void;
+  generateTestData: () => void;
   onBack: () => void;
   isGeneratingPDF: boolean;
   selectedTemplate: 'historical' | 'modern' | 'premium' | 'classic' | 'enhanced';
@@ -766,6 +896,7 @@ function ProposalFormPage({
   updateFormData,
   setPricingData,
   generatePDF,
+  generateTestData,
   onBack,
   isGeneratingPDF,
   selectedTemplate,
@@ -843,6 +974,16 @@ function ProposalFormPage({
 
               {/* Template Selection & Generate Buttons */}
               <div className='flex items-center space-x-3'>
+                {/* Test Data Button */}
+                <button
+                  onClick={generateTestData}
+                  className='px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-semibold text-sm flex items-center space-x-2 hover:from-green-600 hover:to-green-700 transition-all shadow-lg whitespace-nowrap'
+                  title='Fill form with randomized test data for quick testing'
+                >
+                  <Plus className='w-4 h-4' />
+                  <span>Test Data</span>
+                </button>
+
                 {/* Template Selection Buttons */}
                 <div className='flex items-center space-x-1 bg-slate-100 rounded-lg p-1'>
                   <button

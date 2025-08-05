@@ -273,12 +273,24 @@ export class AnchorPDFTemplateGenerator {
 
       // Add-ons
       SELECTED_ADD_ONS: formData.project.selectedAddOns.join(', ') || 'None',
-      ADD_ON_WORK_EXISTS:
-        formData.project.selectedAddOns.length > 0 ||
-        formData.project.utilities.waterMeter === 'separate' ||
-        formData.project.utilities.gasMeter === 'separate'
-          ? 'true'
-          : '',
+      ADD_ON_WORK_EXISTS: (() => {
+        const hasAddOns = formData.project.selectedAddOns.length > 0;
+        const hasWaterMeter = formData.project.utilities.waterMeter === 'separate';
+        const hasGasMeter = formData.project.utilities.gasMeter === 'separate';
+        const result = hasAddOns || hasWaterMeter || hasGasMeter;
+        
+        console.log('🔍 [DEBUG] ADD_ON_WORK_EXISTS check:', {
+          selectedAddOns: formData.project.selectedAddOns,
+          hasAddOns,
+          waterMeter: formData.project.utilities.waterMeter,
+          hasWaterMeter,
+          gasMeter: formData.project.utilities.gasMeter,
+          hasGasMeter,
+          finalResult: result ? 'true' : ''
+        });
+        
+        return result ? 'true' : '';
+      })(),
 
       // Timeline and Notes
       TIMELINE: formData.timeline || 'Standard 3-4 month construction timeline',
@@ -439,27 +451,52 @@ export class AnchorPDFTemplateGenerator {
       .join('');
     html = html.replace(/{{#each MILESTONES}}[\s\S]*?{{\/each}}/g, milestoneRows);
 
-    // Add-ons section
-    if (formData.project.selectedAddOns.length > 0) {
-      // For the scope section, just show the add-ons
+    // Add-ons section - Handle ADD_ON_WORK_EXISTS conditional
+    const hasAddOnWork = formData.project.selectedAddOns.length > 0 ||
+                         formData.project.utilities.waterMeter === 'separate' ||
+                         formData.project.utilities.gasMeter === 'separate';
+
+    if (hasAddOnWork) {
+      // Show the ADD_ON_WORK_EXISTS conditional sections
+      html = html.replace(/{{#if ADD_ON_WORK_EXISTS}}([\s\S]*?){{\/if}}/g, '$1');
+      
+      // For the scope section, show selected add-ons
       html = html.replace(/{{#if SELECTED_ADD_ONS}}([\s\S]*?){{\/if}}/g, '$1');
 
-      // For table rows in pricing, create detailed rows
-      const addOnRows = formData.project.selectedAddOns
-        .map(addOnName => {
-          const addOn = calculation.lineItems.find((item: any) =>
-            item.description.includes(addOnName)
-          );
-          return addOn
-            ? `<tr><td>${addOnName}</td><td>${addOn.description}</td><td class="price">$ ${addOn.totalPrice.toLocaleString()}</td></tr>`
-            : `<li>${addOnName}</li>`;
-        })
-        .join('');
+      // Create detailed rows for selected add-ons
+      if (formData.project.selectedAddOns.length > 0) {
+        const addOnRows = formData.project.selectedAddOns
+          .map((addOnName, index) => {
+            // Find add-on by matching the category 'Add-Ons' and description containing the add-on name or exact match
+            const addOn = calculation.lineItems.find((item: any) =>
+              item.category === 'Add-Ons' && (
+                item.description.toLowerCase().includes(addOnName.toLowerCase()) ||
+                item.description.includes(addOnName)
+              )
+            );
+            return addOn
+              ? `<tr class="milestone-row additional-service">
+                  <td class="milestone-number">A${index + 3}</td>
+                  <td>${addOn.description}</td>
+                  <td class="cost-value">$${addOn.totalPrice.toLocaleString()}</td>
+                 </tr>`
+              : `<tr class="milestone-row additional-service">
+                  <td class="milestone-number">A${index + 3}</td>
+                  <td>${addOnName} - Not found in pricing calculation</td>
+                  <td class="cost-value">$0</td>
+                 </tr>`;
+          })
+          .join('');
 
-      html = html.replace(/{{#each SELECTED_ADD_ONS}}[\s\S]*?{{\/each}}/g, addOnRows);
+        html = html.replace(/{{#each SELECTED_ADD_ONS}}[\s\S]*?{{\/each}}/g, addOnRows);
+        html = html.replace(/{{#each ADD_ON_ITEMS}}[\s\S]*?{{\/each}}/g, addOnRows);
+      }
+      
       html = html.replace(/{{#if ADD_ONS}}([\s\S]*?){{\/if}}/g, '$1');
-      html = html.replace(/{{#each ADD_ONS}}[\s\S]*?{{\/each}}/g, addOnRows);
+      html = html.replace(/{{#each ADD_ONS}}[\s\S]*?{{\/each}}/g, '');
     } else {
+      // Hide all add-on related sections if no add-on work exists
+      html = html.replace(/{{#if ADD_ON_WORK_EXISTS}}[\s\S]*?{{\/if}}/g, '');
       html = html.replace(/{{#if SELECTED_ADD_ONS}}[\s\S]*?{{\/if}}/g, '');
       html = html.replace(/{{#if ADD_ONS}}[\s\S]*?{{\/if}}/g, '');
     }
