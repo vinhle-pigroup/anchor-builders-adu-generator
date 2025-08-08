@@ -149,43 +149,43 @@ export const milestonePayments: MilestonePayment[] = [
   {
     code: 'M1',
     name: 'Mobilization',
-    percentage: 20,
+    percentage: 18,
     description: 'Project setup, permits, and mobilization',
   },
   {
     code: 'M2',
-    name: 'Trenching & Underground Plumbing',
-    percentage: 20,
-    description: 'Site preparation and underground utilities',
+    name: 'Underground Work',
+    percentage: 18,
+    description: 'Trenching and underground utilities',
   },
   {
     code: 'M3',
     name: 'Foundation',
-    percentage: 20,
+    percentage: 18,
     description: 'Foundation and concrete work',
   },
   {
     code: 'M4',
     name: 'Framing',
-    percentage: 15,
+    percentage: 16,
     description: 'Structural framing and roof',
   },
   {
     code: 'M5',
-    name: 'MEP (Mechanical, Electrical, Plumbing)',
-    percentage: 15,
+    name: 'MEP Rough',
+    percentage: 14,
     description: 'Rough mechanical, electrical, and plumbing',
   },
   {
     code: 'M6',
     name: 'Drywall',
-    percentage: 10,
+    percentage: 11,
     description: 'Drywall installation and finish',
   },
   {
     code: 'M7',
-    name: 'Property Final',
-    percentage: 0,
+    name: 'Final Completion',
+    percentage: 5,
     description: 'Final inspection and completion',
   },
 ];
@@ -202,29 +202,37 @@ export const calculateMilestonePayments = (
   let runningTotal = 0;
   const payments: Array<MilestonePayment & { amount: number; baseAmount: number }> = [];
 
-  // Calculate milestones using Excel ROUND(amount, -3) formula
-  milestonePayments.forEach((milestone, index) => {
-    if (index < milestonePayments.length - 1) {
-      // Regular milestone: ROUND(percentage * constructionAmount / 100, -3)
-      const baseAmount = (constructionAmount * milestone.percentage) / 100;
-      const roundedAmount = Math.round(baseAmount / 1000) * 1000; // ROUND(amount, -3)
-      runningTotal += roundedAmount;
+  // Calculate all milestones first with their base percentages
+  milestonePayments.forEach((milestone) => {
+    const baseAmount = (constructionAmount * milestone.percentage) / 100;
+    const roundedAmount = Math.round(baseAmount / 1000) * 1000; // ROUND(amount, -3)
 
-      payments.push({
-        ...milestone,
-        amount: roundedAmount,
-        baseAmount: baseAmount,
-      });
-    } else {
-      // Final milestone: remainder to ensure exact total
-      const finalAmount = constructionAmount - runningTotal;
-      payments.push({
-        ...milestone,
-        amount: finalAmount,
-        baseAmount: finalAmount,
-      });
-    }
+    payments.push({
+      ...milestone,
+      amount: roundedAmount,
+      baseAmount: baseAmount,
+    });
+
+    runningTotal += roundedAmount;
   });
+
+  // Adjust the final payment to ensure the total matches exactly
+  const finalIndex = payments.length - 1;
+  const adjustment = constructionAmount - runningTotal;
+  payments[finalIndex].amount += adjustment;
+
+  // Ensure no negative payments
+  if (payments[finalIndex].amount < 0) {
+    // Distribute the negative amount across other milestones
+    const redistributeAmount = Math.abs(payments[finalIndex].amount);
+    payments[finalIndex].amount = 1000; // Minimum final payment
+
+    // Reduce each milestone proportionally
+    for (let i = 0; i < finalIndex; i++) {
+      const reduction = Math.round(redistributeAmount / finalIndex / 1000) * 1000;
+      payments[i].amount = Math.max(1000, payments[i].amount - reduction);
+    }
+  }
 
   return payments;
 };

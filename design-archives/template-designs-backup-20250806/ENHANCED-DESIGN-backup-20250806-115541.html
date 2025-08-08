@@ -1,57 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADU Construction Proposal - {{CLIENT_FIRST_NAME}} {{CLIENT_NAME}}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>ADU Construction Proposal - {{CLIENT_FIRST_NAME}} {{CLIENT_LAST_NAME}}</title>
     <style>
-        /* Reset and Base Styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-size: 10px;
-            line-height: 1.2;
+            font-family: 'Inter', Arial, sans-serif;
+            background: #f9fafb;
             color: #374151;
-            background: white;
+            /* Force color printing */
             -webkit-print-color-adjust: exact;
             color-adjust: exact;
             print-color-adjust: exact;
         }
-
-        /* Professional Color Palette - Modern Blue Theme */
-        :root {
-            --primary-dark-gray: #4b5563;
-            --secondary-gray: #6b7280;
-            --accent-gray: #9ca3af;
-            --light-gray: #f3f4f6;
-            --complementary-coral: #e85d3d;
-            --complementary-gold: #d69e2e;
-            --text-dark: #1a202c;
-            --text-medium: #4a5568;
-            --text-light: #718096;
-            --border-light: #e2e8f0;
-            --border-medium: #cbd5e0;
-            --background-light: #f7fafc;
-            --background-subtle: #edf2f7;
-            --success-green: #38a169;
-            --dark-charcoal: #2d3748;
-            
-            /* Legacy compatibility */
-            --anchor-navy: #1a365d;
-            --primary: #1a365d;
-            --hol-yellow: #d69e2e;
-            --construction-gray: #6b7280;
-            --secondary: #4a5568;
-            --light-bg: #f7fafc;
-            --border: #e2e8f0;
-            --success: #38a169;
+        
+        .proposal-container {
+            width: 8.5in;
+            min-height: 11in;
+            margin: 20px auto;
+            background: white;
+            font-size: 10px;
+            line-height: 1.4;
+            color: #374151;
+            padding: 0.35in;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            /* Force color printing */
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            print-color-adjust: exact;
+        }
         }
 
         /* Page Container - 8.5x11 Letter Size */
@@ -920,10 +904,10 @@
         .mb-4 { margin-bottom: 16px; }
         .mt-4 { margin-top: 16px; }
     </style>
-<!-- TEMPLATE: MODERN - Generated: 2025-07-31T05:06:30.772Z -->
+<!-- TEMPLATE: ENHANCED - Generated: 2025-08-06T12:00:00.000Z -->
 </head>
 
-<body><div style="position: fixed; top: 0; right: 0; background: red; color: white; padding: 2px 8px; font-size: 10px; z-index: 9999;">TEMPLATE: MODERN</div>
+<body><div style="position: fixed; top: 0; right: 0; background: green; color: white; padding: 2px 8px; font-size: 10px; z-index: 9999;">TEMPLATE: ENHANCED</div>
     <div class="page-container">
         <!-- Header Section -->
         <header class="header-section">
@@ -951,10 +935,6 @@
                             <div class="number-label">PROPOSAL #</div>
                             <div class="number-value">{{PROPOSAL_NUMBER}}</div>
                         </div>
-                        <div class="proposal-info-item">
-                            <div class="date-label">VALID UNTIL</div>
-                            <div class="date-value">{{PROPOSAL_VALID_UNTIL}}</div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -974,19 +954,19 @@
                     <div class="overview-grid">
                         <div class="overview-item">
                             <label>Client</label>
-                            <div class="value">{{CLIENT_FIRST_NAME}} {{CLIENT_NAME}}</div>
+                            <div class="value">1 1</div>
                         </div>
                         <div class="overview-item">
                             <label>Phone</label>
-                            <div class="value">{{CLIENT_PHONE}}</div>
+                            <div class="value">1</div>
                         </div>
                         <div class="overview-item">
                             <label>Email</label>
-                            <div class="value">{{CLIENT_EMAIL}}</div>
+                            <div class="value">1</div>
                         </div>
                         <div class="overview-item">
                             <label>Project Address</label>
-                            <div class="value">{{CLIENT_ADDRESS}}</div>
+                            <div class="value">1, 1, 1 1</div>
                         </div>
                     </div>
                 </div>
@@ -1004,16 +984,6 @@
                     </div>
                     
                 </div>
-            </div>
-        </section>
-
-        <!-- Project Description -->
-        <section class="overview-section">
-            <h3 style="font-size: 10px; font-weight: 700; color: var(--primary-dark-gray); margin-bottom: 8px; text-transform: uppercase;">Project Overview</h3>
-            <div class="content-section">
-                <p style="font-size: 10px; line-height: 1.4; color: var(--text-medium); margin-bottom: 8px;">
-                    {{PROJECT_OVERVIEW_TEXT}}
-                </p>
             </div>
         </section>
 
@@ -1091,7 +1061,7 @@
                     <div class="column-header">✓ Construction Features</div>
                     <ul class="feature-list">
                         <li>Concrete foundation with drainage</li>
-                        <li>Electrical system with {{ELECTRICAL_PANEL}} panel</li>
+                        <li>Electrical system with 100-amp panel</li>
                         <li>Full plumbing with water heater</li>
                         <li>{{HVAC_TYPE}} installation</li>
                         <li>Insulation package (R-13/R-30)</li>
@@ -1185,19 +1155,6 @@
             </div>
 
             <!-- Selected Add-Ons -->
-            <div style="margin-top: 20px;">
-                <h4 style="font-size: 10px; font-weight: 700; color: var(--primary-dark-gray); margin-bottom: 8px;">Selected Additional Services</h4>
-                {{#if EXTRA_BATHROOM_SERVICE}}
-                <div class="additional-service" style="margin-bottom: 8px; padding: 8px; background: #f8fafc; border-radius: 6px;">
-                    <div style="font-weight: 600; font-size: 10px; color: var(--primary-dark-gray);">{{EXTRA_BATHROOM_SERVICE}}</div>
-                </div>
-                {{/if}}
-                {{#if DEDICATED_DRIVEWAY_SERVICE}}
-                <div class="additional-service" style="margin-bottom: 8px; padding: 8px; background: #f8fafc; border-radius: 6px;">
-                    <div style="font-weight: 600; font-size: 10px; color: var(--primary-dark-gray);">{{DEDICATED_DRIVEWAY_SERVICE}}</div>
-                </div>
-                {{/if}}
-            </div>
             
         </div>
 

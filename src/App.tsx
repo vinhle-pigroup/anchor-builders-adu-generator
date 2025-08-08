@@ -82,6 +82,7 @@ function App() {
         waterMeter: 'shared',
         gasMeter: 'shared',
         electricMeter: 'separate',
+        electricalPanel: '200',
       },
       sewerConnection: 'existing-lateral',
       needsDesign: true,
@@ -190,13 +191,18 @@ function App() {
         utilities: {
           waterMeter: waterCost > 0 ? 'separate' : 'shared',
           gasMeter: gasCost > 0 ? 'separate' : 'shared',
-          electricMeter: 'separate', // Always separate per type definition
+          electricMeter: 'separate',
+        electricalPanel: '200', // Always separate per type definition
         },
         sewerConnection: 'existing-lateral',
         needsDesign: true,
         solarDesign: false,
         femaIncluded: randomFema > 0,
-        selectedAddOns: [],
+        selectedAddOns: [
+          ...(randomBathroom > 0 ? ['bathroom'] : []),
+          ...(randomDriveway > 0 ? ['driveway'] : []),
+          ...(randomLandscaping > 0 ? ['landscaping'] : []),
+        ],
       },
       additionalNotes: 'This is a sample proposal generated with test data for demonstration purposes.',
       timeline: '6-8 months',
@@ -538,6 +544,7 @@ function App() {
                   waterMeter: 'shared',
                   gasMeter: 'shared',
                   electricMeter: 'separate',
+        electricalPanel: '200',
                 },
                 sewerConnection: 'existing-lateral',
                 needsDesign: true,
@@ -1799,7 +1806,7 @@ function PricingCard({ liveCalculation, pricingData }: any) {
           <span className='font-semibold'>${liveCalculation.servicesTotal.toLocaleString()}</span>
         </div>
         <div className='flex justify-between items-center text-xs'>
-          <span className='text-slate-600'>Utilities & Permits</span>
+          <span className='text-slate-600'>Utility Upgrades</span>
           <span className='font-semibold'>${liveCalculation.utilitiesTotal.toLocaleString()}</span>
         </div>
         <div className='flex justify-between items-center text-xs'>
