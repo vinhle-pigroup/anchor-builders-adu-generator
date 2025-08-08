@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { logConfigStatus } from './lib/env-config';
+import { AnchorPricingEngine } from './lib/pricing-engine';
+import { calculateMilestonePayments } from './data/pricing-config';
 import {
   FileText,
   Users,
@@ -359,54 +361,64 @@ function App() {
     }
   }, [formData, handleError, selectedTemplate]);
 
-  // Calculate live pricing
+  // Calculate live pricing using the same engine as PDF
   const liveCalculation = useMemo(() => {
-    // Calculate base construction cost
-    const baseConstruction = pricingData.sqft * pricingData.pricePerSqFt;
+    try {
+      const pricingEngine = new AnchorPricingEngine();
+      
+      // Convert pricingData to PricingInputs format
+      const pricingInputs = {
+        squareFootage: pricingData.sqft,
+        aduType: 'detached' as const, // Default, could be dynamic
+        stories: 1 as const, // Default, could be dynamic
+        bedrooms: 2, // Default, could be dynamic
+        bathrooms: 1, // Default, could be dynamic
+        utilities: {
+          waterMeter: 'shared' as const,
+          gasMeter: 'shared' as const,
+          electricMeter: 'separate' as const,
+        },
+        needsDesign: true, // Always include design services
+        appliancesIncluded: false,
+        hvacType: 'central-ac' as const,
+        selectedAddOns: [], // Could be dynamic based on pricingData.addons
+        sewerConnection: 'existing-lateral' as const,
+        solarDesign: false,
+        femaIncluded: false,
+        // CRITICAL: Force 0% markup to prevent unwanted contractor markup
+        priceOverrides: {
+          markupPercentage: 0.0
+        }
+      };
 
-    // Calculate utilities total
-    const utilitiesTotal = Object.values(pricingData.utilities).reduce(
-      (sum, cost) => sum + (cost || 0),
-      0
-    );
-
-    // Calculate services total
-    const servicesTotal = Object.values(pricingData.services).reduce((sum, cost) => sum + cost, 0);
-
-    // Calculate standard add-ons total
-    const standardAddonsTotal = Object.values(pricingData.addons).reduce(
-      (sum, cost) => sum + cost,
-      0
-    );
-
-    // Calculate manual add-ons total
-    const manualAddonsTotal = pricingData.manualAddons.reduce((sum, cost) => sum + cost, 0);
-
-    // Total add-ons
-    const addonsTotal = standardAddonsTotal + manualAddonsTotal;
-
-    // Calculate subtotal
-    const subtotal = baseConstruction + utilitiesTotal + servicesTotal + addonsTotal;
-
-    // Calculate markup (15%)
-    const markup = Math.round(subtotal * 0.15);
-
-    // Calculate final total
-    const finalTotal = subtotal + markup;
-
-    // Calculate price per sq ft
-    const pricePerSqFt = Math.round(finalTotal / pricingData.sqft);
-
-    return {
-      baseConstruction,
-      utilitiesTotal,
-      servicesTotal,
-      addonsTotal,
-      subtotal,
-      markup,
-      finalTotal,
-      pricePerSqFt,
-    };
+      const calculation = pricingEngine.calculateProposal(pricingInputs);
+      
+      return {
+        baseConstruction: calculation.lineItems.find(item => item.category === 'Base Construction')?.totalPrice || 0,
+        utilitiesTotal: calculation.lineItems.filter(item => item.category === 'Utility Connections').reduce((sum, item) => sum + item.totalPrice, 0),
+        servicesTotal: calculation.lineItems.find(item => item.category === 'Design Services')?.totalPrice || 0,
+        addonsTotal: calculation.lineItems.filter(item => item.category === 'Add-ons').reduce((sum, item) => sum + item.totalPrice, 0),
+        subtotal: calculation.subtotal,
+        markup: calculation.markupAmount,
+        finalTotal: calculation.grandTotal,
+        pricePerSqFt: Math.round(calculation.pricePerSqFt),
+      };
+    } catch (error) {
+      console.error('Pricing calculation error:', error);
+      // Fallback to simple calculation
+      const baseConstruction = pricingData.sqft * pricingData.pricePerSqFt;
+      const finalTotal = baseConstruction + 12500; // Base + design
+      return {
+        baseConstruction,
+        utilitiesTotal: 0,
+        servicesTotal: 12500,
+        addonsTotal: 0,
+        subtotal: finalTotal,
+        markup: 0,
+        finalTotal,
+        pricePerSqFt: Math.round(finalTotal / pricingData.sqft),
+      };
+    }
   }, [pricingData]);
 
   // Global UI Components that appear over pages
@@ -1818,7 +1830,7 @@ function PricingCard({ liveCalculation, pricingData }: any) {
           <span className='font-semibold'>${liveCalculation.subtotal.toLocaleString()}</span>
         </div>
         <div className='flex justify-between items-center text-xs'>
-          <span className='text-slate-600'>Contractor Markup (15%)</span>
+          <span className='text-slate-600'>Contractor Markup (0%)</span>
           <span className='font-semibold'>${liveCalculation.markup.toLocaleString()}</span>
         </div>
         <div className='flex justify-between items-center text-sm font-semibold pt-3 mt-3 border-t-2 border-slate-200'>
@@ -1832,53 +1844,24 @@ function PricingCard({ liveCalculation, pricingData }: any) {
 
 // Payment Schedule Card Component
 function PaymentScheduleCard({ liveCalculation }: any) {
-  const milestones = [
-    { number: 1, name: 'Mobilization', percentage: 20 },
-    { number: 2, name: 'Trenching & Underground Plumbing', percentage: 20 },
-    { number: 3, name: 'Foundation', percentage: 20 },
-    { number: 4, name: 'Framing', percentage: 15 },
-    { number: 5, name: 'Mechanical, Electrical, Plumbing (MEP)', percentage: 15 },
-    { number: 6, name: 'Drywall', percentage: 10 },
-    { number: 7, name: 'Property Final', percentage: 5 },
-  ];
-
-  // Excel-style calculation: (Total - Design - Deposit) for construction amount
-  const deposit = 1000; // Fixed $1,000 deposit
-  const designAmount = 12500; // Design services (could be dynamic)
-  const constructionAmount = liveCalculation.finalTotal - designAmount - deposit;
-
-  // Calculate milestones using Excel ROUND(amount, -3) formula
-  const calculateMilestone = (percentage: number, isLast: boolean = false) => {
-    if (isLast) {
-      // Final milestone: remainder to ensure exact total
-      const previousSum = milestones.slice(0, -1).reduce((sum, m) => {
-        const baseAmount = (constructionAmount * m.percentage) / 100;
-        return sum + Math.round(baseAmount / 1000) * 1000; // ROUND(amount, -3)
-      }, 0);
-      return constructionAmount - previousSum;
-    } else {
-      // Regular milestone: ROUND(percentage * constructionAmount / 100, -3)
-      const baseAmount = (constructionAmount * percentage) / 100;
-      return Math.round(baseAmount / 1000) * 1000; // ROUND(amount, -3)
-    }
-  };
+  // Use the same milestone calculation as PDF template
+  const payments = calculateMilestonePayments(liveCalculation.finalTotal, 12500, 1000);
 
   return (
     <div className='bg-white rounded-xl p-4 shadow-md border border-slate-200'>
       <h3 className='font-semibold text-slate-800 mb-3 text-sm'>Payment Milestones</h3>
       <div className='space-y-2'>
-        {milestones.map((milestone, index) => {
-          const amount = calculateMilestone(milestone.percentage, index === milestones.length - 1);
+        {payments.map((payment, index) => {
           return (
-            <div key={milestone.number} className='flex justify-between items-center text-xs'>
+            <div key={payment.code} className='flex justify-between items-center text-xs'>
               <div className='flex items-center space-x-2'>
                 <span className='w-5 h-5 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center text-xs font-semibold'>
-                  {milestone.number}
+                  {index + 1}
                 </span>
-                <span className='text-slate-800'>{milestone.name}</span>
+                <span className='text-slate-800'>{payment.name}</span>
               </div>
               <span className='font-semibold text-slate-800'>
-                ${amount.toLocaleString()} ({milestone.percentage}%)
+                ${payment.amount.toLocaleString()} ({payment.percentage}%)
               </span>
             </div>
           );

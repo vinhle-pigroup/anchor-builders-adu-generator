@@ -1,5 +1,6 @@
 import { ProposalData } from '../types/proposal';
 import { logger } from './logger';
+import { calculateMilestonePayments } from '../data/pricing-config';
 
 /**
  * Enhanced PDF Template Generator with proper variable replacement
@@ -358,21 +359,29 @@ export class PDFTemplateGenerator {
       const costPerSqFt = (proposalData.pricing?.totalCost || 0) / squareFootage;
       variables.COST_PER_SQFT = Math.round(costPerSqFt).toString();
       
-      // Phase totals and design amount calculation
-      const baseDesignAmount = (proposalData.pricing?.baseCost || 0) * 0.05; // 5% for design
-      variables.DESIGN_AMOUNT = this.formatCurrency(baseDesignAmount);
-      variables.PHASE_1_TOTAL = this.formatCurrency(1000 + baseDesignAmount); // Design & Deposits
-      variables.PHASE_3_TOTAL = this.formatCurrency((proposalData.pricing?.baseCost || 0) * 0.95); // Construction
+      // Phase totals and design amount calculation - Fixed design fee
+      const fixedDesignAmount = 12500; // Fixed $12,500 design fee (not percentage)
+      const depositAmount = 1000; // Fixed $1,000 deposit
+      variables.DESIGN_AMOUNT = this.formatCurrency(fixedDesignAmount);
+      variables.DEPOSIT_AMOUNT = this.formatCurrency(depositAmount);
+      variables.PHASE_1_TOTAL = this.formatCurrency(fixedDesignAmount); // Phase I: Design only (deposit separate)
       
-      // Milestone payment breakdown (7 milestones)
+      // Milestone payment breakdown using proper calculation with rounding
       const totalCost = proposalData.pricing?.totalCost || 0;
-      variables.MILESTONE_1 = this.formatCurrency(totalCost * 0.10); // 10% - Contract signing
-      variables.MILESTONE_2 = this.formatCurrency(totalCost * 0.15); // 15% - Permits approved
-      variables.MILESTONE_3 = this.formatCurrency(totalCost * 0.20); // 20% - Foundation complete
-      variables.MILESTONE_4 = this.formatCurrency(totalCost * 0.20); // 20% - Framing complete
-      variables.MILESTONE_5 = this.formatCurrency(totalCost * 0.15); // 15% - Rough plumbing/electrical
-      variables.MILESTONE_6 = this.formatCurrency(totalCost * 0.15); // 15% - Insulation/drywall
-      variables.MILESTONE_7 = this.formatCurrency(totalCost * 0.05); // 5% - Final inspection
+      
+      // Calculate Phase 3 total as construction amount (same calculation as milestones)
+      const constructionAmount = totalCost - fixedDesignAmount - depositAmount;
+      variables.PHASE_3_TOTAL = this.formatCurrency(constructionAmount); // Construction amount
+      const milestones = calculateMilestonePayments(totalCost, fixedDesignAmount, depositAmount);
+      
+      // Map milestone payments to template variables
+      variables.MILESTONE_1 = milestones.length > 0 ? this.formatCurrency(milestones[0].amount) : this.formatCurrency(0);
+      variables.MILESTONE_2 = milestones.length > 1 ? this.formatCurrency(milestones[1].amount) : this.formatCurrency(0);
+      variables.MILESTONE_3 = milestones.length > 2 ? this.formatCurrency(milestones[2].amount) : this.formatCurrency(0);
+      variables.MILESTONE_4 = milestones.length > 3 ? this.formatCurrency(milestones[3].amount) : this.formatCurrency(0);
+      variables.MILESTONE_5 = milestones.length > 4 ? this.formatCurrency(milestones[4].amount) : this.formatCurrency(0);
+      variables.MILESTONE_6 = milestones.length > 5 ? this.formatCurrency(milestones[5].amount) : this.formatCurrency(0);
+      variables.MILESTONE_7 = milestones.length > 6 ? this.formatCurrency(milestones[6].amount) : this.formatCurrency(0);
 
       // Additional Services Total Calculation
       const addOnServices = proposalData.additionalServices || [];

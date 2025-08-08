@@ -84,10 +84,14 @@ export class AnchorPricingEngine {
     // Calculate subtotal
     const subtotal = lineItems.reduce((sum, item) => sum + item.totalPrice, 0);
 
-    // Apply markup (use override if available)
+    // Apply markup only to construction costs (exclude design services)
+    const constructionSubtotal = lineItems
+      .filter((item) => item.category !== 'Design Services')
+      .reduce((sum, item) => sum + item.totalPrice, 0);
+
     const markupPercentage =
       inputs.priceOverrides?.markupPercentage ?? businessSettings.standardMarkup;
-    const markupAmount = subtotal * markupPercentage;
+    const markupAmount = constructionSubtotal * markupPercentage;
     const grandTotal = subtotal + markupAmount;
 
     return {

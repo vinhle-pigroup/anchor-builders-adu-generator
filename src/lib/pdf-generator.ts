@@ -38,7 +38,11 @@ export class AnchorPDFGenerator {
         appliancesIncluded: formData.project.appliancesIncluded,
         hvacType: formData.project.hvacType,
         selectedAddOns: formData.project.selectedAddOns || [],
-        priceOverrides: formData.project.priceOverrides,
+        // CRITICAL: Force 0% markup in PDF generator to match input form
+        priceOverrides: {
+          ...formData.project.priceOverrides,
+          markupPercentage: 0.0
+        },
         // Required fields with defaults
         sewerConnection: formData.project.sewerConnection || 'existing-lateral',
         solarDesign: formData.project.solarDesign || false,

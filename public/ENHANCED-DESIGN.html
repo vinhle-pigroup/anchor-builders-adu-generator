@@ -112,8 +112,8 @@
         }
         
         .logo-box {
-            width: 65px;
-            height: 65px;
+            width: 72px;
+            height: 72px;
             background: white;
             border-radius: 4px;
             display: flex;
@@ -123,8 +123,8 @@
         }
         
         .logo-box img {
-            max-width: 59px;
-            max-height: 59px;
+            max-width: 65px;
+            max-height: 65px;
             object-fit: contain;
         }
         
@@ -183,7 +183,7 @@
         }
         
         .title-banner h2 {
-            font-size: 14px; /* Uniform title size */
+            font-size: 15px; /* 10% bigger: 14px * 1.1 = 15.4px rounded to 15px */
             font-weight: 700;
             margin: 0;
             text-transform: uppercase;
@@ -733,12 +733,12 @@
             page-break-after: always;
         }
 
-        /* Horizontal Timeline Styles */
+        /* Clean Timeline Design */
         .horizontal-timeline-container {
             background: white;
             border: 1px solid #e5e7eb;
             border-radius: 4px;
-            padding: 12px;
+            padding: 16px;
             margin: 8px 0 6px 0;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
@@ -749,82 +749,75 @@
             color: #1f2937;
             text-transform: uppercase;
             letter-spacing: 0.3px;
-            margin-bottom: 10px;
+            margin-bottom: 14px;
             text-align: center;
         }
 
-        .timeline-horizontal {
-            position: relative;
-            display: flex;
-            justify-content: space-between;
+        .timeline-steps {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 12px;
             align-items: center;
-            padding: 0 20px;
-            gap: 80px;
+            margin-bottom: 12px;
         }
 
-        .timeline-horizontal::before {
-            content: '';
-            position: absolute;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60%;
-            height: 2px;
-            background: linear-gradient(to right, #f59e0b 0%, #f59e0b 50%, #0284c7 50%, #0284c7 100%);
-            border-radius: 2px;
-            z-index: 0;
-        }
-
-        .timeline-phase {
-            position: relative;
+        .timeline-step {
             text-align: center;
-            z-index: 2;
-            max-width: 200px;
         }
 
-        .phase-circle {
-            width: 30px;
-            height: 30px;
+        .step-number {
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 700;
-            margin: 0 auto 6px auto;
-            border: 2px solid;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+            margin-bottom: 6px;
         }
 
-        .phase-circle.design {
-            background: #fef9e7;
-            color: #713f12;
-            border-color: #f59e0b;
+        .step-number.design {
+            background: #f59e0b;
+            color: white;
         }
 
-        .phase-circle.construction {
-            background: #e0f2fe;
-            color: #0c4a6e;
-            border-color: #0284c7;
+        .step-number.construction {
+            background: #0284c7;
+            color: white;
         }
 
-        .timeline-phase-title {
+        .step-title {
             font-size: 10px;
             font-weight: 700;
             color: #1f2937;
             margin-bottom: 2px;
-            line-height: 1.1;
         }
 
-        .timeline-phase-subtitle {
-            font-size: 9px;
+        .step-duration {
+            font-size: 10px;
             color: #6b7280;
-            line-height: 1.1;
+            line-height: 1.3;
         }
 
-        .total-time {
-            margin-top: 8px;
+        .timeline-connector {
+            width: 160px;
+            height: 3px;
+            background: linear-gradient(to right, #f59e0b 0%, #0284c7 100%);
+            border-radius: 2px;
+            justify-self: center;
+        }
+
+        .timeline-total {
             text-align: center;
+            font-size: 10px;
+            font-weight: 600;
+            color: #0284c7;
+            background: #f0f9ff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #bae6fd;
+            margin-top: 4px;
             padding: 4px 8px;
             background: #dbeafe;
             border: 1px solid #3b82f6;
@@ -1000,7 +993,6 @@
                         <li class="work-item">{{HVAC_TYPE}} installation</li>
                         <li class="work-item">Insulation package (R-13/R-30)</li>
                         <li class="work-item">Drywall with texture & primer</li>
-                        <li class="work-item">• Appliances included</li>
                         <li class="work-item">Cabinets & vanities</li>
                         <li class="work-item">Interior & exterior doors</li>
                         <li class="work-item">Double-pane vinyl windows</li>
@@ -1035,23 +1027,26 @@
         <div class="horizontal-timeline-container">
             <h3 class="horizontal-timeline-title">Estimated Timeline</h3>
             
-            <div class="timeline-horizontal">
+            <div class="timeline-steps">
                 <!-- Design & Permitting Phase -->
-                <div class="timeline-phase">
-                    <div class="phase-circle design">✓</div>
-                    <div class="timeline-phase-title">Design & Permitting (HOL)</div>
-                    <div class="timeline-phase-subtitle">21 days + 3-4 months city approval</div>
+                <div class="timeline-step left">
+                    <div class="step-number design">1</div>
+                    <div class="step-title">Design & Permitting (HOL)</div>
+                    <div class="step-duration">21 days + 3-4 months<br>city approval</div>
                 </div>
 
+                <!-- Connecting Line -->
+                <div class="timeline-connector"></div>
+
                 <!-- Construction Phase -->
-                <div class="timeline-phase">
-                    <div class="phase-circle construction">✓</div>
-                    <div class="timeline-phase-title">Construction Phase</div>
-                    <div class="timeline-phase-subtitle">4-6 months after permit approval</div>
+                <div class="timeline-step right">
+                    <div class="step-number construction">2</div>
+                    <div class="step-title">Construction Phase</div>
+                    <div class="step-duration">4-6 months after<br>permit approval</div>
                 </div>
             </div>
 
-            <div class="total-time">
+            <div class="timeline-total">
                 Total Estimated Time: 8-12 months
             </div>
         </div>
@@ -1193,30 +1188,36 @@
                         </tr>
                         {{/each}}
                         <!-- CHATGPT FIX: Move subtotal row INSIDE the if block -->
-                        <tr style="background: #f8f9fa;">
-                            <td colspan="2" style="text-align: right; padding: 8px; font-weight: 600; color: #495057;">Additional Services Total:</td>
-                            <td style="text-align: right; padding: 8px; font-weight: 600; color: #495057;">${{ADDITIONAL_SERVICES_TOTAL}}</td>
+                        <tr style="background: #f8f9fa; line-height: 1.1;">
+                            <td colspan="2" style="text-align: right; padding: 3px 4px; font-weight: 600; color: #495057;">Additional Services Total:</td>
+                            <td style="text-align: right; padding: 3px 4px; font-weight: 600; color: #495057;">${{ADDITIONAL_SERVICES_TOTAL}}</td>
                         </tr>
                         {{/if}}
 
                         <!-- Phase Subtotals -->
-                        <tr style="background: #f8f9fa; border-top: 1px solid #dee2e6;">
-                            <td colspan="2" style="text-align: right; padding: 8px; font-weight: 600; color: #495057;">Phase I Total (Design & Deposits):</td>
-                            <td style="text-align: right; padding: 8px; font-weight: 600; color: #495057;">${{PHASE_1_TOTAL}}</td>
+                        <tr style="background: #f8f9fa; border-top: 1px solid #dee2e6; line-height: 1.1;">
+                            <td colspan="2" style="text-align: right; padding: 3px 4px; font-weight: 600; color: #495057;">Phase I Total (Design):</td>
+                            <td style="text-align: right; padding: 3px 4px; font-weight: 600; color: #495057;">${{PHASE_1_TOTAL}}</td>
                         </tr>
-                        <tr style="background: #f8f9fa;">
-                            <td colspan="2" style="text-align: right; padding: 8px; font-weight: 600; color: #495057;">Phase II Total (Permits & Coordination):</td>
-                            <td style="text-align: right; padding: 8px; font-weight: 600; color: #495057;">included</td>
+                        <tr style="background: #f8f9fa; line-height: 1.1;">
+                            <td colspan="2" style="text-align: right; padding: 3px 4px; font-weight: 600; color: #495057;">Phase II Total (Permits & Coordination):</td>
+                            <td style="text-align: right; padding: 3px 4px; font-weight: 600; color: #495057;">included</td>
                         </tr>
-                        <tr style="background: #f8f9fa;">
-                            <td colspan="2" style="text-align: right; padding: 8px; font-weight: 600; color: #495057;">Phase III Total (Construction):</td>
-                            <td style="text-align: right; padding: 8px; font-weight: 600; color: #495057;">${{PHASE_3_TOTAL}}</td>
+                        <tr style="background: #f8f9fa; line-height: 1.1;">
+                            <td colspan="2" style="text-align: right; padding: 3px 4px; font-weight: 600; color: #495057;">Phase III Total (Construction):</td>
+                            <td style="text-align: right; padding: 3px 4px; font-weight: 600; color: #495057;">${{PHASE_3_TOTAL}}</td>
+                        </tr>
+
+                        <!-- Deposit Line Item -->
+                        <tr style="background: #fff3cd; border: 1px solid #ffeaa7; line-height: 1.1;">
+                            <td colspan="2" style="text-align: right; padding: 3px 4px; font-weight: 600; color: #856404;">Deposit (Due at Contract Signing):</td>
+                            <td style="text-align: right; padding: 3px 4px; font-weight: 600; color: #856404;">${{DEPOSIT_AMOUNT}}</td>
                         </tr>
 
                         <!-- Grand Total -->
-                        <tr class="total-row">
-                            <td colspan="2" style="text-align: right; padding: 8px;"><strong>GRAND TOTAL:</strong></td>
-                            <td style="text-align: right; padding: 8px;">${{GRAND_TOTAL}}</td>
+                        <tr class="total-row" style="line-height: 1.1;">
+                            <td colspan="2" style="text-align: right; padding: 3px 4px;"><strong>GRAND TOTAL:</strong></td>
+                            <td style="text-align: right; padding: 3px 4px;"><strong>${{GRAND_TOTAL}}</strong></td>
                         </tr>
                         
                         <tr style="background: #f3f4f6;">

@@ -1,4 +1,4 @@
-# Product Requirements Document (PRD)
+`# Product Requirements Document (PRD)
 ## Anchor Builders ADU Generator - Data Mapping & Build Quality Improvements
 
 **Date**: 2025-08-07  

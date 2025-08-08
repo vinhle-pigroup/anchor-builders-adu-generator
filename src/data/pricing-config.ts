@@ -105,7 +105,7 @@ export const addOnOptions: AddOnOption[] = [
 
 // Business Settings - From Excel Configuration
 export const businessSettings = {
-  standardMarkup: 0.15, // 15% standard markup
+  standardMarkup: 0.0, // No markup - pricing already includes all costs
   proposalValidityDays: 30,
   defaultCity: 'Westminster',
 };
@@ -202,10 +202,18 @@ export const calculateMilestonePayments = (
   let runningTotal = 0;
   const payments: Array<MilestonePayment & { amount: number; baseAmount: number }> = [];
 
-  // Calculate all milestones first with their base percentages
-  milestonePayments.forEach((milestone) => {
+  // Calculate M1-M6 with clean thousand rounding, final gets remainder
+  milestonePayments.forEach((milestone, index) => {
     const baseAmount = (constructionAmount * milestone.percentage) / 100;
-    const roundedAmount = Math.round(baseAmount / 1000) * 1000; // ROUND(amount, -3)
+    
+    let roundedAmount;
+    if (index < 6) {
+      // M1-M6: Round to clean thousands (down for cleaner numbers)
+      roundedAmount = Math.floor(baseAmount / 1000) * 1000;
+    } else {
+      // M7 (final): Will be calculated as remainder
+      roundedAmount = baseAmount; // Temporary, will be adjusted below
+    }
 
     payments.push({
       ...milestone,
@@ -213,13 +221,14 @@ export const calculateMilestonePayments = (
       baseAmount: baseAmount,
     });
 
-    runningTotal += roundedAmount;
+    if (index < 6) {
+      runningTotal += roundedAmount;
+    }
   });
 
-  // Adjust the final payment to ensure the total matches exactly
+  // Final payment gets all the remainder to ensure exact total
   const finalIndex = payments.length - 1;
-  const adjustment = constructionAmount - runningTotal;
-  payments[finalIndex].amount += adjustment;
+  payments[finalIndex].amount = constructionAmount - runningTotal;
 
   // Ensure no negative payments
   if (payments[finalIndex].amount < 0) {
