@@ -25,10 +25,12 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.60.0",
     "react-router-dom": "^6.26.2",
-    "zod": "^4.0.5",
+    "zod": "^4.0.15",
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.0",
     "@types/node": "^24.0.13",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
@@ -39,6 +41,7 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
+    "jsdom": "^26.1.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
     "terser": "^5.43.1",

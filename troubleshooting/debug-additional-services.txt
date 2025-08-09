@@ -1,0 +1,42 @@
+DEBUG ANALYSIS: Additional Services Section Missing
+
+PROBLEM:
+The "Additional Services" section in the Enhanced PDF template was working but now doesn't appear.
+
+INVESTIGATION FINDINGS:
+
+1. TEMPLATE STRUCTURE ANALYSIS:
+   - File: /public/ENHANCED-DESIGN.html
+   - Conditional: {{#if ADD_ON_WORK_EXISTS}} (line 1032)
+   - Template rows: {{#each ADD_ON_ITEMS}} (line 1036)
+   - Condition should ALWAYS be true due to line 586 in pdf-template-generator.ts
+
+2. LOGIC ANALYSIS (pdf-template-generator.ts lines 582-586):
+   const hasAddOnWork =
+     formData.project.selectedAddOns.length > 0 ||
+     formData.project.utilities.waterMeter === 'separate' ||
+     formData.project.utilities.gasMeter === 'separate' ||
+     true; // Electric meter is always separate, so always show Additional Services section
+
+   This should ALWAYS evaluate to true due to the hardcoded 'true' value.
+
+3. TEMPLATE REPLACEMENT PROCESS:
+   - Line 597: html.replace(/{{#if ADD_ON_WORK_EXISTS}}([\s\S]*?){{\/if}}/g, '$1')
+   - This should ALWAYS show the section content if hasAddOnWork is true
+   
+4. DATA FLOW:
+   - Line 618: Gets Add-On items from calculation.lineItems where category === 'Add-Ons'
+   - Line 647-648: Replaces {{#each ADD_ON_ITEMS}} with generated rows
+   
+5. POTENTIAL ISSUES:
+   a) Template conditional not being replaced properly
+   b) No Add-On category items in pricing calculation
+   c) Template syntax parsing error
+   d) Caching/build issue
+
+NEXT STEPS FOR INVESTIGATION:
+1. Check browser console for conditional replacement logs
+2. Verify pricing calculation generates Add-On category items
+3. Test template replacement manually
+4. Check for syntax errors in conditionals
+EOF < /dev/null

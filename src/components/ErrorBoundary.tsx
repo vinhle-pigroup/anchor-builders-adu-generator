@@ -1,9 +1,11 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { Component, ErrorInfo, ReactNode } from 'react';
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { logger } from '../lib/logger';
 
 interface Props {
-  children: ReactNode;
+  children?: ReactNode;
   fallback?: ReactNode;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface State {
@@ -14,17 +16,23 @@ interface State {
 
 export class ErrorBoundary extends Component<Props, State> {
   public state: State = {
-    hasError: false,
+    hasError: false
   };
 
   public static getDerivedStateFromError(error: Error): State {
-    // Update state so the next render will show the fallback UI
     return { hasError: true, error };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
+    logger.error('Error Boundary caught an error', error, {
+      component: 'ErrorBoundary',
+      errorInfo: errorInfo.componentStack,
+    });
+
+    this.props.onError?.(error, errorInfo);
+
     this.setState({
+      hasError: true,
       error,
       errorInfo,
     });
@@ -34,53 +42,64 @@ export class ErrorBoundary extends Component<Props, State> {
     this.setState({ hasError: false, error: undefined, errorInfo: undefined });
   };
 
+  private handleReload = () => {
+    window.location.reload();
+  };
+
+  private handleHome = () => {
+    window.location.href = '/';
+  };
+
   public render() {
     if (this.state.hasError) {
-      // Custom fallback UI
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
-      // Default fallback UI
       return (
-        <div className='min-h-screen bg-gradient-to-br from-slate-100 to-amber-50 flex items-center justify-center p-4'>
-          <div className='bg-white rounded-xl shadow-lg p-8 max-w-lg w-full text-center'>
-            <div className='mb-6'>
-              <AlertTriangle className='w-16 h-16 text-red-500 mx-auto mb-4' />
-              <h1 className='text-2xl font-bold text-slate-800 mb-2'>Something went wrong</h1>
-              <p className='text-slate-600'>
-                We encountered an unexpected error. Don't worry, your data is safe.
-              </p>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
+            <div className="flex justify-center mb-4">
+              <AlertTriangle className="h-16 w-16 text-red-500" />
             </div>
+            
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Oops! Something went wrong
+            </h1>
+            
+            <p className="text-gray-600 mb-6">
+              We encountered an unexpected error. This has been logged and we'll investigate the issue.
+            </p>
 
-            <div className='space-y-4'>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <button
                 onClick={this.handleReset}
-                className='w-full px-4 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2'
+                className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                <RefreshCw className='w-4 h-4' />
-                <span>Try Again</span>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Try Again
+              </button>
+              
+              <button
+                onClick={this.handleReload}
+                className="flex items-center justify-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Reload Page
               </button>
 
               <button
-                onClick={() => window.location.reload()}
-                className='w-full px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors'
+                onClick={this.handleHome}
+                className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
-                Reload Page
+                <Home className="h-4 w-4 mr-2" />
+                Go Home
               </button>
             </div>
 
-            {process.env.NODE_ENV === 'development' && this.state.error && (
-              <details className='mt-6 text-left'>
-                <summary className='cursor-pointer text-sm text-slate-500 hover:text-slate-700'>
-                  Error Details (Development)
-                </summary>
-                <pre className='mt-2 p-3 bg-slate-100 rounded text-xs text-slate-700 overflow-auto'>
-                  {this.state.error.toString()}
-                  {this.state.errorInfo?.componentStack}
-                </pre>
-              </details>
-            )}
+            <p className="text-xs text-gray-500 mt-4">
+              If this problem persists, please contact support.
+            </p>
           </div>
         </div>
       );
@@ -90,16 +109,33 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-// Higher-order component for easy wrapping
-export function withErrorBoundary<P extends object>(
-  Component: React.ComponentType<P>,
-  fallback?: ReactNode
-) {
-  return function WrappedComponent(props: P) {
-    return (
-      <ErrorBoundary fallback={fallback}>
-        <Component {...props} />
-      </ErrorBoundary>
-    );
-  };
+export function PDFErrorBoundary({ children, onError }: { children: ReactNode; onError?: (error: Error) => void }) {
+  return (
+    <ErrorBoundary
+      onError={(error, errorInfo) => {
+        logger.error('PDF Generation Error', error, {
+          component: 'PDFErrorBoundary',
+          errorInfo: errorInfo.componentStack,
+        });
+        onError?.(error);
+      }}
+      fallback={
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
+            <div>
+              <h3 className="text-sm font-medium text-red-800">
+                PDF Generation Error
+              </h3>
+              <p className="text-sm text-red-700 mt-1">
+                Unable to generate PDF. Please check your form data and try again.
+              </p>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      {children}
+    </ErrorBoundary>
+  );
 }

@@ -105,7 +105,7 @@ export const addOnOptions: AddOnOption[] = [
 
 // Business Settings - From Excel Configuration
 export const businessSettings = {
-  standardMarkup: 0.15, // 15% standard markup
+  standardMarkup: 0.0, // No markup - pricing already includes all costs
   proposalValidityDays: 30,
   defaultCity: 'Westminster',
 };
@@ -149,43 +149,43 @@ export const milestonePayments: MilestonePayment[] = [
   {
     code: 'M1',
     name: 'Mobilization',
-    percentage: 20,
+    percentage: 18,
     description: 'Project setup, permits, and mobilization',
   },
   {
     code: 'M2',
-    name: 'Trenching & Underground Plumbing',
-    percentage: 20,
-    description: 'Site preparation and underground utilities',
+    name: 'Underground Work',
+    percentage: 18,
+    description: 'Trenching and underground utilities',
   },
   {
     code: 'M3',
     name: 'Foundation',
-    percentage: 20,
+    percentage: 18,
     description: 'Foundation and concrete work',
   },
   {
     code: 'M4',
     name: 'Framing',
-    percentage: 15,
+    percentage: 16,
     description: 'Structural framing and roof',
   },
   {
     code: 'M5',
-    name: 'MEP (Mechanical, Electrical, Plumbing)',
-    percentage: 15,
+    name: 'MEP Rough',
+    percentage: 14,
     description: 'Rough mechanical, electrical, and plumbing',
   },
   {
     code: 'M6',
     name: 'Drywall',
-    percentage: 10,
+    percentage: 11,
     description: 'Drywall installation and finish',
   },
   {
     code: 'M7',
-    name: 'Property Final',
-    percentage: 0,
+    name: 'Final Completion',
+    percentage: 5,
     description: 'Final inspection and completion',
   },
 ];
@@ -194,37 +194,54 @@ export const milestonePayments: MilestonePayment[] = [
 export const calculateMilestonePayments = (
   totalAmount: number,
   designAmount: number = 12500,
-  deposit: number = 1000
+  _deposit: number = 1000 // Not used in calculation - deposit comes from milestone payments
 ) => {
-  // Excel-style calculation: (Total - Design - Deposit) for construction amount
-  const constructionAmount = totalAmount - designAmount - deposit;
+  // CORRECTED: Construction amount should be total minus design only (deposit comes from construction phases)
+  const constructionAmount = totalAmount - designAmount;
 
   let runningTotal = 0;
   const payments: Array<MilestonePayment & { amount: number; baseAmount: number }> = [];
 
-  // Calculate milestones using Excel ROUND(amount, -3) formula
+  // Calculate M1-M6 with clean thousand rounding, final gets remainder
   milestonePayments.forEach((milestone, index) => {
-    if (index < milestonePayments.length - 1) {
-      // Regular milestone: ROUND(percentage * constructionAmount / 100, -3)
-      const baseAmount = (constructionAmount * milestone.percentage) / 100;
-      const roundedAmount = Math.round(baseAmount / 1000) * 1000; // ROUND(amount, -3)
-      runningTotal += roundedAmount;
-
-      payments.push({
-        ...milestone,
-        amount: roundedAmount,
-        baseAmount: baseAmount,
-      });
+    const baseAmount = (constructionAmount * milestone.percentage) / 100;
+    
+    let roundedAmount;
+    if (index < 6) {
+      // M1-M6: Round to clean thousands (down for cleaner numbers)
+      roundedAmount = Math.floor(baseAmount / 1000) * 1000;
     } else {
-      // Final milestone: remainder to ensure exact total
-      const finalAmount = constructionAmount - runningTotal;
-      payments.push({
-        ...milestone,
-        amount: finalAmount,
-        baseAmount: finalAmount,
-      });
+      // M7 (final): Will be calculated as remainder
+      roundedAmount = baseAmount; // Temporary, will be adjusted below
+    }
+
+    payments.push({
+      ...milestone,
+      amount: roundedAmount,
+      baseAmount: baseAmount,
+    });
+
+    if (index < 6) {
+      runningTotal += roundedAmount;
     }
   });
+
+  // Final payment gets all the remainder to ensure exact total
+  const finalIndex = payments.length - 1;
+  payments[finalIndex].amount = constructionAmount - runningTotal;
+
+  // Ensure no negative payments
+  if (payments[finalIndex].amount < 0) {
+    // Distribute the negative amount across other milestones
+    const redistributeAmount = Math.abs(payments[finalIndex].amount);
+    payments[finalIndex].amount = 1000; // Minimum final payment
+
+    // Reduce each milestone proportionally
+    for (let i = 0; i < finalIndex; i++) {
+      const reduction = Math.round(redistributeAmount / finalIndex / 1000) * 1000;
+      payments[i].amount = Math.max(1000, payments[i].amount - reduction);
+    }
+  }
 
   return payments;
 };

@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
-import { AnchorProposalFormData } from '../types/proposal';
+import { AnchorProposalFormData, ProposalData } from '../types/proposal';
 import { AnchorPricingEngine } from './pricing-engine';
-import { AnchorPDFTemplateGenerator } from './pdf-template-generator';
+import { PDFTemplateGenerator } from './pdf-template-generator';
 
 export class AnchorPDFGenerator {
   private doc: jsPDF;
@@ -16,14 +16,208 @@ export class AnchorPDFGenerator {
     // Add some custom fonts if available
   }
 
+  /**
+   * Convert AnchorProposalFormData to ProposalData format expected by template generator
+   * Uses liveCalculation as single source of truth for all pricing data
+   */
+  private convertFormDataToProposalData(
+    formData: AnchorProposalFormData, 
+    liveCalculation?: any
+  ): ProposalData {
+    // Use liveCalculation as single source of truth for all pricing data
+    let baseCost = 0;
+    let totalCost = 0;
+    let additionalServices: Array<{name?: string, description?: string, cost?: number}> = [];
+    
+    if (liveCalculation) {
+      console.log('🎯 [PDF] Using liveCalculation as single source of truth:');
+      console.log('  - Base Construction:', liveCalculation.baseConstruction);
+      console.log('  - Final Total:', liveCalculation.finalTotal);
+      console.log('  - Subtotal:', liveCalculation.subtotal);
+      console.log('  - Markup:', liveCalculation.markup);
+      
+      // Map liveCalculation data to PDF generator format
+      baseCost = liveCalculation.baseConstruction || 0;
+      totalCost = liveCalculation.finalTotal || 0;
+      
+      // Create additional services from liveCalculation breakdown
+      // NOTE: Design Services ($12,500) should NOT be in additional services - it has its own line
+      const services = [];
+      
+      if (liveCalculation.utilitiesTotal > 0) {
+        services.push({
+          name: 'Utility Upgrades',
+          description: 'Separate utility meter connections',
+          cost: liveCalculation.utilitiesTotal
+        });
+      }
+      
+      if (liveCalculation.addonsTotal > 0) {
+        services.push({
+          name: 'Add-on Services',
+          description: 'Selected additional services and upgrades',
+          cost: liveCalculation.addonsTotal
+        });
+      }
+      
+      additionalServices = services;
+      console.log('📊 [PDF] Additional services from liveCalculation:', additionalServices);
+      
+    } else {
+      console.warn('⚠️ [PDF] No liveCalculation provided, using fallback pricing');
+      // Fallback to basic pricing for backwards compatibility
+      baseCost = formData.project.squareFootage * 200; // Basic fallback
+      totalCost = baseCost + 12500; // Add design services
+    }
+    
+    return {
+      clientInfo: {
+        name: `${formData.client.firstName} ${formData.client.lastName}`,
+        email: formData.client.email,
+        phone: formData.client.phone,
+        address: formData.client.address,
+      },
+      projectInfo: {
+        address: formData.client.address, // Project address same as client for ADU
+        type: formData.project.aduType,
+        bedrooms: formData.project.bedrooms,
+        bathrooms: formData.project.bathrooms,
+        squareFootage: formData.project.squareFootage,
+      },
+      // Pass through utility selections for scope of work display
+      utilities: {
+        waterMeter: formData.project.utilities?.waterMeter,
+        gasMeter: formData.project.utilities?.gasMeter,
+        electricMeter: 'separate', // Always separate for ADUs
+        electricalPanel: formData.project.utilities?.electricalPanel
+      },
+      // Pass through selected add-ons for bathroom count calculation
+      selectedAddOns: formData.project.selectedAddOns || [],
+      pricing: {
+        baseCost: baseCost,
+        totalCost: totalCost,
+        estimatedTimeline: formData.timeline,
+      },
+      additionalServices: additionalServices,
+      // Template-specific array for {{#each ADD_ON_ITEMS}} loops
+      ADD_ON_ITEMS: additionalServices.map((service, index) => ({
+        number: (index + 1).toString(),
+        name: service.name || 'Additional Service',
+        description: service.description || `${service.name} upgrade`,
+        cost: new Intl.NumberFormat('en-US').format(service.cost || 0) // Format as number string, not currency
+      }))
+    };
+  }
+
+  /**
+   * Create PDF from processed HTML using browser's print functionality
+   */
+  private createPDFFromHTML(htmlContent: string, filename: string): void {
+    console.log('🖨️ Opening HTML in new window for PDF generation...');
+    
+    // Create a complete HTML document
+    const completeHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anchor Builders ADU Proposal</title>
+    <style>
+        @media print {
+            @page { 
+                margin: 0.5in;
+                size: letter;
+            }
+            body { 
+                margin: 0;
+                font-family: Arial, sans-serif;
+                line-height: 1.4;
+            }
+        }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.4;
+            margin: 20px;
+        }
+        .cost-value { text-align: right; }
+        .phase-header { background: #f0f0f0; font-weight: bold; }
+        table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+        td, th { border: 1px solid #ddd; padding: 8px; }
+    </style>
+</head>
+<body>
+    ${htmlContent}
+    <script>
+        // Auto-open print dialog after page loads
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                window.print();
+                // Close window after printing (user can cancel this)
+                setTimeout(function() {
+                    if (confirm('Close this window?')) {
+                        window.close();
+                    }
+                }, 1000);
+            }, 500);
+        });
+    </script>
+</body>
+</html>`;
+
+    // Open in new window
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(completeHtml);
+      printWindow.document.close();
+      console.log('✅ PDF generation window opened successfully');
+    } else {
+      console.error('❌ Failed to open print window - popup blocked?');
+      // Fallback: download HTML file
+      this.downloadHTMLFile(completeHtml, filename.replace('.pdf', '.html'));
+    }
+  }
+
+  /**
+   * Fallback: download HTML file if popup is blocked
+   */
+  private downloadHTMLFile(htmlContent: string, filename: string): void {
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    console.log('📄 HTML file downloaded as fallback');
+  }
+
   async generateProposal(
     formData: AnchorProposalFormData,
-    selectedTemplate?: string
+    _selectedTemplate?: string,
+    liveCalculation?: any
   ): Promise<void> {
     // Try to use the new template generator first
     try {
-      const templateGenerator = new AnchorPDFTemplateGenerator();
-      await templateGenerator.generateProposal(formData, selectedTemplate);
+      const templateGenerator = new PDFTemplateGenerator();
+      const proposalData = this.convertFormDataToProposalData(formData, liveCalculation);
+      
+      // Load the correct template HTML
+      const templatePath = '/ENHANCED-DESIGN.html'; // Default to enhanced template
+      const response = await fetch(templatePath);
+      if (!response.ok) {
+        throw new Error(`Failed to load template: ${response.status}`);
+      }
+      const templateHtml = await response.text();
+      console.log('📄 Template loaded successfully, length:', templateHtml.length);
+      
+      const processedHtml = await templateGenerator.generateTemplate(templateHtml, proposalData, { debugMode: true });
+      
+      // Create PDF from the processed HTML
+      console.log('🖨️ Creating PDF from processed HTML...');
+      this.createPDFFromHTML(processedHtml, `Anchor-Builders-ADU-Proposal-${Date.now()}.pdf`);
     } catch (error) {
       console.warn('Template generator failed, falling back to jsPDF:', error);
       // Fallback to jsPDF generation - create download for this case
