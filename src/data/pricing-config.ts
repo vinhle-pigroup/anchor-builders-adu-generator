@@ -194,10 +194,10 @@ export const milestonePayments: MilestonePayment[] = [
 export const calculateMilestonePayments = (
   totalAmount: number,
   designAmount: number = 12500,
-  deposit: number = 1000
+  _deposit: number = 1000 // Not used in calculation - deposit comes from milestone payments
 ) => {
-  // Excel-style calculation: (Total - Design - Deposit) for construction amount
-  const constructionAmount = totalAmount - designAmount - deposit;
+  // CORRECTED: Construction amount should be total minus design only (deposit comes from construction phases)
+  const constructionAmount = totalAmount - designAmount;
 
   let runningTotal = 0;
   const payments: Array<MilestonePayment & { amount: number; baseAmount: number }> = [];

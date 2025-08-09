@@ -89,17 +89,8 @@ export function FormField({
         </div>
       )}
 
-      {/* Success message for complex validations */}
-      {showValid && isRequired && (
-        <div
-          className='flex items-center space-x-1 text-sm text-green-600'
-          role='status'
-          aria-live='polite'
-        >
-          <CheckCircle className='w-4 h-4 flex-shrink-0' aria-hidden='true' />
-          <span>Valid</span>
-        </div>
-      )}
+      {/* Success message for complex validations - Text removed per user request */}
+      {/* Visual validation (green border, icon) remains in place */}
     </div>
   );
 }

@@ -18,69 +18,56 @@ export class AnchorPDFGenerator {
 
   /**
    * Convert AnchorProposalFormData to ProposalData format expected by template generator
+   * Uses liveCalculation as single source of truth for all pricing data
    */
-  private convertFormDataToProposalData(formData: AnchorProposalFormData): ProposalData {
-    // Calculate pricing using the pricing engine
+  private convertFormDataToProposalData(
+    formData: AnchorProposalFormData, 
+    liveCalculation?: any
+  ): ProposalData {
+    // Use liveCalculation as single source of truth for all pricing data
     let baseCost = 0;
     let totalCost = 0;
     let additionalServices: Array<{name?: string, description?: string, cost?: number}> = [];
     
-    try {
-      // ENHANCED DEBUG: Check form data being passed to pricing engine
-      const pricingInputs = {
-        squareFootage: formData.project.squareFootage,
-        aduType: formData.project.aduType,
-        stories: formData.project.stories || 1,
-        bedrooms: formData.project.bedrooms,
-        bathrooms: formData.project.bathrooms,
-        utilities: formData.project.utilities,
-        needsDesign: formData.project.needsDesign,
-        appliancesIncluded: formData.project.appliancesIncluded,
-        hvacType: formData.project.hvacType,
-        selectedAddOns: formData.project.selectedAddOns || [],
-        // CRITICAL: Force 0% markup in PDF generator to match input form
-        priceOverrides: {
-          ...formData.project.priceOverrides,
-          markupPercentage: 0.0
-        },
-        // Required fields with defaults
-        sewerConnection: formData.project.sewerConnection || 'existing-lateral',
-        solarDesign: formData.project.solarDesign || false,
-        femaIncluded: formData.project.femaIncluded || false
-      };
+    if (liveCalculation) {
+      console.log('🎯 [PDF] Using liveCalculation as single source of truth:');
+      console.log('  - Base Construction:', liveCalculation.baseConstruction);
+      console.log('  - Final Total:', liveCalculation.finalTotal);
+      console.log('  - Subtotal:', liveCalculation.subtotal);
+      console.log('  - Markup:', liveCalculation.markup);
       
-      console.log('🔍 [DEBUG] Pricing engine inputs:');
-      console.log('  - selectedAddOns:', pricingInputs.selectedAddOns);
-      console.log('  - utilities:', pricingInputs.utilities);
-      console.log('  - Full inputs:', pricingInputs);
+      // Map liveCalculation data to PDF generator format
+      baseCost = liveCalculation.baseConstruction || 0;
+      totalCost = liveCalculation.finalTotal || 0;
       
-      const pricingEngine = new AnchorPricingEngine();
-      const calculation = pricingEngine.calculateProposal(pricingInputs);
+      // Create additional services from liveCalculation breakdown
+      // NOTE: Design Services ($12,500) should NOT be in additional services - it has its own line
+      const services = [];
       
-      baseCost = calculation.totalBeforeMarkup;
-      totalCost = calculation.grandTotal;
+      if (liveCalculation.utilitiesTotal > 0) {
+        services.push({
+          name: 'Utility Upgrades',
+          description: 'Separate utility meter connections',
+          cost: liveCalculation.utilitiesTotal
+        });
+      }
       
-      // ENHANCED DEBUG: Check what the pricing engine calculated
-      console.log('🔍 [DEBUG] Pricing calculation result:');
-      console.log('  - selectedAddOns from form:', formData.project.selectedAddOns);
-      console.log('  - All lineItems from pricing engine:', calculation.lineItems);
-      console.log('  - Add-Ons category items:', calculation.lineItems?.filter((item: any) => item.category === 'Add-Ons'));
+      if (liveCalculation.addonsTotal > 0) {
+        services.push({
+          name: 'Add-on Services',
+          description: 'Selected additional services and upgrades',
+          cost: liveCalculation.addonsTotal
+        });
+      }
       
-      // Extract additional services from pricing calculation
-      additionalServices = (calculation.lineItems || [])
-        .filter((item: any) => item.category === 'Add-Ons')
-        .map((item: any) => ({
-          name: item.name || item.description?.split(' - ')[0] || 'Additional Service',
-          description: item.description || `${item.name} upgrade`,
-          cost: item.totalPrice || item.cost || 0
-        }));
+      additionalServices = services;
+      console.log('📊 [PDF] Additional services from liveCalculation:', additionalServices);
       
-      console.log('💰 [DEBUG] Final additional services for PDF:', additionalServices);
-      console.log('💰 Pricing calculated:', { baseCost, totalCost, additionalServices: additionalServices.length });
-      
-    } catch (error) {
-      console.error('❌ Pricing calculation failed:', error);
-      // Fallback to basic data structure
+    } else {
+      console.warn('⚠️ [PDF] No liveCalculation provided, using fallback pricing');
+      // Fallback to basic pricing for backwards compatibility
+      baseCost = formData.project.squareFootage * 200; // Basic fallback
+      totalCost = baseCost + 12500; // Add design services
     }
     
     return {
@@ -209,12 +196,13 @@ export class AnchorPDFGenerator {
 
   async generateProposal(
     formData: AnchorProposalFormData,
-    _selectedTemplate?: string
+    _selectedTemplate?: string,
+    liveCalculation?: any
   ): Promise<void> {
     // Try to use the new template generator first
     try {
       const templateGenerator = new PDFTemplateGenerator();
-      const proposalData = this.convertFormDataToProposalData(formData);
+      const proposalData = this.convertFormDataToProposalData(formData, liveCalculation);
       
       // Load the correct template HTML
       const templatePath = '/ENHANCED-DESIGN.html'; // Default to enhanced template

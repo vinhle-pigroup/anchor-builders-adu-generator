@@ -155,7 +155,7 @@ export class AnchorPricingEngine {
       const waterUtility = utilityOptions.find(u => u.name === 'Water Meter');
       if (waterUtility) {
         lineItems.push({
-          category: 'Add-Ons',
+          category: 'Utility Connections', // FIXED: Use correct category
           description: 'Separate Water Meter Connection',
           quantity: 1,
           unitPrice: waterUtility.separatePrice,
@@ -170,7 +170,7 @@ export class AnchorPricingEngine {
       const gasUtility = utilityOptions.find(u => u.name === 'Gas Meter');
       if (gasUtility) {
         lineItems.push({
-          category: 'Add-Ons',
+          category: 'Utility Connections', // FIXED: Use correct category
           description: 'Separate Gas Meter Connection',
           quantity: 1,
           unitPrice: gasUtility.separatePrice,
