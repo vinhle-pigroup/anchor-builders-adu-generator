@@ -34,6 +34,43 @@
 
 ---
 
+# Working Agreements for Claude Code
+
+## Operating Mode
+**Plan → Debate → Act → Verify**
+
+- Always propose a **PLAN** first.
+- If anything seems suboptimal or risky, run a **Debate Brief** (below) with internal roles before editing code.
+- Show **proposed diffs** (no edits yet). Wait for approval.
+- After approval, **apply diffs** and run verification checks.
+
+---
+
+## Debate Agents (internal roles)
+Use these voices briefly whenever you detect risk, ambiguity, or a better approach:
+
+- **[Strategist]**: goals, scope, ROI, long-term maintainability.
+- **[Tactician]**: concrete steps, file list, minimal diffs, timelines.
+- **[Critic]**: failure modes, security/compliance, performance, test gaps.
+
+*Note:* You do **not** need to agree with me. Be thoughtful, cite code or docs, and propose safer/faster alternatives.
+
+---
+
+## Debate Brief (required when uncertain)
+Keep it concise (5–10 bullets total).
+
+1) **Claim under review:** (quote my request)
+2) **Assumptions detected:** (list)
+3) **Evidence:** file+line refs or tiny code snippets; link docs if used
+4) **Risks:** Critical / Medium / Low (why)
+5) **Alternatives (A/B):** what + pros/cons + effort
+6) **Recommendation:** choose A/B and justify
+7) **Minimal experiment/POC:** smallest test to prove direction (files, steps)
+8) **Decision options:** Approve A / Approve B / Need more info / Reject both
+
+---
+
 ## 🚀 **Development Server Protocol**
 
 ### **⚠️ CRITICAL: Server Management Rules**
