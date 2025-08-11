@@ -1,0 +1,20 @@
+# Alternative configuration using serve with proper binding
+[build]
+builder = "nixpacks"
+buildCommand = "npm install && npm run build"
+
+[deploy]
+# Option 1: serve with explicit tcp binding
+startCommand = "npx serve@latest dist --listen tcp://0.0.0.0:$PORT --no-port-switching"
+
+# Option 2: http-server (more explicit)
+# startCommand = "npx http-server dist -p $PORT -a 0.0.0.0 --cors -c-1"
+
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+healthcheckPath = "/"
+healthcheckTimeout = 30
+replicas = 1
+
+[variables]
+NODE_ENV = "production"
