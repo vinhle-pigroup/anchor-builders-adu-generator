@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADU Construction Proposal - Anchor Builders</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            line-height: 1.2;
+            color: #000;
+            background: #fff;
+        }
+
+        .page {
+            width: 8.5in;
+            min-height: 11in;
+            margin: 0 auto;
+            padding: 0.4in;
+            background: white;
+            page-break-after: always;
+        }
+
+        .page:last-child {
+            page-break-after: avoid;
+        }
+
+        /* Page 1 Styles */
+        .page-1-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .anchor-icon {
+            width: 25px;
+            height: 25px;
+            background: #1f4e79;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .company-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #000;
+            letter-spacing: 1px;
+        }
+
+        .proposal-title-section {
+            text-align: center;
+            flex-grow: 1;
+            margin: 20px 0;
+        }
+
+        .proposal-main-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1f4e79;
+            margin-bottom: 3px;
+            letter-spacing: 1px;
+        }
+
+        .proposal-subtitle {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1f4e79;
+        }
+
+        .proposal-date {
+            position: absolute;
+            top: 0.4in;
+            right: 0.4in;
+            font-size: 11px;
+            color: #000;
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 300px;
+            background: #f0f0f0;
+            margin: 30px 0;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .page-1-footer {
+            background: #6c7b8a;
+            color: white;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-size: 10px;
+        }
+
+        .prepared-for h4, .project-address h4 {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .company-footer {
+            position: absolute;
+            bottom: 0.4in;
+            right: 0.4in;
+            text-align: right;
+            font-size: 9px;
+            color: #666;
+        }
+
+        /* Page 2 Styles */
+        .page-2-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .page-2-logo {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .page-2-logo .anchor-icon {
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+        }
+
+        .page-2-logo .company-name {
+            font-size: 12px;
+        }
+
+        .page-2-date-image {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+
+        .page-2-date {
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .page-2-hero {
+            width: 160px;
+            height: 100px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 9px;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 15px;
+        }
+
+        .left-content {
+            flex: 2;
+        }
+
+        .right-sidebar {
+            flex: 1;
+            background: #f5f5f5;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        /* Project Owner Table */
+        .project-owner-section {
+            background: #1f4e79;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .project-owner-header {
+            background: #1f4e79;
+            color: white;
+            padding: 6px 10px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 11px;
+        }
+
+        .project-owner-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            color: black;
+        }
+
+        .project-owner-table td {
+            padding: 4px 6px;
+            border: 1px solid #ddd;
+            font-size: 9px;
+        }
+
+        .project-owner-table .label-cell {
+            background: #e8e8e8;
+            font-weight: bold;
+            width: 25%;
+        }
+
+        /* Scope of Work - COMPACT VERSION */
+        .scope-section {
+            margin-bottom: 6px;
+        }
+
+        .scope-header {
+            background: #1f4e79;
+            color: white;
+            padding: 3px 8px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 10px;
+        }
+
+        .scope-content {
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+        }
+
+        .scope-specs {
+            display: flex;
+            padding: 2px;
+            gap: 4px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .scope-left, .scope-right {
+            flex: 1;
+        }
+
+        .scope-specs-header {
+            background: #e8e8e8;
+            padding: 2px 4px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .scope-specs-content {
+            padding: 2px;
+            border: 1px solid #ddd;
+            border-top: none;
+            font-size: 7px;
+            min-height: 25px;
+            line-height: 1.2;
+        }
+
+        .scope-additional {
+            padding: 2px;
+            font-size: 7px;
+            background: #f9f9f9;
+        }
+
+        /* Pricing Table */
+        .pricing-section {
+            margin-bottom: 10px;
+        }
+
+        .pricing-header {
+            background: #1f4e79;
+            color: white;
+            padding: 6px 10px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 11px;
+        }
+
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            font-size: 8px;
+        }
+
+        .pricing-table th {
+            background: #e8e8e8;
+            padding: 4px 6px;
+            border: 1px solid #ddd;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .pricing-table td {
+            padding: 3px 5px;
+            border: 1px solid #ddd;
+        }
+
+        .phase-header {
+            background: #d4b896 !important;
+            font-weight: bold;
+        }
+
+        .phase-design { background: #6b7280; }
+        .phase-coordination { background: #9ca3af; }
+        .phase-construction { background: #9ca3af; }
+        .phase-addon { background: #228b22; }
+
+        .price-cell {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .total-row {
+            background: #1f4e79 !important;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Timeline Sidebar */
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            padding: 6px;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .timeline-icon {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 8px;
+        }
+
+        .timeline-icon.design { background: #d4b896; }
+        .timeline-icon.coordination { background: #b8860b; }
+        .timeline-icon.construction { background: #4682b4; }
+        .timeline-icon.completion { background: #228b22; }
+
+        .timeline-text {
+            flex: 1;
+        }
+
+        .timeline-phase {
+            font-weight: bold;
+            font-size: 8px;
+            margin-bottom: 1px;
+        }
+
+        .timeline-duration {
+            font-size: 7px;
+            color: #666;
+        }
+
+        .estimated-completion {
+            text-align: center;
+            margin-top: 12px;
+            padding: 6px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+        }
+
+        .grand-total {
+            background: #1f4e79;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 12px;
+        }
+
+        /* Page 3 Styles */
+        .two-column-section {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .column {
+            flex: 1;
+        }
+
+        .section-header {
+            background: #1f4e79;
+            color: white;
+            padding: 4px 10px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
+        .section-content {
+            font-size: 8px;
+            line-height: 1.3;
+        }
+
+        .section-content h4 {
+            font-weight: bold;
+            margin: 6px 0 3px 0;
+            font-size: 9px;
+        }
+
+        .section-content ul {
+            margin-left: 12px;
+            margin-bottom: 6px;
+        }
+
+        .section-content li {
+            margin-bottom: 2px;
+        }
+
+        .terms-conditions {
+            background: #1f4e79;
+            color: white;
+            padding: 6px 10px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
+        .terms-content {
+            font-size: 8px;
+            line-height: 1.3;
+            margin-bottom: 12px;
+        }
+
+        .owner-acceptance {
+            background: #1f4e79;
+            color: white;
+            padding: 6px 10px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+        }
+
+        .signature-line {
+            border-bottom: 2px solid #000;
+            width: 200px;
+            height: 25px;
+            margin-bottom: 3px;
+        }
+
+        .page-3-hero {
+            width: 50%;
+            height: 150px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            margin: 12px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 10px;
+        }
+
+        /* Milestone Timeline Styles */
+        .milestone-timeline {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+
+        .milestone-track {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            margin: 10px 0;
+        }
+
+        .milestone-track::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #1f4e79;
+            z-index: 1;
+        }
+
+        .milestone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+            background-color: #f8f9fa;
+            padding: 5px;
+            min-width: 80px;
+        }
+
+        .milestone-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #1f4e79;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .milestone-label {
+            font-size: 8px;
+            text-align: center;
+            font-weight: bold;
+            color: #1f4e79;
+            margin-bottom: 2px;
+            max-width: 80px;
+            line-height: 1.1;
+        }
+
+        .milestone-amount {
+            font-size: 9px;
+            color: #000;
+            font-weight: bold;
+            margin-bottom: 1px;
+        }
+
+        .milestone-percent {
+            font-size: 7px;
+            color: #666;
+        }
+
+        .page-footer {
+            position: absolute;
+            bottom: 0.4in;
+            width: calc(100% - 0.8in);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 8px;
+            color: #666;
+        }
+
+        /* Print Styles */
+        @media print {
+            .page {
+                margin: 0;
+                padding: 0.5in;
+                page-break-after: always;
+            }
+            
+            .page:last-child {
+                page-break-after: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page 1 -->
+    <div class="page">
+        <div class="page-1-header">
+            <div class="logo-section">
+                <div class="anchor-icon">⚓</div>
+                <div class="company-name">ANCHOR<br>BUILDERS</div>
+            </div>
+        </div>
+        
+        <div class="proposal-date">{{currentDate}}</div>
+        
+        <div class="proposal-title-section">
+            <div class="proposal-main-title">ADU CONSTRUCTION</div>
+            <div class="proposal-subtitle">PROPOSAL</div>
+        </div>
+        
+        <div class="hero-image">
+            [Modern ADU Interior Image]
+        </div>
+        
+        <div class="page-1-footer">
+            <div class="prepared-for">
+                <h4>Prepared for:</h4>
+                <p>{{clientName}}</p>
+                <p>{{clientPhone}}</p>
+                <p>{{clientEmail}}</p>
+            </div>
+            <div class="project-address">
+                <h4>Project Address:</h4>
+                <p>{{projectAddress}}</p>
+                <p>{{projectCity}}, {{projectState}} {{projectZip}}</p>
+            </div>
+        </div>
+        
+        <div class="company-footer">
+            <p>Anchor Builders</p>
+            <p>12962 Main Street, Garden</p>
+            <p>Grove, CA 92840</p>
+            <p>CSL B# 1029392</p>
+        </div>
+        
+        <div class="page-footer">
+            <span>Visit our website at www.AnchorBuilders.io</span>
+        </div>
+    </div>
+
+    <!-- Page 2 -->
+    <div class="page">
+        <div class="page-2-header">
+            <div class="page-2-logo">
+                <div class="anchor-icon">⚓</div>
+                <div class="company-name">ANCHOR<br>BUILDERS</div>
+            </div>
+            <div class="page-2-date-image">
+                <div class="page-2-date">Proposal date: {{currentDate}}</div>
+                <div class="page-2-hero">[ADU Interior Image]</div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="left-content">
+                <!-- Project Owner Section -->
+                <div class="project-owner-section">
+                    <div class="project-owner-header">PROJECT OWNER</div>
+                    <table class="project-owner-table">
+                        <tr>
+                            <td class="label-cell">Name</td>
+                            <td>{{clientName}}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-cell">Address</td>
+                            <td>{{projectAddress}}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-cell">City, State ZIP</td>
+                            <td>{{projectCity}}, {{projectState}} {{projectZip}}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-cell">Phone</td>
+                            <td>{{clientPhone}}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-cell">Email</td>
+                            <td>{{clientEmail}}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Scope of Work Section -->
+                <div class="scope-section">
+                    <div class="scope-header">SCOPE OF WORK</div>
+                    <div class="scope-content">
+                        <div style="padding: 4px; font-size: 8px; text-align: center; background: #f0f0f0; border-bottom: 1px solid #ddd;">
+                            Full ADU Build-out
+                        </div>
+                        <div class="scope-specs">
+                            <div class="scope-left">
+                                <div class="scope-specs-header">BED/ BATH: {{BEDROOMS}} Bedrooms {{BATHROOMS}} Bathrooms</div>
+                                <div class="scope-specs-content">
+                                    • Standard finishes & fixtures
+                                    • Allowance worksheet included
+                                    {{#if APPLIANCES_INCLUDED}}• Appliances included{{else}}• Appliances excluded{{/if}}
+                                    • Kitchen & bath cabinets
+                                </div>
+                            </div>
+                            <div class="scope-right">
+                                <div class="scope-specs-header">LIVING AREA: + {{SQUARE_FOOTAGE}} sqft</div>
+                                <div class="scope-specs-content">
+                                    • HVAC: {{HVAC_TYPE}}
+                                    • Electric: Separate meter
+                                    • Gas: {{GAS_METER}}
+                                    • Water: {{WATER_METER}}
+                                    • Sewer: {{SEWER_CONNECTION}}
+                                </div>
+                                <div class="scope-specs-header" style="margin-top: 10px;">ADU TYPE: {{ADU_TYPE}}</div>
+                            </div>
+                        </div>
+                        <div class="scope-additional">
+                            <strong>Additional:</strong> HERS, CU & Compaction testing
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing Section -->
+                <div class="pricing-section">
+                    <div class="pricing-header">ESTIMATED PRICE BREAKDOWN</div>
+                    <table class="pricing-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%;">Phase</th>
+                                <th style="width: 55%;">Description</th>
+                                <th style="width: 30%;">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="phase-design">
+                                <td rowspan="5" style="vertical-align: top; font-weight: bold;">DESIGN<br><br>PLANNING</td>
+                                <td>ADU Plan Design</td>
+                                <td class="price-cell">${{DESIGN_PRICE}}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 20px; font-style: italic;">Structural Engineering (Roof & Foundation Plans)</td>
+                                <td class="price-cell">included</td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 20px; font-style: italic;">MEP Design (Mechanical, Electrical, Plumbing)</td>
+                                <td class="price-cell">included</td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 20px; font-style: italic;">Zoning & Site Planning Review</td>
+                                <td class="price-cell">included</td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 20px; font-style: italic;">Title 24 Energy Compliance</td>
+                                <td class="price-cell">included</td>
+                            </tr>
+                            <tr style="border-top: 2px solid #000;">
+                                <td></td>
+                                <td style="text-align: right; font-weight: bold;">Subtotal</td>
+                                <td class="price-cell">${{DESIGN_PRICE}}</td>
+                            </tr>
+                            <tr class="phase-coordination">
+                                <td rowspan="5" style="vertical-align: top; font-weight: bold;">COORDINATION<br>SERVICES</td>
+                                <td>Plan Check Coordination</td>
+                                <td class="price-cell">$0</td>
+                            </tr>
+                            <tr>
+                                <td>Building Permit Coordination</td>
+                                <td class="price-cell">$0</td>
+                            </tr>
+                            <tr>
+                                <td>Utility & Public Works Coordination</td>
+                                <td class="price-cell">$0</td>
+                            </tr>
+                            <tr>
+                                <td>Solar Vendor Coordination</td>
+                                <td class="price-cell">$0</td>
+                            </tr>
+                            <tr class="phase-construction">
+                                <td rowspan="10" style="vertical-align: top; font-weight: bold;">CONSTRUCTION</td>
+                                <td>Deposit</td>
+                                <td class="price-cell">$1,000</td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 20px; font-style: italic;">Interior Design / Finish Material Selection*</td>
+                                <td class="price-cell">included</td>
+                            </tr>
+                            <tr>
+                                <td>Mobilization</td>
+                                <td class="price-cell">$35,000</td>
+                            </tr>
+                            <tr>
+                                <td>Demo / Site Prep and Grading Plans</td>
+                                <td class="price-cell">$35,000</td>
+                            </tr>
+                            <tr>
+                                <td>Foundation</td>
+                                <td class="price-cell">$25,000</td>
+                            </tr>
+                            <tr>
+                                <td>Framing</td>
+                                <td class="price-cell">$25,000</td>
+                            </tr>
+                            <tr>
+                                <td>Mechanical, Electrical, Plumbing (MEP)</td>
+                                <td class="price-cell">$25,000</td>
+                            </tr>
+                            <tr>
+                                <td>Drywall</td>
+                                <td class="price-cell">$22,000</td>
+                            </tr>
+                            <tr>
+                                <td>Electrical Meter Installation</td>
+                                <td class="price-cell">$2,000</td>
+                            </tr>
+                            {{#if WATER_METER_SEPARATE}}
+                            <tr>
+                                <td>Water Meter Installation (Separate)</td>
+                                <td class="price-cell">$1,000</td>
+                            </tr>
+                            {{/if}}
+                            {{#if GAS_METER_SEPARATE}}
+                            <tr>
+                                <td>Gas Meter Installation (Separate)</td>
+                                <td class="price-cell">$1,500</td>
+                            </tr>
+                            {{/if}}
+                            <tr>
+                                <td>Property Final</td>
+                                <td class="price-cell">$5,000</td>
+                            </tr>
+                            <tr style="border-top: 2px solid #000;">
+                                <td></td>
+                                <td style="text-align: right; font-weight: bold;">Construction Subtotal</td>
+                                <td class="price-cell">${{CONSTRUCTION_SUBTOTAL}}</td>
+                            </tr>
+                            {{#if SELECTED_ADD_ONS}}
+                            <tr class="phase-addon">
+                                <td style="vertical-align: top; font-weight: bold;">ADD ON WORK</td>
+                                <td>{{SELECTED_ADD_ONS}}</td>
+                                <td class="price-cell">{{#each SELECTED_ADD_ONS}}{{/each}}</td>
+                            </tr>
+                            {{/if}}
+                            <tr style="border-top: 2px solid #000;">
+                                <td></td>
+                                <td style="text-align: right; font-weight: bold;">Project Total</td>
+                                <td class="price-cell">${{GRAND_TOTAL}}</td>
+                            </tr>
+                            <tr style="border-top: 2px solid #000;">
+                                <td></td>
+                                <td style="text-align: right; font-weight: bold;">Family Discount</td>
+                                <td class="price-cell">$2,000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Milestone Timeline -->
+                <div class="milestone-timeline">
+                    <div class="section-header">PAYMENT MILESTONES</div>
+                    <div class="milestone-track">
+                        <div class="milestone">
+                            <div class="milestone-dot">M1</div>
+                            <div class="milestone-label">Mobilization</div>
+                            <div class="milestone-amount">${{MILESTONE_1}}</div>
+                            <div class="milestone-percent">20%</div>
+                        </div>
+                        <div class="milestone">
+                            <div class="milestone-dot">M2</div>
+                            <div class="milestone-label">Trenching & Underground</div>
+                            <div class="milestone-amount">${{MILESTONE_2}}</div>
+                            <div class="milestone-percent">20%</div>
+                        </div>
+                        <div class="milestone">
+                            <div class="milestone-dot">M3</div>
+                            <div class="milestone-label">Foundation</div>
+                            <div class="milestone-amount">${{MILESTONE_3}}</div>
+                            <div class="milestone-percent">20%</div>
+                        </div>
+                        <div class="milestone">
+                            <div class="milestone-dot">M4</div>
+                            <div class="milestone-label">Framing</div>
+                            <div class="milestone-amount">${{MILESTONE_4}}</div>
+                            <div class="milestone-percent">15%</div>
+                        </div>
+                        <div class="milestone">
+                            <div class="milestone-dot">M5</div>
+                            <div class="milestone-label">MEP Systems</div>
+                            <div class="milestone-amount">${{MILESTONE_5}}</div>
+                            <div class="milestone-percent">15%</div>
+                        </div>
+                        <div class="milestone">
+                            <div class="milestone-dot">M6</div>
+                            <div class="milestone-label">Drywall</div>
+                            <div class="milestone-amount">${{MILESTONE_6}}</div>
+                            <div class="milestone-percent">10%</div>
+                        </div>
+                        <div class="milestone">
+                            <div class="milestone-dot">M7</div>
+                            <div class="milestone-label">Final</div>
+                            <div class="milestone-amount">${{MILESTONE_7}}</div>
+                            <div class="milestone-percent">5%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="right-sidebar">
+                <div class="section-header">ESTIMATED DELIVERY</div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-icon design">📋</div>
+                    <div class="timeline-text">
+                        <div class="timeline-phase">Design Phase</div>
+                        <div class="timeline-duration">• Deposit + Design Fee<br>within 21 days</div>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-icon coordination">📋</div>
+                    <div class="timeline-text">
+                        <div class="timeline-phase">Planning Phase</div>
+                        <div class="timeline-duration">• City Submission<br>& Plan Review<br>• Building Permit<br>Approval<br>3 - 4 months</div>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-icon construction">🏗️</div>
+                    <div class="timeline-text">
+                        <div class="timeline-phase">Construction Phase</div>
+                        <div class="timeline-duration">• Mobilization<br>• Construction<br>4 - 6 months after approval</div>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-icon completion">📍</div>
+                    <div class="timeline-text">
+                        <div class="timeline-phase">Estimated Completion</div>
+                        <div class="timeline-duration">~8 - 12 months</div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px; padding: 10px; background: #1f4e79; color: white; font-size: 12px;">
+                    <div>CONSTRUCTION</div>
+                    <div>Cost per sqft</div>
+                    <div style="font-size: 16px; font-weight: bold; margin-top: 5px;">${{COST_PER_SQFT}} / per sqft</div>
+                </div>
+                
+                <div class="grand-total">
+                    GRAND TOTAL<br>
+                    ${{GRAND_TOTAL}}
+                </div>
+            </div>
+        </div>
+        
+        <div class="page-footer">
+            <span>Visit our website at www.AnchorBuilders.io</span>
+            <span>Page 2 of 3</span>
+            <span>Anchor Builders<br>12962 Main Street, Garden Grove, CA 92840<br>CSL B# 1029392</span>
+        </div>
+    </div>
+
+    <!-- Page 3 -->
+    <div class="page">
+        <div class="two-column-section">
+            <div class="column">
+                <div class="section-header">EXCLUSIONS</div>
+                <div class="section-content">
+                    <p style="font-style: italic; margin-bottom: 10px;">[Any work outside of the normal building of an ADU]</p>
+                    
+                    <h4>City-Related Costs</h4>
+                    <ul>
+                        <li>City permits, planning approval fees, and third-party inspections</li>
+                        <li>Land surveys, geotech reports, and soil testing (if required), including grading beyond the building foundation area</li>
+                    </ul>
+                    
+                    <h4>Site Prep & Exterior Work</h4>
+                    <ul>
+                        <li>Cleaning or demolishing any existing or unpermitted structures</li>
+                        <li>Landscaping, fencing, driveways, patios, rain gutters</li>
+                        <li>Potential damage to underground irrigation or tree roots</li>
+                    </ul>
+                    
+                    <h4>Utilities & Unexpected Conditions</h4>
+                    <ul>
+                        <li>Utility connections (gas, water, electric) or fire sprinkler system installation (if required)</li>
+                        <li>Unforeseen repairs like structural issues, pests, or water drainage</li>
+                        <li>Builder Risk insurance or city-required bonds for construction</li>
+                    </ul>
+                    
+                    <h4>Security & Insurance</h4>
+                    <ul>
+                        <li>Job-site security or surveillance systems</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="column">
+                <div class="section-header">ADDITIONAL SERVICES (ADD ON)</div>
+                <div class="section-content">
+                    <p style="font-style: italic; margin-bottom: 15px;">[These are additional services that are not included]</p>
+                    
+                    <h4>1) Design Upgrades</h4>
+                    <div style="margin-left: 16px; margin-bottom: 12px;">
+                        a. Customized option to personalize your project beyond our Standardized Material Package.
+                    </div>
+                    
+                    <h4>2) Landscaping and Hardscaping Site Design</h4>
+                    <div style="margin-left: 16px; margin-bottom: 12px;">
+                        a. Landscape and hardscaping services to improve the appearance and functionality of your property.
+                    </div>
+                    
+                    <h4>3) Rental Plans</h4>
+                    <div style="margin-left: 16px; margin-bottom: 12px;">
+                        a. Creation of a site plan to designate a parking spot for tenants, ensuring separation between rental units.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="terms-conditions">TERMS & CONDITIONS</div>
+        <div class="terms-content">
+            <p>A formal construction contract will be prepared and executed upon acceptance of this bid. The pricing outlined in this proposal is valid for 30 days from the proposal date. A detailed payment schedule will be included in the formal contract.</p>
+            
+            <p>The overall project schedule is subject to factors such as city permitting timelines, material availability, and the client's responsiveness throughout the process.</p>
+            
+            <p>Any changes to the agreed-upon scope of work, materials, layout, or finish levels must be requested in writing and formally approved. Approved change orders may result in adjustments to both the total project cost and construction timeline. All changes will be documented and reflected with an updated scope, revised pricing, and adjusted schedule as needed.</p>
+            
+            <p style="font-style: italic; margin-top: 16px;"><em>*This is a non-binding estimate. Final cost is subject to plan approval, scope adjustments, and change orders.*</em></p>
+            
+            <div style="margin-top: 16px; font-size: 11px;">
+                <strong>Footnotes & Clarifications:</strong><br>
+                ¹ Interior Design – Includes 2 sessions (each session 2 hours). Additional sessions billed at $150/hour.
+            </div>
+        </div>
+
+        <div class="page-3-hero">
+            [Modern ADU Living Space Image]
+        </div>
+
+        <div class="owner-acceptance">OWNER ACCEPTANCE</div>
+        <div style="padding: 15px; border: 1px solid #ddd; margin-bottom: 20px;">
+            <p style="font-size: 11px; margin-bottom: 15px;">I, {{CLIENT_FIRST_NAME}} {{CLIENT_LAST_NAME}}, accept the above scope of work, proposed to be completed by Anchor Builders for the amount of ${{GRAND_TOTAL}}.</p>
+            
+            <div class="signature-section">
+                <div>
+                    <div class="signature-line"></div>
+                    <div style="text-align: center; font-size: 11px;">Submitted by {{CLIENT_FIRST_NAME}} {{CLIENT_LAST_NAME}}</div>
+                </div>
+                <div>
+                    <div class="signature-line"></div>
+                    <div style="text-align: center; font-size: 11px;">Date</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="page-footer">
+            <span>Visit our website at www.AnchorBuilders.io</span>
+            <span>Page 3 of 3</span>
+            <span>Anchor Builders<br>12962 Main Street, Garden Grove, CA 92840<br>CSL B# 1029392</span>
+        </div>
+    </div>
+</body>
+</html>

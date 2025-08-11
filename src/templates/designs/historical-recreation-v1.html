@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADU Construction Proposal - Anchor Builders</title>
+    <style>
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.4;
+            color: #333;
+            background: white;
+        }
+
+        .container {
+            max-width: 8.5in;
+            margin: 0 auto;
+            padding: 0.5in;
+            background: white;
+        }
+
+        /* Header Section */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #1a472a;
+        }
+
+        .logo-section {
+            flex: 1;
+        }
+
+        .logo {
+            width: 200px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        .company-info {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.3;
+        }
+
+        .proposal-info {
+            text-align: right;
+            flex: 1;
+        }
+
+        .proposal-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a472a;
+            margin-bottom: 10px;
+        }
+
+        .proposal-details {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .proposal-details strong {
+            color: #1a472a;
+        }
+
+        /* Client Information Section */
+        .client-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #1a472a;
+        }
+
+        .client-section h2 {
+            color: #1a472a;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .client-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .client-info {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .client-info strong {
+            color: #1a472a;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        /* Project Scope Section */
+        .scope-section {
+            margin-bottom: 30px;
+        }
+
+        .scope-section h2 {
+            color: #1a472a;
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .scope-content {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .scope-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .scope-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        .scope-list li:before {
+            content: "✓";
+            color: #1a472a;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        /* Pricing Section */
+        .pricing-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 2px solid #1a472a;
+        }
+
+        .pricing-section h2 {
+            color: #1a472a;
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .pricing-table th,
+        .pricing-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        .pricing-table th {
+            background-color: #1a472a;
+            color: white;
+            font-weight: bold;
+        }
+
+        .pricing-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .total-row {
+            background-color: #e8f5e8;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .total-row td {
+            border-top: 2px solid #1a472a;
+            padding-top: 15px;
+        }
+
+        /* Timeline Section */
+        .timeline-section {
+            margin-bottom: 30px;
+        }
+
+        .timeline-section h2 {
+            color: #1a472a;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .timeline-content {
+            font-size: 14px;
+            line-height: 1.6;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #1a472a;
+        }
+
+        /* Terms Section */
+        .terms-section {
+            margin-bottom: 30px;
+        }
+
+        .terms-section h2 {
+            color: #1a472a;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .terms-content {
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .terms-list {
+            list-style: decimal;
+            padding-left: 20px;
+        }
+
+        .terms-list li {
+            margin-bottom: 8px;
+        }
+
+        /* Footer Section */
+        .footer {
+            border-top: 2px solid #1a472a;
+            padding-top: 20px;
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .signature-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .signature-box {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+
+        .signature-box h3 {
+            color: #1a472a;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #333;
+            height: 40px;
+            margin-bottom: 10px;
+        }
+
+        .date-line {
+            border-bottom: 1px solid #333;
+            height: 30px;
+            width: 120px;
+            display: inline-block;
+        }
+
+        /* Contact Information */
+        .contact-info {
+            background: #1a472a;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .contact-info h3 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                font-size: 12px;
+            }
+            
+            .container {
+                max-width: none;
+                padding: 0.25in;
+            }
+            
+            .page-break {
+                page-break-before: always;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .proposal-info {
+                text-align: center;
+                margin-top: 20px;
+            }
+            
+            .client-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .signature-section {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="logo-section">
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMjAwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjMWE0NzJhIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iMzAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSJib2xkIj5BTkNIT1IgQlVJTERFUlM8L3RleHQ+Cjx0ZXh0IHg9IjEwMCIgeT0iNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiPkNvbnN0cnVjdGlvbiBDb21wYW55PC90ZXh0Pgo8L3N2Zz4K" alt="Anchor Builders Logo" class="logo">
+                <div class="company-info">
+                    <strong>Anchor Builders Construction Company</strong><br>
+                    Licensed General Contractor<br>
+                    License #: 1234567<br>
+                    Phone: (555) 123-4567<br>
+                    Email: info@anchorbuilders.com
+                </div>
+            </div>
+            <div class="proposal-info">
+                <div class="proposal-title">ADU Construction Proposal</div>
+                <div class="proposal-details">
+                    <strong>Proposal #:</strong> {{proposalNumber}}<br>
+                    <strong>Date:</strong> {{currentDate}}<br>
+                    <strong>Valid Until:</strong> {{validUntil}}<br>
+                    <strong>Project Type:</strong> Accessory Dwelling Unit
+                </div>
+            </div>
+        </div>
+
+        <!-- Client Information Section -->
+        <div class="client-section">
+            <h2>Client Information</h2>
+            <div class="client-grid">
+                <div class="client-info">
+                    <strong>Client Name:</strong> {{clientName}}<br>
+                    <strong>Phone:</strong> {{clientPhone}}<br>
+                    <strong>Email:</strong> {{clientEmail}}
+                </div>
+                <div class="client-info">
+                    <strong>Project Address:</strong><br>
+                    {{projectAddress}}<br>
+                    {{projectCity}}, {{projectState}} {{projectZip}}
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Scope Section -->
+        <div class="scope-section">
+            <h2>Project Scope & Specifications</h2>
+            <div class="scope-content">
+                <p><strong>ADU Type:</strong> {{aduType}}</p>
+                <p><strong>Square Footage:</strong> {{squareFootage}} sq ft</p>
+                <p><strong>Bedrooms:</strong> {{bedrooms}} | <strong>Bathrooms:</strong> {{bathrooms}}</p>
+            </div>
+
+            <h3 style="color: #1a472a; margin: 20px 0 10px 0;">Included in Base Package:</h3>
+            <ul class="scope-list">
+                <li>Site preparation and excavation</li>
+                <li>Foundation (concrete slab or crawl space)</li>
+                <li>Framing (wood frame construction)</li>
+                <li>Roofing (composition shingles)</li>
+                <li>Siding (vinyl or fiber cement)</li>
+                <li>Windows and exterior doors</li>
+                <li>Electrical system (main panel, outlets, fixtures)</li>
+                <li>Plumbing system (water, sewer, gas connections)</li>
+                <li>HVAC system (heating and cooling)</li>
+                <li>Insulation and drywall</li>
+                <li>Interior doors and trim</li>
+                <li>Flooring (luxury vinyl plank or carpet)</li>
+                <li>Kitchen cabinets and countertops</li>
+                <li>Bathroom fixtures and vanities</li>
+                <li>Interior and exterior paint</li>
+                <li>Final inspections and occupancy permit</li>
+            </ul>
+        </div>
+
+        <!-- Pricing Section -->
+        <div class="pricing-section">
+            <h2>Investment Summary</h2>
+            <table class="pricing-table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th style="text-align: right;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Base ADU Construction ({{squareFootage}} sq ft)</td>
+                        <td style="text-align: right;">${{basePrice}}</td>
+                    </tr>
+                    <tr>
+                        <td>Site Preparation & Utilities</td>
+                        <td style="text-align: right;">${{sitePrepCost}}</td>
+                    </tr>
+                    <tr>
+                        <td>Permits & Engineering</td>
+                        <td style="text-align: right;">${{permitsCost}}</td>
+                    </tr>
+                    {{#if hasUpgrades}}
+                    <tr>
+                        <td>Selected Upgrades</td>
+                        <td style="text-align: right;">${{upgradesTotal}}</td>
+                    </tr>
+                    {{/if}}
+                    <tr class="total-row">
+                        <td><strong>Total Investment</strong></td>
+                        <td style="text-align: right;"><strong>${{totalPrice}}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 5px; border-left: 4px solid #1a472a;">
+                <strong>Payment Schedule:</strong><br>
+                • 10% deposit upon contract signing<br>
+                • 25% at foundation completion<br>
+                • 25% at framing and roofing completion<br>
+                • 25% at electrical/plumbing rough-in<br>
+                • 15% final payment upon completion
+            </div>
+        </div>
+
+        <!-- Timeline Section -->
+        <div class="timeline-section">
+            <h2>Project Timeline</h2>
+            <div class="timeline-content">
+                <p><strong>Estimated Timeline:</strong> {{projectTimeline}}</p>
+                <p><strong>Start Date:</strong> Subject to permit approval and contract execution</p>
+                
+                <h4 style="margin: 15px 0 10px 0; color: #1a472a;">Major Milestones:</h4>
+                <ul style="margin-left: 20px;">
+                    <li>Permits & Engineering: 2-4 weeks</li>
+                    <li>Site Preparation: 1-2 weeks</li>
+                    <li>Foundation: 1-2 weeks</li>
+                    <li>Framing & Roofing: 2-3 weeks</li>
+                    <li>Systems (Electrical, Plumbing, HVAC): 2-3 weeks</li>
+                    <li>Interior Finishes: 3-4 weeks</li>
+                    <li>Final Inspections: 1 week</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Terms and Conditions -->
+        <div class="terms-section">
+            <h2>Terms & Conditions</h2>
+            <div class="terms-content">
+                <ol class="terms-list">
+                    <li><strong>Contract Validity:</strong> This proposal is valid for 30 days from the date issued.</li>
+                    <li><strong>Changes:</strong> Any changes to the scope of work must be approved in writing and may affect the total price and timeline.</li>
+                    <li><strong>Permits:</strong> All necessary permits will be obtained by Anchor Builders. Costs are included in the total price.</li>
+                    <li><strong>Materials:</strong> All materials will be new and of good quality, installed according to manufacturer specifications.</li>
+                    <li><strong>Warranty:</strong> We provide a 1-year warranty on workmanship and honor all manufacturer warranties.</li>
+                    <li><strong>Insurance:</strong> Anchor Builders carries full liability and workers' compensation insurance.</li>
+                    <li><strong>Clean-up:</strong> Daily clean-up and final job site clean-up are included.</li>
+                    <li><strong>Weather:</strong> Timeline may be affected by weather conditions beyond our control.</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Signature Section -->
+        <div class="footer">
+            <div class="signature-section">
+                <div class="signature-box">
+                    <h3>Client Acceptance</h3>
+                    <div class="signature-line"></div>
+                    <p>{{clientName}}</p>
+                    <p>Date: <span class="date-line"></span></p>
+                </div>
+                <div class="signature-box">
+                    <h3>Anchor Builders Representative</h3>
+                    <div class="signature-line"></div>
+                    <p>Project Manager</p>
+                    <p>Date: <span class="date-line"></span></p>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="contact-info">
+                <h3>Questions? Contact Us!</h3>
+                <p>Phone: (555) 123-4567 | Email: info@anchorbuilders.com</p>
+                <p>www.anchorbuilders.com | Licensed, Bonded, Insured</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

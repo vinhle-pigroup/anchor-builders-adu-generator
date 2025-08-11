@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADU Construction Proposal - Anchor Builders</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #000;
+            background: #fff;
+        }
+
+        .page {
+            width: 8.5in;
+            min-height: 11in;
+            margin: 0 auto;
+            padding: 0.5in;
+            background: white;
+            page-break-after: always;
+        }
+
+        .page:last-child {
+            page-break-after: avoid;
+        }
+
+        /* Header Section */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 15px;
+        }
+
+        .logo-section {
+            flex: 1;
+        }
+
+        .logo {
+            width: 200px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        .company-info {
+            font-size: 11px;
+            line-height: 1.3;
+        }
+
+        .proposal-title {
+            flex: 1;
+            text-align: center;
+        }
+
+        .proposal-title h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f4e79;
+            margin-bottom: 5px;
+        }
+
+        .proposal-title h2 {
+            font-size: 18px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .contact-info {
+            flex: 1;
+            text-align: right;
+            font-size: 11px;
+        }
+
+        /* Client Information Section */
+        .client-section {
+            margin-bottom: 25px;
+        }
+
+        .client-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .client-details, .project-details {
+            width: 48%;
+        }
+
+        .client-details h3, .project-details h3 {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #1f4e79;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 3px;
+        }
+
+        .info-row {
+            margin-bottom: 5px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 80px;
+        }
+
+        /* Project Overview Section */
+        .project-overview {
+            margin-bottom: 25px;
+        }
+
+        .project-overview h3 {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1f4e79;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #1f4e79;
+            padding-bottom: 5px;
+        }
+
+        .overview-content {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border: 1px solid #e0e6ed;
+            border-left: 4px solid #1f4e79;
+            margin-bottom: 15px;
+            border-radius: 3px;
+        }
+
+        .specs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .spec-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+
+        .spec-label {
+            font-weight: bold;
+        }
+
+        /* Pricing Section */
+        .pricing-section {
+            margin-bottom: 15px;
+        }
+
+        .pricing-section h3 {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1f4e79;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #1f4e79;
+            padding-bottom: 5px;
+        }
+
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .pricing-table th {
+            background-color: #1f4e79;
+            color: white;
+            padding: 6px 8px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .pricing-table td {
+            padding: 4px 8px;
+            border-bottom: 1px solid #ddd;
+            vertical-align: top;
+        }
+
+        .pricing-table tr:nth-child(even) {
+            background-color: #fbfcfd;
+        }
+
+        .pricing-table .category {
+            font-weight: bold;
+            background-color: #e8f0fe !important;
+            color: #1f4e79;
+        }
+
+        .pricing-table .subcategory {
+            padding-left: 20px;
+            font-style: italic;
+        }
+
+        .pricing-table .amount {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .total-row {
+            background-color: #1f4e79 !important;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .total-row td {
+            padding: 10px 8px;
+        }
+
+        /* Payment Schedule */
+        .payment-schedule {
+            margin-bottom: 20px;
+        }
+
+        /* Milestone Timeline */
+        .milestone-timeline {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+
+        .milestone-timeline h4 {
+            font-size: 14px;
+            font-weight: bold;
+            color: #1f4e79;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .milestone-track {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            margin: 10px 0;
+        }
+
+        .milestone-track::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #1f4e79;
+            z-index: 1;
+        }
+
+        .milestone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+            background-color: #f8f9fa;
+            padding: 5px;
+        }
+
+        .milestone-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #1f4e79;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .milestone-label {
+            font-size: 9px;
+            text-align: center;
+            font-weight: bold;
+            color: #1f4e79;
+            margin-bottom: 2px;
+            max-width: 80px;
+            line-height: 1.1;
+        }
+
+        .milestone-amount {
+            font-size: 10px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .payment-schedule h4 {
+            font-size: 14px;
+            font-weight: bold;
+            color: #1f4e79;
+            margin-bottom: 10px;
+        }
+
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .payment-table th {
+            background-color: #1f4e79;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .payment-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .payment-table tr:nth-child(even) {
+            background-color: #fbfcfd;
+        }
+
+        /* Timeline Section */
+        .timeline-section {
+            margin-bottom: 25px;
+        }
+
+        .timeline-section h3 {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1f4e79;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #1f4e79;
+            padding-bottom: 5px;
+        }
+
+        .timeline-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+
+        .timeline-phase {
+            font-weight: bold;
+        }
+
+        .timeline-duration {
+            color: #666;
+        }
+
+        /* What's Included Section */
+        .inclusions-section {
+            margin-bottom: 25px;
+        }
+
+        .inclusions-section h3 {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1f4e79;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #1f4e79;
+            padding-bottom: 5px;
+        }
+
+        .inclusions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .inclusion-category h4 {
+            font-size: 14px;
+            font-weight: bold;
+            color: #1f4e79;
+            margin-bottom: 8px;
+        }
+
+        .inclusion-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .inclusion-list li {
+            padding: 3px 0;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        .inclusion-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        /* Terms and Conditions */
+        .terms-section {
+            margin-bottom: 25px;
+        }
+
+        .terms-section h3 {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1f4e79;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #1f4e79;
+            padding-bottom: 5px;
+        }
+
+        .terms-content {
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .terms-content h4 {
+            font-size: 12px;
+            font-weight: bold;
+            margin: 15px 0 8px 0;
+            color: #1f4e79;
+        }
+
+        .terms-content p {
+            margin-bottom: 10px;
+        }
+
+        .terms-content ul {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .terms-content li {
+            margin-bottom: 5px;
+        }
+
+        /* Signature Section */
+        .signature-section {
+            margin-top: 30px;
+            border-top: 2px solid #1f4e79;
+            padding-top: 20px;
+        }
+
+        .signature-section h3 {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1f4e79;
+            margin-bottom: 20px;
+        }
+
+        .signature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .signature-block {
+            text-align: center;
+        }
+
+        .signature-line {
+            border-bottom: 2px solid #000;
+            height: 40px;
+            margin-bottom: 10px;
+        }
+
+        .signature-label {
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .signature-date {
+            margin-top: 20px;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 15px;
+        }
+
+        /* Page Break Control */
+        .avoid-break {
+            page-break-inside: avoid;
+        }
+
+        .pricing-table, .payment-table {
+            page-break-inside: avoid;
+        }
+
+        .milestone-timeline {
+            page-break-inside: avoid;
+        }
+
+        .inclusions-section {
+            page-break-inside: avoid;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                font-size: 11px;
+            }
+            
+            .page {
+                margin: 0;
+                padding: 0.5in;
+                page-break-after: always;
+            }
+            
+            .page:last-child {
+                page-break-after: avoid;
+            }
+            
+            .avoid-break {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="logo-section">
+                <img src="data:image/svg+xml;base64,{{logoBase64}}" alt="Anchor Builders Logo" class="logo">
+                <div class="company-info">
+                    <strong>ANCHOR BUILDERS, INC.</strong><br>
+                    Licensed General Contractor<br>
+                    License #1015153
+                </div>
+            </div>
+            <div class="proposal-title">
+                <h1>ADU CONSTRUCTION</h1>
+                <h2>PROPOSAL</h2>
+            </div>
+            <div class="contact-info">
+                <strong>Contact Information:</strong><br>
+                Phone: (408) 836-2534<br>
+                Email: info@anchorbuilders.com<br>
+                Website: www.anchorbuilders.com<br><br>
+                <strong>Date:</strong> {{currentDate}}<br>
+                <strong>Proposal #:</strong> {{proposalNumber}}
+            </div>
+        </div>
+
+        <!-- Client Information -->
+        <div class="client-section">
+            <div class="client-info">
+                <div class="client-details">
+                    <h3>Client Information</h3>
+                    <div class="info-row">
+                        <span class="info-label">Name:</span> {{clientName}}
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Phone:</span> {{clientPhone}}
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Email:</span> {{clientEmail}}
+                    </div>
+                </div>
+                <div class="project-details">
+                    <h3>Project Details</h3>
+                    <div class="info-row">
+                        <span class="info-label">Address:</span> {{projectAddress}}
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">City:</span> {{projectCity}}, {{projectState}} {{projectZip}}
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">APN:</span> {{apn}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Overview -->
+        <div class="project-overview">
+            <h3>Project Overview</h3>
+            <div class="overview-content">
+                <p><strong>Project Type:</strong> {{projectType}}</p>
+                <p><strong>Description:</strong> Construction of a new {{squareFootage}} square foot Accessory Dwelling Unit (ADU) on the above referenced property. The ADU will be a detached/attached unit featuring {{bedrooms}} bedroom(s), {{bathrooms}} bathroom(s), and modern amenities throughout.</p>
+                
+                <div class="specs-grid">
+                    <div class="spec-item">
+                        <span class="spec-label">Square Footage:</span>
+                        <span>{{squareFootage}} sq ft</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Bedrooms:</span>
+                        <span>{{bedrooms}}</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Bathrooms:</span>
+                        <span>{{bathrooms}}</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Foundation:</span>
+                        <span>{{foundationType}}</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Exterior:</span>
+                        <span>{{exteriorFinish}}</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Flooring:</span>
+                        <span>{{flooringType}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing Section -->
+        <div class="pricing-section avoid-break">
+            <h3>Project Investment</h3>
+            <table class="pricing-table">
+                <thead>
+                    <tr>
+                        <th style="width: 70%;">Description</th>
+                        <th style="width: 30%;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="category">
+                        <td><strong>DESIGN & PERMITTING</strong></td>
+                        <td class="amount"></td>
+                    </tr>
+                    <tr>
+                        <td class="subcategory">Architectural Plans & Engineering</td>
+                        <td class="amount">${{designCosts}}</td>
+                    </tr>
+                    <tr>
+                        <td class="subcategory">Permit Fees & Processing</td>
+                        <td class="amount">${{permitCosts}}</td>
+                    </tr>
+                    
+                    <tr class="category">
+                        <td><strong>CONSTRUCTION</strong></td>
+                        <td class="amount"></td>
+                    </tr>
+                    <tr>
+                        <td class="subcategory">Site Preparation & Foundation</td>
+                        <td class="amount">${{foundationCosts}}</td>
+                    </tr>
+                    <tr>
+                        <td class="subcategory">Framing & Structural</td>
+                        <td class="amount">${{framingCosts}}</td>
+                    </tr>
+                    <tr>
+                        <td class="subcategory">Roofing & Exterior</td>
+                        <td class="amount">${{roofingCosts}}</td>
+                    </tr>
+                    <tr>
+                        <td class="subcategory">Plumbing System</td>
+                        <td class="amount">${{plumbingCosts}}</td>
+                    </tr>
+                    <tr>
+                        <td class="subcategory">Electrical System</td>
+                        <td class="amount">${{electricalCosts}}</td>
+                    </tr>
+                    <tr>
+                        <td class="subcategory">HVAC System</td>
+                        <td class="amount">${{hvacCosts}}</td>
+                    </tr>
+                    <tr>
+                        <td class="subcategory">Insulation & Drywall</td>
+                        <td class="amount">${{insulationCosts}}</td>
+                    </tr>
+                    <tr>
+                        <td class="subcategory">Flooring Installation</td>
+                        <td class="amount">${{flooringCosts}}</td>
+                    </tr>
+                    <tr>
+                        <td class="subcategory">Kitchen & Appliances</td>
+                        <td class="amount">${{kitchenCosts}}</td>
+                    </tr>
+                    <tr>
+                        <td class="subcategory">Bathroom Fixtures</td>
+                        <td class="amount">${{bathroomCosts}}</td>
+                    </tr>
+                    <tr>
+                        <td class="subcategory">Interior & Exterior Paint</td>
+                        <td class="amount">${{paintingCosts}}</td>
+                    </tr>
+                    <tr>
+                        <td class="subcategory">Final Inspections & Cleanup</td>
+                        <td class="amount">${{cleanupCosts}}</td>
+                    </tr>
+                    
+                    <tr class="total-row">
+                        <td><strong>TOTAL PROJECT INVESTMENT</strong></td>
+                        <td class="amount"><strong>${{totalCost}}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Milestone Timeline -->
+            <div class="milestone-timeline avoid-break">
+                <h4>Payment Milestones</h4>
+                <div class="milestone-track">
+                    <div class="milestone">
+                        <div class="milestone-dot">M1</div>
+                        <div class="milestone-label">Mobilization</div>
+                        <div class="milestone-amount">${{milestone1Amount}}</div>
+                        <div style="font-size: 8px; color: #888;">(20%)</div>
+                    </div>
+                    <div class="milestone">
+                        <div class="milestone-dot">M2</div>
+                        <div class="milestone-label">Trenching & Underground</div>
+                        <div class="milestone-amount">${{milestone2Amount}}</div>
+                        <div style="font-size: 8px; color: #888;">(20%)</div>
+                    </div>
+                    <div class="milestone">
+                        <div class="milestone-dot">M3</div>
+                        <div class="milestone-label">Foundation</div>
+                        <div class="milestone-amount">${{milestone3Amount}}</div>
+                        <div style="font-size: 8px; color: #888;">(20%)</div>
+                    </div>
+                    <div class="milestone">
+                        <div class="milestone-dot">M4</div>
+                        <div class="milestone-label">Framing</div>
+                        <div class="milestone-amount">${{milestone4Amount}}</div>
+                        <div style="font-size: 8px; color: #888;">(15%)</div>
+                    </div>
+                    <div class="milestone">
+                        <div class="milestone-dot">M5</div>
+                        <div class="milestone-label">MEP Systems</div>
+                        <div class="milestone-amount">${{milestone5Amount}}</div>
+                        <div style="font-size: 8px; color: #888;">(15%)</div>
+                    </div>
+                    <div class="milestone">
+                        <div class="milestone-dot">M6</div>
+                        <div class="milestone-label">Drywall</div>
+                        <div class="milestone-amount">${{milestone6Amount}}</div>
+                        <div style="font-size: 8px; color: #888;">(10%)</div>
+                    </div>
+                    <div class="milestone">
+                        <div class="milestone-dot">M7</div>
+                        <div class="milestone-label">Final</div>
+                        <div class="milestone-amount">${{milestone7Amount}}</div>
+                        <div style="font-size: 8px; color: #888;">(5%)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Schedule -->
+            <div class="payment-schedule avoid-break">
+                <h4>Payment Schedule</h4>
+                <table class="payment-table">
+                    <thead>
+                        <tr>
+                            <th>Phase</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Due Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>Contract Signing & Permit Application</td>
+                            <td>${{phase1Payment}}</td>
+                            <td>Upon Contract Signing</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Foundation Completion</td>
+                            <td>${{phase2Payment}}</td>
+                            <td>Foundation Pour Complete</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>Framing & Roof Complete</td>
+                            <td>${{phase3Payment}}</td>
+                            <td>Framing Inspection Passed</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>Rough Inspections Passed</td>
+                            <td>${{phase4Payment}}</td>
+                            <td>Electrical/Plumbing/HVAC Rough</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>Final Completion & CO</td>
+                            <td>${{phase5Payment}}</td>
+                            <td>Certificate of Occupancy</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="page">
+        <!-- Project Timeline -->
+        <div class="timeline-section">
+            <h3>Project Timeline</h3>
+            <div class="timeline-item">
+                <span class="timeline-phase">Contract Signing & Permits</span>
+                <span class="timeline-duration">Weeks 1-2</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-phase">Site Preparation & Foundation</span>
+                <span class="timeline-duration">Weeks 3-5</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-phase">Framing & Roofing</span>
+                <span class="timeline-duration">Weeks 6-9</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-phase">Rough Inspections (Plumbing, Electrical, HVAC)</span>
+                <span class="timeline-duration">Weeks 10-13</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-phase">Insulation & Drywall</span>
+                <span class="timeline-duration">Weeks 14-16</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-phase">Flooring & Interior Finishes</span>
+                <span class="timeline-duration">Weeks 17-19</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-phase">Kitchen & Bathroom Installation</span>
+                <span class="timeline-duration">Weeks 20-22</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-phase">Final Inspections & Cleanup</span>
+                <span class="timeline-duration">Weeks 23-24</span>
+            </div>
+            <p style="margin-top: 15px; font-style: italic; color: #666;">
+                <strong>Estimated Timeline:</strong> 24 weeks from contract signing to completion
+                (subject to permit approval and inspection scheduling)
+            </p>
+        </div>
+
+        <!-- What's Included -->
+        <div class="inclusions-section avoid-break">
+            <h3>What's Included</h3>
+            <div class="inclusions-grid">
+                <div class="inclusion-category">
+                    <h4>Structural & Foundation</h4>
+                    <ul class="inclusion-list">
+                        <li>Complete foundation system</li>
+                        <li>Engineered lumber framing</li>
+                        <li>Roof structure and materials</li>
+                        <li>Exterior siding and trim</li>
+                        <li>Windows and exterior doors</li>
+                    </ul>
+                </div>
+                <div class="inclusion-category">
+                    <h4>Mechanical Systems</h4>
+                    <ul class="inclusion-list">
+                        <li>Complete electrical system</li>
+                        <li>Full plumbing system</li>
+                        <li>HVAC system and ductwork</li>
+                        <li>Gas line installation</li>
+                        <li>Smoke and carbon monoxide detectors</li>
+                    </ul>
+                </div>
+                <div class="inclusion-category">
+                    <h4>Interior Finishes</h4>
+                    <ul class="inclusion-list">
+                        <li>Insulation throughout</li>
+                        <li>Drywall and texture</li>
+                        <li>Interior paint</li>
+                        <li>Flooring installation</li>
+                        <li>Interior doors and trim</li>
+                    </ul>
+                </div>
+                <div class="inclusion-category">
+                    <h4>Kitchen & Bath</h4>
+                    <ul class="inclusion-list">
+                        <li>Kitchen cabinets</li>
+                        <li>Countertops</li>
+                        <li>Appliance package</li>
+                        <li>Bathroom vanity and fixtures</li>
+                        <li>Tile work</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exclusions and Additional Services - Historical Two-Column Layout -->
+        <div style="display: flex; gap: 20px; margin-bottom: 25px;">
+            <div style="flex: 1;">
+                <h3 style="font-size: 16px; font-weight: bold; color: #1f4e79; margin-bottom: 15px; border-bottom: 2px solid #1f4e79; padding-bottom: 5px;">EXCLUSIONS</h3>
+                <p style="font-style: italic; margin-bottom: 10px;">[Any work outside of the normal building of an ADU]</p>
+                
+                <h4 style="font-size: 14px; font-weight: bold; margin: 12px 0 8px 0;">City-Related Costs</h4>
+                <ul style="margin-left: 20px; margin-bottom: 10px;">
+                    <li>City permits, planning approval fees, and third-party inspections</li>
+                    <li>Land grading, surveys, and soil testing (if required), including grading beyond the building foundation area</li>
+                </ul>
+                
+                <h4 style="font-size: 14px; font-weight: bold; margin: 12px 0 8px 0;">Site Prep & Exterior Work</h4>
+                <ul style="margin-left: 20px; margin-bottom: 10px;">
+                    <li>Cleaning or demolishing any existing or unpermitted structures</li>
+                    <li>Landscaping, fencing, driveways, patios, rain gutters</li>
+                    <li>Potential damage to underground irrigation or tree roots</li>
+                </ul>
+                
+                <h4 style="font-size: 14px; font-weight: bold; margin: 12px 0 8px 0;">Utilities & Unexpected Conditions</h4>
+                <ul style="margin-left: 20px; margin-bottom: 10px;">
+                    <li>Utility connections (gas, water, electric) or fire sprinkler system installation (if required)</li>
+                    <li>Unforeseen repairs like structural issues, pests, or water drainage</li>
+                    <li>Builder Risk insurance or city-required bonds for construction</li>
+                </ul>
+                
+                <h4 style="font-size: 14px; font-weight: bold; margin: 12px 0 8px 0;">Security & Insurance</h4>
+                <ul style="margin-left: 20px; margin-bottom: 10px;">
+                    <li>Job-site security or surveillance systems</li>
+                </ul>
+            </div>
+            <div style="flex: 1;">
+                <h3 style="font-size: 16px; font-weight: bold; color: #1f4e79; margin-bottom: 15px; border-bottom: 2px solid #1f4e79; padding-bottom: 5px;">ADDITIONAL SERVICES (ADD ON)</h3>
+                <p style="font-style: italic; margin-bottom: 15px;">[These are additional services that are not included]</p>
+                
+                <h4 style="font-size: 14px; font-weight: bold; margin: 12px 0 8px 0;">1) Design Upgrades</h4>
+                <div style="margin-left: 16px; margin-bottom: 12px;">
+                    a. Customized option to personalize your project beyond our Standardized Material Package.
+                </div>
+                
+                <h4 style="font-size: 14px; font-weight: bold; margin: 12px 0 8px 0;">2) Landscaping and Hardscaping Site Design</h4>
+                <div style="margin-left: 16px; margin-bottom: 12px;">
+                    a. Landscape and hardscaping services to improve the appearance and functionality of your property.
+                </div>
+                
+                <h4 style="font-size: 14px; font-weight: bold; margin: 12px 0 8px 0;">3) Rental Plans</h4>
+                <div style="margin-left: 16px; margin-bottom: 12px;">
+                    a. Creation of a site plan to designate a parking spot for tenants, ensuring separation between rental units.
+                </div>
+            </div>
+        </div>
+
+        <!-- Terms and Conditions -->
+        <div class="terms-section">
+            <h3>Terms and Conditions</h3>
+            <div class="terms-content">
+                <p>A formal construction contract will be prepared and executed upon acceptance of this bid. The pricing outlined in this proposal is valid for 30 days from the proposal date. A detailed payment schedule will be included in the formal contract.</p>
+                
+                <p>The overall project schedule is subject to factors such as city permitting timelines, material availability, and the client's responsiveness throughout the process.</p>
+                
+                <p>Any changes to the agreed-upon scope of work, materials, layout, or finish levels must be requested in writing and formally approved. Approved change orders may result in adjustments to both the total project cost and construction timeline. All changes will be documented and reflected with an updated scope, revised pricing, and adjusted schedule as needed.</p>
+                
+                <p style="font-style: italic; margin-top: 16px;"><em>*This is a non-binding estimate. Final cost is subject to plan approval, scope adjustments, and change orders.*</em></p>
+                
+                <div style="margin-top: 16px; font-size: 11px;">
+                    <strong>Footnotes & Clarifications:</strong><br>
+                    ¹ Interior Design – Includes 2 sessions (each session 2 hours). Additional sessions billed at $150/hour.
+                </div>
+            </div>
+        </div>
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <h3>Agreement</h3>
+            <p style="margin-bottom: 20px;">By signing below, both parties agree to the terms and conditions outlined in this proposal.</p>
+            
+            <div class="signature-grid">
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Client Signature</div>
+                    <div class="signature-date">
+                        <br>Date: _______________
+                    </div>
+                </div>
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Anchor Builders Representative</div>
+                    <div class="signature-date">
+                        <br>Date: _______________
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Anchor Builders, Inc. | Licensed General Contractor #1015153 | (408) 836-2534 | info@anchorbuilders.com</p>
+            <p>This proposal constitutes the entire agreement between the parties. Any modifications must be agreed upon in writing.</p>
+        </div>
+    </div>
+</body>
+</html>
