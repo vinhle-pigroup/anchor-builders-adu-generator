@@ -5,12 +5,11 @@ import {
   addOnOptions,
   businessSettings,
 } from '../data/pricing-config';
-// import { pricingLogger } from './logger'; // TODO: Replace console.log statements
 
 export interface PricingInputs {
   // Basic Project Info
   squareFootage: number;
-  aduType: 'detached' | 'attached';
+  aduType: 'detached' | 'attached' | string;
   stories?: 1 | 2; // For detached ADUs only
   bedrooms: number;
   bathrooms: number;
@@ -84,14 +83,10 @@ export class AnchorPricingEngine {
     // Calculate subtotal
     const subtotal = lineItems.reduce((sum, item) => sum + item.totalPrice, 0);
 
-    // Apply markup only to construction costs (exclude design services)
-    const constructionSubtotal = lineItems
-      .filter((item) => item.category !== 'Design Services')
-      .reduce((sum, item) => sum + item.totalPrice, 0);
-
+    // Apply markup (use override if available)
     const markupPercentage =
       inputs.priceOverrides?.markupPercentage ?? businessSettings.standardMarkup;
-    const markupAmount = constructionSubtotal * markupPercentage;
+    const markupAmount = subtotal * markupPercentage;
     const grandTotal = subtotal + markupAmount;
 
     return {
@@ -155,7 +150,7 @@ export class AnchorPricingEngine {
       const waterUtility = utilityOptions.find(u => u.name === 'Water Meter');
       if (waterUtility) {
         lineItems.push({
-          category: 'Add-Ons',
+          category: 'Utilities',
           description: 'Separate Water Meter Connection',
           quantity: 1,
           unitPrice: waterUtility.separatePrice,
@@ -170,7 +165,7 @@ export class AnchorPricingEngine {
       const gasUtility = utilityOptions.find(u => u.name === 'Gas Meter');
       if (gasUtility) {
         lineItems.push({
-          category: 'Add-Ons',
+          category: 'Utilities',
           description: 'Separate Gas Meter Connection',
           quantity: 1,
           unitPrice: gasUtility.separatePrice,
@@ -180,50 +175,28 @@ export class AnchorPricingEngine {
       }
     }
 
-    // Electric Meter - Only add as line item if it's an upgrade/optional cost
-    // Note: If separate electric meter is always required and included in base cost,
-    // it should NOT appear in Additional Services section
-    // TODO: Check with user if separate electric meter should be:
-    // 1. Included in base cost (don't add to line items), OR
-    // 2. Optional upgrade (add to line items only when selected)
-    
-    // Temporarily commenting out to prevent unwanted electric meter in Additional Services
-    // const electricUtility = utilityOptions.find(u => u.name === 'Electric Meter');
-    // if (electricUtility) {
-    //   lineItems.push({
-    //     category: 'Add-Ons',
-    //     description: 'Separate Electric Meter Connection',
-    //     quantity: 1,
-    //     unitPrice: electricUtility.separatePrice,
-    //     totalPrice: electricUtility.separatePrice,
-    //     isOptional: false,
-    //   });
-    // }
+    // Electric Meter (always separate)
+    const electricUtility = utilityOptions.find(u => u.name === 'Electric Meter');
+    if (electricUtility) {
+      lineItems.push({
+        category: 'Utilities',
+        description: 'Separate Electric Meter Connection',
+        quantity: 1,
+        unitPrice: electricUtility.separatePrice,
+        totalPrice: electricUtility.separatePrice,
+        isOptional: false,
+      });
+    }
   }
 
   private calculateAddOns(inputs: PricingInputs, lineItems: PricingLineItem[]) {
-    // Map form field names to pricing config names
-    const addOnNameMapping: Record<string, string> = {
-      'bathroom': 'Extra Bathroom',
-      'driveway': 'Driveway', 
-      'landscaping': 'Basic Landscaping'
-    };
-
-    inputs.selectedAddOns.forEach(formAddOnName => {
-      // First try to find by exact match, then try mapped name
-      const configAddOnName = addOnNameMapping[formAddOnName] || formAddOnName;
-      const addOn = addOnOptions.find(a => a.name === configAddOnName);
-      
-      if (!addOn) {
-        console.warn(`[PRICING ENGINE] Add-on not found: form="${formAddOnName}" config="${configAddOnName}"`);
-        return;
-      }
-
-      console.log(`[PRICING ENGINE] Found add-on: form="${formAddOnName}" -> config="${configAddOnName}" -> $${addOn.price}`);
+    inputs.selectedAddOns.forEach(addOnName => {
+      const addOn = addOnOptions.find(a => a.name === addOnName);
+      if (!addOn) return;
 
       // Use override price if available, otherwise use default
-      const addOnPrice = inputs.priceOverrides?.addOnPrices?.[formAddOnName] ?? addOn.price;
-      const isOverridden = inputs.priceOverrides?.addOnPrices?.[formAddOnName] !== undefined;
+      const addOnPrice = inputs.priceOverrides?.addOnPrices?.[addOnName] ?? addOn.price;
+      const isOverridden = inputs.priceOverrides?.addOnPrices?.[addOnName] !== undefined;
 
       lineItems.push({
         category: 'Add-Ons',

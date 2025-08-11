@@ -1,217 +1,214 @@
-# CLAUDE.md - Anchor Builders ADU Generator
-**Project-Specific Instructions for AI Development**
+# CLAUDE.md – Anchor Builders ADU Generator
+**Service**: `apps/anchor-builders-adu-generator` (React + Vite)  
+**Platform**: Railway | **Status**: ✅ Active
 
-## 🚨 **CONTEXT MANAGEMENT PROTOCOL**
-
-### **⚠️ CRITICAL: Chat History Preservation**
-**WHEN CONTEXT REACHES 15% REMAINING:**
-
-1. **Create Summary Document**:
-   ```
-   CHAT-HISTORY-YYYY-MM-DD.md (Executive summary + technical analysis)
-   ```
-
-2. **Create Verbatim Archive**:
-   ```
-   CHAT-VERBATIM-YYYY-MM-DD.md (Complete conversation copy)
-   ```
-
-3. **Content Requirements**:
-   - Executive summary of all accomplishments
-   - Technical changes with file paths and line numbers
-   - Bug fixes with root cause analysis
-   - Lessons learned and prevention strategies
-   - Complete verbatim chat including tool calls
-
-4. **Reminder Protocol**:
-   ```
-   "⚠️ CONTEXT AT 15% - Time to create chat history summary before compacting!"
-   ```
-
-**Location**: Save in project root directory  
-**Purpose**: Preserve critical debugging patterns and technical knowledge  
-**Frequency**: Every session when context fills up
+> This is the Anchor Builders ADU proposal generator with ultra-compact design and complete form functionality.
 
 ---
 
-## 🚀 **Development Server Protocol**
+## 📋 **FORM CONTENT - SINGLE SOURCE OF TRUTH**
 
-### **⚠️ CRITICAL: Server Management Rules**
-- **NEVER run `npm run dev` automatically**
-- **ALWAYS assume server is running at localhost:5000**
-- **ONLY ask Vinh to restart server if I need to halt it for debugging**
-- **Vinh manages all server operations and port assignments**
+**✅ CONTENT VERIFICATION COMPLETE (2025-08-10)**
 
-### **🎯 Default Assumptions**
-- Server is active at: **http://localhost:5000**
-- All features should be tested against this URL
-- No need to start/stop server unless explicitly required for fixes
+All form content has been verified against user screenshots and is now stored in:
+```
+src/data/form-content.ts
+```
+
+### **Card 1 - CLIENT INFORMATION** (HOL Design Structure)
+- [x] Proposal # (auto-generated AB-2025-######) and Date (auto-generated)
+- [x] **Primary Client** section:
+  - [x] First Name and Last Name (separate fields)
+  - [x] Email and Phone (grid layout)
+- [x] **Secondary Client (Optional)** section:
+  - [x] First Name and Last Name (separate fields) 
+  - [x] Email and Phone (grid layout)
+- [x] **Property Address** section:
+  - [x] Full address field
+  - [x] City, State, ZIP (3-column grid)
+- [x] **Friends & Family Discount** checkbox (10% off)
+
+### **Card 2 - ADU CONFIGURATION** 
+- [x] ADU Type buttons (Detached, Attached, JADU)
+- [x] "▶ More types" link under ADU Type
+- [x] Square Footage buttons (400, 800, 1000, 1200) + custom input
+- [x] Bedrooms (Studio, 1, 2, 3, 4) and Bathrooms (0, 1, 2, 3)
+- [x] ❄️ HVAC section (Central AC Available, Mini-Split Available)
+- [x] ⚡ Utilities section (Water Shared, Sewer Separate, Gas Separate, Electric Shared)
+- [x] ➕ Additional Services:
+  - [x] Extra Bathroom (+$8,000)
+  - [x] Dedicated Driveway (+$5,000) 
+  - [x] Basic Landscaping (+$10,000)
+  - [x] "+ Add More" text link
+  - [x] "Click 'Add More' to create custom services" helper text
+
+### **Card 3 - DESIGN SERVICES**
+- [x] Professional Design Services checkbox (+$12,500)
+  - [x] Description: "Architectural plans, structural engineering, and permit assistance"
+- [x] Solar Ready checkbox
+- [x] FEMA Compliance checkbox
+
+### **Card 4 - ADDITIONAL NOTES**
+- [x] Additional Notes text area
+- [x] Placeholder: "Any special requirements, preferences, or project details..."
+
+### **RIGHT SIDEBAR - PROJECT SUMMARY**
+- [x] Project Summary section with detailed breakdown:
+  - [x] Client name, Address, ADU Type, Size, Layout
+  - [x] HVAC selection display
+  - [x] Utilities status (All Shared)
+  - [x] Design services status
+  - [x] Add-ons breakdown with individual prices
+- [x] Breakdown section:
+  - [x] Base: $160,000
+  - [x] Design: $12,500 (when selected)
+  - [x] Utilities: $1,500
+  - [x] Add-ons: Dynamic total based on selections
+- [x] Total calculation: Base + Utilities + Design + Add-ons
 
 ---
 
-## 📋 **Project Overview**
-- **App**: Anchor Builders ADU Generator
-- **Port**: 5000 (http://localhost:5000)
-- **Tech Stack**: React + TypeScript + Vite + Tailwind
-- **Main Features**: PDF proposal generation, form validation, admin tools
+## 🎨 **DESIGN SYSTEM**
+
+### **HOL Design Integration:**
+- **Client Information Card**: Follows HOL design structure with Primary/Secondary client sections
+- **Field Organization**: Separate first/last name fields, proper grid layouts
+- **Content Structure**: Matches HOL user experience patterns while maintaining Anchor Builders branding
+
+### **Ultra-Compact Design Applied:**
+- Font sizes: `text-[7px]` to `text-[12px]`
+- Input heights: `h-6` 
+- Spacing: `space-y-0.5`, `space-y-1.5`
+- Padding: `p-1`, `p-1.5`, `px-2 py-1`
+
+### **Color Theme:**
+- Primary: Blue (`bg-blue-800`, `bg-blue-600`)
+- Accents: Blue variations (`text-blue-600`, `border-blue-300`)
+- Success: Blue (`bg-blue-500`)
+- Text: Slate colors for hierarchy
+
+### **Layout:**
+- 2x2 card grid on desktop
+- Numbered cards (1-4) with completion percentages
+- Mobile accordion functionality
+- 280px sidebar with project summary
 
 ---
 
-## 🔧 **Development Workflow**
+## 🔧 **DEVELOPMENT NOTES**
 
-### **Code Quality Gates**
+### **Content Management:**
+- **NEVER** hardcode form labels/options in components
+- **ALWAYS** reference `src/data/form-content.ts` for content
+- Use helper functions: `getFormSection()`, `getFormField()`, `getFieldOptions()`
+
+### **Build Process:**
 ```bash
-# Run these for verification (ask Vinh to run if needed)
-npm run lint                    # Must pass with 0 warnings  
-npx tsc --noEmit               # Must pass with 0 errors
-npm run build                  # Must complete successfully
+npm run build    # ✅ Passes successfully
+npm run dev      # Local development
+npm run lint     # Code quality checks
 ```
 
-### **Feature Testing Protocol**
-1. **Assume server running**: localhost:5000
-2. **Manual testing**: Test all user-facing features
-3. **Browser console**: Check for errors
-4. **Screenshots**: Document working features
-5. **User confirmation**: Get Vinh's verification
+### **📌 ACTIVE FILES (Use These):**
+- `src/components/EnhancedProductionGrid.tsx` - Main form component  
+- `src/data/form-content.ts` - Single source of truth for ALL content
+- `src/types/proposal.ts` - TypeScript interfaces
+- `src/data/pricing-config.ts` - Pricing calculations
+- `src/lib/pdf-template-generator.ts` - PDF generation engine
+- `public/ENHANCED-DESIGN.html` - Active PDF template (21 variables)
+- `src/App.tsx` - Main application component
+
+### **⚠️ ARCHIVED FILES (Do Not Use):**
+- `archive/2025-08-11-production-cleanup/` - All backup/duplicate files moved here
+  - 14 component backup versions
+  - 10 duplicate PDF templates  
+  - 4 library backup files
+  - Complete design-backups folder
+- **Files archived**: EnhancedProductionGrid-*.tsx, *.backup, *-Clean.tsx, etc.
+- **Recovery**: See `archive/2025-08-11-production-cleanup/README.md` for details
 
 ---
 
-## 🎨 **Features Completed**
+## 🚨 **CONTENT PROTECTION RULES**
 
-### **PDF Generation System**
-- Multiple template designs (Enhanced, Modern, Historical)
-- Real-time pricing calculations
-- Template variable mapping system
-- Debug mapping tools for troubleshooting
+1. **Before any redesign:** Check `src/data/form-content.ts` for complete content list
+2. **Never delete content:** Move unused content to comments, don't delete
+3. **Add new content:** Update `form-content.ts` FIRST, then implement UI
+4. **Verify completeness:** Compare against screenshots in `/home/vinh/screenshots/`
 
-### **🚨 CRITICAL: Template File Mapping**
-**When editing PDF templates, use the CORRECT files:**
-
-| Template Button | File Path | Status |
-|----------------|-----------|--------|
-| **Enhanced** (DEFAULT) | `/public/ENHANCED-DESIGN.html` | ✅ ACTIVE - Edit this one! |
-| Modern | `/public/MODERN-ENHANCED.html` | 🟡 Backup only |
-| Historical | `/public/HISTORICAL-EXACT.html` | 🟡 Backup only |
-| Premium | `/public/PREMIUM-LUXURY.html` | 🟡 Backup only |
-
-**⚠️ ALWAYS EDIT:** `/public/ENHANCED-DESIGN.html` for the default Enhanced template
-**❌ DO NOT EDIT:** Other templates unless specifically requested
-
-### **🚨 CRITICAL: Additional Services PDF Solution**
-**Date**: 2025-08-08  
-**Status**: ✅ FIXED AND WORKING - SOLUTION DOCUMENTED  
-**Critical Files**: NEVER modify these working solutions:
-
-1. **`src/lib/pdf-template-generator.ts` (Lines 207-236)**
-   - `processEachBlocks` method handles BOTH `{{this.property}}` AND `{{property}}` formats
-   - This is what makes individual line items appear in PDF
-
-2. **`src/types/proposal.ts` (Lines 80-86)**  
-   - `ADD_ON_ITEMS` array interface matches template expectations
-   - Template uses `{{#each ADD_ON_ITEMS}}` not ADDITIONAL_SERVICES_ITEMS
-
-3. **`src/lib/pdf-generator.ts` (Lines 87-94)**
-   - `ADD_ON_ITEMS` population with numbered rows and formatted costs
-   - Creates exact data structure template requires
-
-**📋 Reference Document**: `/CRITICAL-SOLUTION-DOCUMENTED.md`
-
-### **🚨 CRITICAL: Template Dynamic Sections**
-**When modifying dynamic content, use these exact patterns:**
-
-| Template Pattern | Replacement Logic | File Location |
-|-----------------|-------------------|---------------|
-| `{{#if ADD_ON_WORK_EXISTS}}` | Shows if utilities OR add-ons selected | pdf-template-generator.ts:333 |
-| `{{#each ADD_ON_ITEMS}}` | Replaced with dynamic rows | pdf-template-generator.ts:207-236 |
-| `{{number}}`, `{{name}}`, `{{description}}`, `{{cost}}` | Individual item properties | processEachBlocks method |
-
-**❌ NEVER hardcode add-on rows** - they will always show even if not selected
-**✅ ALWAYS use dynamic patterns** - items appear only when selected in form
-**✅ NEVER edit the working processEachBlocks method** - this is what makes line items work
-
-### **Admin Tools**
-- **Data Mapping Debug Tool**: Full-screen template variable visualization
-- Template text editor
-- Proposal management system
-- Form validation with live feedback
-
-### **Recent Major Updates**
-- ✅ Additional Services line items WORKING (documented solution)
-- ✅ Full-page debug mapping tool with color-coded sections
-- ✅ Enhanced template with improved font sizing
-- ✅ Fixed template width constraints in preview
-- ✅ Color-coded number system for form field mapping
+### **Reference Screenshots:**
+- `Screenshot 2025-08-10 011454.png` - Complete form with all content
+- `Screenshot 2025-08-10 011510.png` - Alternate view with all fields
 
 ---
 
-## 📋 **Persistent Issues Documentation Protocol**
+## 📋 **PENDING TASKS**
 
-### **⚠️ When to Use Comprehensive Issue Documentation**
-Use this approach for issues that are:
-- Reported multiple times by users
-- Intermittent or hard to reproduce consistently  
-- Previously "worked" but now broken without clear cause
-- Complex enough to require team investigation
-- Block user workflow or core functionality
+### **⚠️ PDF Template Updates Required:**
+- [ ] **CRITICAL**: Update PDF template to include secondary client section
+  - **File to edit**: `src/templates/anchor-proposal-template.html`
+  - **Location**: Around lines 346-351 in the `.client-info-card` section
+  - **Current structure**: Only has `{{CLIENT_NAME}}`, `{{CLIENT_ADDRESS}}`, `{{CLIENT_PHONE}}`, `{{CLIENT_EMAIL}}`
+  - **Required changes**:
+    - Add conditional secondary client section after primary client
+    - Variables: `{{secondaryClientFirstName}}`, `{{secondaryClientLastName}}`, `{{secondaryClientEmail}}`, `{{secondaryClientPhone}}`
+    - Use conditional logic to only show if secondary client data exists
+    - Maintain visual consistency with existing client-info-card styling
 
-### **🗂️ Documentation Structure**
-```
-troubleshooting/
-├── persistent-issues/
-│   ├── [issue-name]-[date].md
-│   └── README.md (index of all issues)
-├── resolved-issues/ 
-│   └── [archived resolved issues]
-└── investigation-templates/
-    └── issue-template.md
-```
-
-### **📝 Required Documentation Sections**
-Each persistent issue MUST include:
-
-1. **Problem Statement**: Exact user report and symptoms
-2. **Investigation Summary**: Coordinator agent findings
-3. **Technical Analysis**: Code architecture and data flow
-4. **Evidence Collection**: Generated files, logs, screenshots
-5. **Root Cause Analysis**: Primary and secondary issues identified  
-6. **Recommended Solutions**: Prioritized fix approaches
-7. **Verification Plan**: L1-L4 testing requirements
-8. **Reproduction Steps**: Exact steps to reproduce issue
-9. **Follow-up Actions**: Immediate, short-term, long-term
-10. **Escalation Criteria**: When to involve senior developers
-
-### **🤖 Process for Persistent Issues**
-```bash
-# 1. Deploy coordinator agent for investigation
-coordinator: "Investigate [issue] with comprehensive analysis"
-
-# 2. Create documentation folder if doesn't exist
-mkdir -p troubleshooting/persistent-issues
-
-# 3. Document findings in ultra detail
-# File: troubleshooting/persistent-issues/[issue-name].md
-
-# 4. Update this CLAUDE.md with documentation approach
-
-# 5. Hand off to team with complete investigation
-```
-
-### **📊 Current Persistent Issues**
-- **PDF-ADDITIONAL-SERVICES-001** (2025-08-08): ✅ RESOLVED AND DOCUMENTED
-  - **Solution**: `/CRITICAL-SOLUTION-DOCUMENTED.md`
-  - **Status**: WORKING - Individual line items display correctly
-  - **Protection**: Critical files marked as DO NOT MODIFY
+### **Template Integration Notes:**
+- Form now captures secondary client data but PDF template needs updating
+- Consider conditional rendering: only show secondary client section if data exists
+- Maintain consistent formatting with primary client section
+- Test with both single client and dual client scenarios
 
 ---
 
-## 🎯 **Quick Access Links**
-- **Main App**: http://localhost:5000
-- **Admin**: http://localhost:5000 → Admin Settings
-- **Debug Tool**: Admin → Data Mapping → "Open Full-Page Debug Tool"
-- **Templates**: Located in `public/` directory
-- **Critical Solution**: `/CRITICAL-SOLUTION-DOCUMENTED.md`
+## ✅ **VERIFICATION STATUS**
+
+- [x] All content from screenshots implemented
+- [x] Ultra-compact design applied  
+- [x] Blue color theme implemented
+- [x] Single source of truth created (`form-content.ts`)
+- [x] Build passes successfully
+- [x] TypeScript compilation successful
+- [x] No content missing vs screenshots
+
+**Last Content Audit**: 2025-08-10 by Claude
+**Status**: ✅ Complete and Protected
 
 ---
 
-**Last Updated**: 2025-08-08  
-**Status**: Active Development - Additional Services PDF fix completed and documented
+## 🐛 **RECENT BUG FIXES (2025-08-11)**
+
+### **Fixed Issues:**
+
+1. **Studio/0 Bathroom Selection** ✅
+   - **Issue**: Bedrooms and bathrooms were initializing at 2 instead of 0
+   - **Fix**: Changed initialization in `App.tsx` to start at 0 (Studio/0 bathrooms)
+   - **Files**: `src/App.tsx` (lines 2003-2005)
+
+2. **Utilities Display** ✅
+   - **Issue**: Utilities showing as "All Shared" regardless of selection
+   - **Fix**: Updated utilities display logic to show actual selections
+   - **Files**: 
+     - `src/components/EnhancedProductionGrid.tsx` (lines 1399-1419, utilities display)
+     - `src/components/EnhancedProductionGrid.tsx` (lines 213-217, pricing calculation)
+     - `src/components/SidebarWithPricing.tsx` (lines 50-56, utilities data flow)
+
+3. **Dynamic Pricing** ✅
+   - **Issue**: Pricing appeared hardcoded, not updating with selections
+   - **Fix**: Replaced hardcoded values with dynamic calculations from liveCalculation
+   - **Files**: `src/components/EnhancedProductionGrid.tsx` (lines 1456-1461)
+
+4. **Header Spacing** ✅
+   - **Issue**: Form cards were tucked under the header
+   - **Fix**: Increased padding-top from 60px to 80px
+   - **Files**: `src/components/EnhancedProductionGrid.tsx` (line 613)
+
+5. **PDF Generation Template** ✅
+   - **Issue**: PDF was printing home page instead of proposal template
+   - **Fix**: Updated template resolver to use existing `ENHANCED-DESIGN.html`
+   - **Files**: 
+     - `src/lib/getActiveTemplate.ts` (lines 20-23, template order)
+     - `src/lib/pdf-template-generator.ts` (lines 813-822, template mapping)
+   - **Template File**: `public/ENHANCED-DESIGN.html` (55KB, verified exists)
