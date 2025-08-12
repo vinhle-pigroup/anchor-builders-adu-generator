@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 
-// Add wiggle animation CSS
+// Add wiggle animation CSS and custom color
 const wiggleStyle = `
   @keyframes wiggle {
     0%, 100% { transform: rotate(0deg); }
@@ -9,6 +9,29 @@ const wiggleStyle = `
   }
   .animate-wiggle {
     animation: wiggle 0.6s ease-in-out;
+  }
+  
+  /* Custom Anchor Blue Color - Rich Azure */
+  :root {
+    --anchor-blue: #1E88E5;
+    --anchor-blue-light: #e3f2fd;
+    --anchor-blue-hover: #1976D2;
+    --anchor-blue-focus: #1E88E540;
+  }
+  
+  /* Custom blue classes */
+  .text-anchor-blue { color: var(--anchor-blue) !important; }
+  .bg-anchor-blue { background-color: var(--anchor-blue) !important; }
+  .border-anchor-blue { border-color: var(--anchor-blue) !important; }
+  .hover\\:bg-anchor-blue-hover:hover { background-color: var(--anchor-blue-hover) !important; }
+  .bg-anchor-blue-light { background-color: var(--anchor-blue-light) !important; }
+  
+  /* Removed color test classes - using consistent Rich Azure theme */
+  
+  /* Focus states for inputs */
+  .focus\\:border-anchor-blue:focus { 
+    border-color: var(--anchor-blue) !important; 
+    box-shadow: 0 0 0 1px var(--anchor-blue-focus) !important;
   }
 `;
 
@@ -58,14 +81,14 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
   onPricingDataUpdate,
 }) => {
   // Removed unused currentSection state
-  const initialIsMobile = window.innerWidth < 1280;
-  const [isMobile, setIsMobile] = useState(initialIsMobile); // Use xl breakpoint to match sidebar
+  const initialIsMobile = window.innerWidth < 640; // Use mobile-only breakpoint (not tablets)
+  const [isMobile, setIsMobile] = useState(initialIsMobile);
   const [expandedCard, setExpandedCard] = useState<string | null>(null); // Start with all cards collapsed
 
   // Handle window resize for mobile detection
   useEffect(() => {
     const handleResize = () => {
-      const newIsMobile = window.innerWidth < 1280; // Use xl breakpoint
+      const newIsMobile = window.innerWidth < 640; // Use mobile-only breakpoint (not tablets)
       setIsMobile(newIsMobile);
       
       // When switching to mobile, start with all collapsed
@@ -211,9 +234,9 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
         bathrooms: projectData.bathrooms ?? 1,
         hvacType: (projectData.hvacType as 'central-ac' | 'mini-split') || 'central-ac',
         utilities: {
-          waterMeter: (projectData.utilities?.waterMeter || 'separate') as 'shared' | 'separate',
-          gasMeter: (projectData.utilities?.gasMeter || 'separate') as 'shared' | 'separate',
-          electricMeter: 'separate' as const,
+          waterMeter: (projectData.utilities?.waterMeter || 'shared') as 'shared' | 'separate',
+          gasMeter: (projectData.utilities?.gasMeter || 'shared') as 'shared' | 'separate',
+          electricMeter: (projectData.utilities?.electricMeter || 'shared') as 'shared' | 'separate',
         },
         needsDesign: !!pricingData.designServices,
         appliancesIncluded: true,
@@ -352,6 +375,45 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
 
   // PDF generation handler
   const handleGenerateProposal = async () => {
+    console.log('🔥 PDF BUTTON CLICKED - Starting handleGenerateProposal function');
+    
+    // Check if utilities have been selected
+    const hasUtilitySelection = pricingData.utilities && (
+      pricingData.utilities.waterMeter || 
+      pricingData.utilities.gasMeter || 
+      pricingData.utilities.sewerMeter || 
+      pricingData.utilities.electricMeter
+    );
+    
+    if (!hasUtilitySelection) {
+      const confirmContinue = window.confirm(
+        '⚠️ UTILITIES NOT SELECTED\n\n' +
+        'You haven\'t selected utility meter configurations.\n\n' +
+        'DEFAULT: All utilities will be set to SHARED (no separate meters).\n\n' +
+        'Is this correct? Click OK to continue with shared utilities, or Cancel to go back and select.'
+      );
+      
+      if (!confirmContinue) {
+        // Scroll to utilities section
+        const utilitiesSection = document.querySelector('[data-section="utilities"]');
+        if (utilitiesSection) {
+          utilitiesSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+      
+      // Set all utilities to shared if user confirms
+      onPricingDataUpdate({
+        utilities: {
+          waterMeter: 'shared',
+          gasMeter: 'shared',
+          sewerMeter: 'shared',
+          electricMeter: 'shared',
+          electricalPanel: 0,
+        }
+      });
+    }
+    
     try {
       // Generate consistent proposal number and date
       const proposalNumber = `AB-2025-${Math.floor(Math.random() * 900000) + 100000}`;
@@ -429,8 +491,11 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
         customServicesCount: customServices.length,
       });
       
+      console.log('🎯 About to create PDF generator and call generateProposal');
       const pdfGenerator = new AnchorPDFGenerator();
+      console.log('📋 Calling generateProposal with data:', mappedFormData);
       await pdfGenerator.generateProposal(mappedFormData, 'anchor-proposal');
+      console.log('✅ PDF generation completed successfully');
       
     } catch (error) {
       console.error('❌ PDF generation failed:', error);
@@ -570,7 +635,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
               <div className='flex items-center gap-1 xl:hidden'>
                 <button 
                   onClick={handleGenerateProposal}
-                  className='bg-blue-700 text-white px-2 py-1 rounded text-xs font-medium hover:bg-blue-800 transition-all shadow-sm'
+                  className='bg-anchor-blue text-white px-2 py-1 rounded text-xs font-medium hover:bg-anchor-blue-hover transition-all shadow-sm'
                 >
                   PDF
                 </button>
@@ -646,7 +711,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                     {section.isComplete ? (
                       <span className='text-[11px] font-semibold text-green-600'>COMPLETE</span>
                     ) : (
-                      <span className='text-[11px] text-blue-600 font-medium'>{calculateSectionProgress(section.id)}%</span>
+                      <span className='text-[11px] text-anchor-blue font-medium'>{calculateSectionProgress(section.id)}%</span>
                     )}
                     {isMobile && (
                       <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${
@@ -673,7 +738,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                   {section.id === 'client' && (
                     <div className={isMobile ? 'space-y-3' : 'space-y-6'}>
                       {/* Proposal Info */}
-                      <div className={`grid grid-cols-2 ${isMobile ? 'gap-2 p-2' : 'gap-4 p-4'} rounded-lg bg-blue-50 border border-blue-200`}>
+                      <div className={`grid grid-cols-2 ${isMobile ? 'gap-2 p-2' : 'gap-4 p-4'} rounded-lg bg-anchor-blue-light border border-gray-200`}>
                         <div>
                           <label className={`block ${isMobile ? 'text-[9px]' : 'text-[11px]'} font-medium text-gray-900 ${isMobile ? 'mb-0.5' : 'mb-1'}`}>Proposal #</label>
                           <div className='text-[11px] font-semibold text-gray-900'>AB-2025-{Math.floor(Math.random() * 900000) + 100000}</div>
@@ -693,9 +758,14 @@ ${liveCalculation.finalTotal.toLocaleString()}
                             value={projectData.clientName?.split(' ')[0] || ''}
                             onChange={e => {
                               const lastName = projectData.clientName?.split(' ').slice(1).join(' ') || '';
-                              updateProjectData({ clientName: `${e.target.value} ${lastName}`.trim() });
+                              // Allow complete deletion
+                              if (e.target.value === '') {
+                                updateProjectData({ clientName: lastName });
+                              } else {
+                                updateProjectData({ clientName: `${e.target.value} ${lastName}`.trim() });
+                              }
                             }}
-                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none hover:border-blue-400`}
+                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-anchor-blue focus:ring-1 focus:ring-anchor-blue focus:outline-none hover:border-gray-400`}
                             placeholder='First Name'
                           />
                           <input
@@ -703,9 +773,14 @@ ${liveCalculation.finalTotal.toLocaleString()}
                             value={projectData.clientName?.split(' ').slice(1).join(' ') || ''}
                             onChange={e => {
                               const firstName = projectData.clientName?.split(' ')[0] || '';
-                              updateProjectData({ clientName: `${firstName} ${e.target.value}`.trim() });
+                              // Allow complete deletion
+                              if (e.target.value === '') {
+                                updateProjectData({ clientName: firstName });
+                              } else {
+                                updateProjectData({ clientName: `${firstName} ${e.target.value}`.trim() });
+                              }
                             }}
-                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none hover:border-blue-400`}
+                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-anchor-blue focus:ring-1 focus:ring-anchor-blue focus:outline-none hover:border-gray-400`}
                             placeholder='Last Name'
                           />
                         </div>
@@ -717,7 +792,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               const sanitizedEmail = sanitizeHtmlInput(e.target.value);
                               updateProjectData({ clientEmail: sanitizedEmail });
                             }}
-                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none hover:border-blue-400`}
+                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-anchor-blue focus:ring-1 focus:ring-anchor-blue focus:outline-none hover:border-gray-400`}
                             placeholder='Email'
                           />
                           <input
@@ -727,7 +802,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               const sanitizedPhone = sanitizeHtmlInput(e.target.value);
                               updateProjectData({ clientPhone: sanitizedPhone });
                             }}
-                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none hover:border-blue-400`}
+                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-anchor-blue focus:ring-1 focus:ring-anchor-blue focus:outline-none hover:border-gray-400`}
                             placeholder='Phone'
                           />
                         </div>
@@ -741,14 +816,14 @@ ${liveCalculation.finalTotal.toLocaleString()}
                             type='text'
                             value={projectData.secondaryClientFirstName || ''}
                             onChange={e => updateProjectData({ secondaryClientFirstName: e.target.value })}
-                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none hover:border-blue-400`}
+                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-anchor-blue focus:ring-1 focus:ring-anchor-blue focus:outline-none hover:border-gray-400`}
                             placeholder='First Name'
                           />
                           <input
                             type='text'
                             value={projectData.secondaryClientLastName || ''}
                             onChange={e => updateProjectData({ secondaryClientLastName: e.target.value })}
-                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none hover:border-blue-400`}
+                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-anchor-blue focus:ring-1 focus:ring-anchor-blue focus:outline-none hover:border-gray-400`}
                             placeholder='Last Name'
                           />
                         </div>
@@ -757,14 +832,14 @@ ${liveCalculation.finalTotal.toLocaleString()}
                             type='email'
                             value={projectData.secondaryClientEmail || ''}
                             onChange={e => updateProjectData({ secondaryClientEmail: e.target.value })}
-                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none hover:border-blue-400`}
+                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-anchor-blue focus:ring-1 focus:ring-anchor-blue focus:outline-none hover:border-gray-400`}
                             placeholder='Email'
                           />
                           <input
                             type='tel'
                             value={projectData.secondaryClientPhone || ''}
                             onChange={e => updateProjectData({ secondaryClientPhone: e.target.value })}
-                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none hover:border-blue-400`}
+                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-anchor-blue focus:ring-1 focus:ring-anchor-blue focus:outline-none hover:border-gray-400`}
                             placeholder='Phone'
                           />
                         </div>
@@ -780,7 +855,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                             const sanitizedAddress = sanitizeAddress(e.target.value);
                             updateProjectData({ propertyAddress: sanitizedAddress });
                           }}
-                          className='w-full px-3 py-1 border border-gray-300 rounded-md text-[11px] text-gray-900 bg-white transition-all focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none hover:border-gray-400'
+                          className='w-full px-3 py-1 border border-gray-300 rounded-md text-[11px] text-gray-900 bg-white transition-all focus:border-anchor-blue focus:ring-1 focus:ring-anchor-blue focus:outline-none hover:border-gray-400'
                           placeholder='Property Address'
                         />
                         <div className='grid grid-cols-3 gap-1 mt-1'>
@@ -788,21 +863,21 @@ ${liveCalculation.finalTotal.toLocaleString()}
                             type='text'
                             value={projectData.city || ''}
                             onChange={e => updateProjectData({ city: e.target.value })}
-                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none hover:border-blue-400`}
+                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-anchor-blue focus:ring-1 focus:ring-anchor-blue focus:outline-none hover:border-gray-400`}
                             placeholder='City'
                           />
                           <input
                             type='text'
                             value={projectData.state || ''}
                             onChange={e => updateProjectData({ state: e.target.value })}
-                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none hover:border-blue-400`}
+                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-anchor-blue focus:ring-1 focus:ring-anchor-blue focus:outline-none hover:border-gray-400`}
                             placeholder='State'
                           />
                           <input
                             type='text'
                             value={projectData.zipCode || ''}
                             onChange={e => updateProjectData({ zipCode: e.target.value })}
-                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none hover:border-blue-400`}
+                            className={`${isMobile ? 'h-6 px-2 py-0.5 text-[10px]' : 'h-8 px-3 py-1 text-[11px]'} border border-gray-300 rounded text-gray-900 bg-white focus:border-anchor-blue focus:ring-1 focus:ring-anchor-blue focus:outline-none hover:border-gray-400`}
                             placeholder='ZIP'
                           />
                         </div>
@@ -810,7 +885,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
 
                       {/* Friends & Family Discount */}
                       <label 
-                        className='cursor-pointer flex items-center gap-2 p-1.5 rounded border border-slate-200 bg-white hover:border-blue-900 transition-all focus-within:ring-2 focus-within:ring-blue-900 focus-within:border-blue-900'
+                        className='cursor-pointer flex items-center gap-2 p-1.5 rounded border border-slate-200 bg-white hover:border-anchor-blue transition-all focus-within:ring-2 focus-within:ring-anchor-blue focus-within:border-anchor-blue'
                         onClick={(e) => {
                           console.log('👪 F&F Label clicked, current state:', !!pricingData.friendsAndFamilyDiscount);
                           e.stopPropagation();
@@ -828,7 +903,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                             console.log('👪 F&F Checkbox clicked directly');
                             e.stopPropagation();
                           }}
-                          className='w-3 h-3 text-blue-600 rounded focus:ring-1 focus:ring-blue-500' 
+                          className='w-3 h-3 text-anchor-blue rounded focus:ring-1 focus:ring-anchor-blue' 
                         />
                         <span className='text-[11px] font-medium flex-1' style={{color: '#000000'}}>Friends & Family Discount (10% off)</span>
                       </label>
@@ -854,8 +929,8 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               className={`
                                 ${isMobile ? 'px-2 py-1' : 'px-4 py-2'} rounded-md border text-center transition-all ${isMobile ? 'text-[9px]' : 'text-[11px]'} font-medium
                                 ${projectData.aduType === option.value
-                                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600'
+                                  ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue'
                                 }
                               `}
                             >
@@ -867,7 +942,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                           <button
                             type='button'
                             onClick={() => alert('More ADU types coming soon: Conversion ADU, Garage Conversion, Basement ADU')}
-                            className='text-[11px] text-blue-600 hover:text-blue-800 transition-colors'
+                            className='text-[11px] text-anchor-blue hover:text-gray-700 transition-colors'
                           >
                             ▶ More types
                           </button>
@@ -885,9 +960,9 @@ ${liveCalculation.finalTotal.toLocaleString()}
                             value={projectData.squareFootage || ''}
                             onChange={e => updateProjectData({ squareFootage: parseInt(e.target.value) || 0 })}
                             className={`
-                              ${isMobile ? 'h-6 px-1 py-0.5 text-[9px]' : 'h-8 px-3 py-1 text-[11px]'} border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all text-center font-medium
+                              ${isMobile ? 'h-6 px-1 py-0.5 text-[9px]' : 'h-8 px-3 py-1 text-[11px]'} border rounded focus:ring-2 focus:ring-anchor-blue focus:border-anchor-blue focus:outline-none transition-all text-center font-medium
                               ${projectData.squareFootage && ![400, 800, 1000, 1200].includes(projectData.squareFootage)
-                                ? 'border-blue-500 bg-blue-50 text-blue-900'
+                                ? 'border-anchor-blue bg-anchor-blue-light text-anchor-blue'
                                 : 'border-gray-400 bg-white text-gray-800 hover:border-gray-500 hover:bg-gray-50'
                               }
                             `}
@@ -903,8 +978,8 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               className={`
                                 h-10 px-3 rounded border text-center text-[11px] font-medium inline-flex items-center justify-center
                                 ${projectData.squareFootage === sqft
-                                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600'
+                                  ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue'
                                 }
                               `}
                             >
@@ -935,14 +1010,14 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               className={`
                                 ${isMobile ? 'h-6 px-1 text-[9px]' : 'h-10 px-2 text-[11px]'} rounded border text-center font-medium inline-flex items-center justify-center
                                 ${projectData.bedrooms === 0
-                                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600'
+                                  ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue'
                                 }
                               `}
                             >
                               Studio
                             </button>
-                            {[1, 2, 3, 4].map(num => (
+                            {[1, 2, 3, 4].map((num, index) => (
                               <button
                                 key={num}
                                 type='button'
@@ -951,8 +1026,8 @@ ${liveCalculation.finalTotal.toLocaleString()}
                                 className={`
                                   ${isMobile ? 'h-6 px-1 text-[9px]' : 'h-10 px-2 text-[11px]'} rounded border text-center font-medium inline-flex items-center justify-center
                                   ${projectData.bedrooms === num
-                                    ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                                    : 'bg-white border-gray-300 text-gray-900 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600'
+                                    ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                    : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue'
                                   }
                                 `}
                               >
@@ -979,14 +1054,14 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               className={`
                                 ${isMobile ? 'h-6 px-1 text-[9px]' : 'h-10 px-2 text-[11px]'} rounded border text-center font-medium inline-flex items-center justify-center
                                 ${projectData.bathrooms === 0
-                                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600'
+                                  ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue'
                                 }
                               `}
                             >
                               0
                             </button>
-                            {[1, 2, 3].map(num => (
+                            {[1, 2, 3].map((num, index) => (
                               <button
                                 key={num}
                                 type='button'
@@ -995,8 +1070,8 @@ ${liveCalculation.finalTotal.toLocaleString()}
                                 className={`
                                   ${isMobile ? 'h-6 px-1 text-[9px]' : 'h-10 px-2 text-[11px]'} rounded border text-center font-medium inline-flex items-center justify-center
                                   ${projectData.bathrooms === num
-                                    ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                                    : 'bg-white border-gray-300 text-gray-900 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600'
+                                    ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                    : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue'
                                   }
                                 `}
                               >
@@ -1020,8 +1095,8 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               className={`
                                 ${isMobile ? 'px-1 py-0.5 h-6 text-[9px]' : 'px-3 py-1.5 h-10 text-[11px]'} rounded border transition-all flex flex-col items-center justify-center
                                 ${projectData.hvacType === 'central-ac'
-                                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none'
+                                  ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue focus:border-anchor-blue focus:ring-1 focus:ring-anchor-blue focus:outline-none'
                                 }
                               `}
                             >
@@ -1034,8 +1109,8 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               className={`
                                 ${isMobile ? 'px-1 py-0.5 h-6 text-[9px]' : 'px-3 py-1.5 h-10 text-[11px]'} rounded border transition-all flex flex-col items-center justify-center
                                 ${projectData.hvacType === 'mini-split'
-                                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none'
+                                  ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue focus:border-anchor-blue focus:ring-1 focus:ring-anchor-blue focus:outline-none'
                                 }
                               `}
                             >
@@ -1054,7 +1129,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               onClick={(e) => {
                                 console.log('💧 Water button clicked - event:', e);
                                 try {
-                                  const newWaterState = projectData.utilities?.waterMeter === 'shared' ? 'separate' : 'shared';
+                                  const newWaterState = (!projectData.utilities?.waterMeter || projectData.utilities.waterMeter === '') ? 'shared' : projectData.utilities.waterMeter === 'shared' ? 'separate' : 'shared';
                                   console.log('Water utility clicked - toggling to:', newWaterState);
                                   updateProjectData({ 
                                     utilities: { 
@@ -1068,15 +1143,15 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               }}
                               className={`
                                 ${isMobile ? 'h-7 px-1 text-[8px]' : 'h-10 px-2 text-[11px]'} rounded border text-center font-medium inline-flex flex-col items-center justify-center
-                                ${projectData.utilities?.waterMeter === 'separate'
-                                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600'
+                                ${projectData.utilities?.waterMeter && projectData.utilities.waterMeter !== '' && projectData.utilities.waterMeter === 'separate'
+                                  ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue'
                                 }
                               `}
                             >
                               <div className='font-medium'>Water</div>
-                              <div className={`${isMobile ? 'text-[7px]' : 'text-[9px]'} ${projectData.utilities?.waterMeter === 'separate' ? 'text-blue-100' : 'text-gray-500'}`}>
-                                {projectData.utilities?.waterMeter === 'separate' ? 'Separate' : 'Shared'}
+                              <div className={`${isMobile ? 'text-[7px]' : 'text-[9px]'} ${projectData.utilities?.waterMeter && projectData.utilities.waterMeter === 'separate' ? 'text-gray-200' : 'text-gray-500'}`}>
+                                {!projectData.utilities?.waterMeter || projectData.utilities.waterMeter === '' ? 'Select' : projectData.utilities.waterMeter === 'separate' ? 'Separate' : 'Shared'}
                               </div>
                             </button>
                             <button 
@@ -1085,7 +1160,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               onClick={(e) => {
                                 console.log('🚽 Sewer button clicked - event:', e);
                                 try {
-                                  const newSewerState = projectData.utilities?.sewerMeter === 'shared' ? 'separate' : 'shared';
+                                  const newSewerState = (!projectData.utilities?.sewerMeter || projectData.utilities.sewerMeter === '') ? 'shared' : projectData.utilities.sewerMeter === 'shared' ? 'separate' : 'shared';
                                   console.log('Sewer utility clicked - toggling to:', newSewerState);
                                   updateProjectData({ 
                                     utilities: { 
@@ -1099,15 +1174,15 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               }}
                               className={`
                                 ${isMobile ? 'h-7 px-1 text-[8px]' : 'h-10 px-2 text-[11px]'} rounded border text-center font-medium inline-flex flex-col items-center justify-center
-                                ${projectData.utilities?.sewerMeter === 'separate'
-                                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600'
+                                ${projectData.utilities?.sewerMeter && projectData.utilities.sewerMeter !== '' && projectData.utilities.sewerMeter === 'separate'
+                                  ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue'
                                 }
                               `}
                             >
                               <div className='font-medium'>Sewer</div>
-                              <div className={`${isMobile ? 'text-[7px]' : 'text-[9px]'} ${projectData.utilities?.sewerMeter === 'separate' ? 'text-blue-100' : 'text-gray-500'}`}>
-                                {projectData.utilities?.sewerMeter === 'separate' ? 'Separate' : 'Shared'}
+                              <div className={`${isMobile ? 'text-[7px]' : 'text-[9px]'} ${projectData.utilities?.sewerMeter && projectData.utilities.sewerMeter === 'separate' ? 'text-gray-200' : 'text-gray-500'}`}>
+                                {!projectData.utilities?.sewerMeter || projectData.utilities.sewerMeter === '' ? 'Select' : projectData.utilities.sewerMeter === 'separate' ? 'Separate' : 'Shared'}
                               </div>
                             </button>
                             <button 
@@ -1116,7 +1191,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               onClick={(e) => {
                                 console.log('🔥 Gas button clicked - event:', e);
                                 try {
-                                  const newGasState = projectData.utilities?.gasMeter === 'shared' ? 'separate' : 'shared';
+                                  const newGasState = (!projectData.utilities?.gasMeter || projectData.utilities.gasMeter === '') ? 'shared' : projectData.utilities.gasMeter === 'shared' ? 'separate' : 'shared';
                                   console.log('Gas utility clicked - toggling to:', newGasState);
                                   updateProjectData({ 
                                     utilities: { 
@@ -1130,15 +1205,15 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               }}
                               className={`
                                 ${isMobile ? 'h-7 px-1 text-[8px]' : 'h-10 px-2 text-[11px]'} rounded border text-center font-medium inline-flex flex-col items-center justify-center
-                                ${projectData.utilities?.gasMeter === 'separate'
-                                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600'
+                                ${projectData.utilities?.gasMeter && projectData.utilities.gasMeter !== '' && projectData.utilities.gasMeter === 'separate'
+                                  ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue'
                                 }
                               `}
                             >
                               <div className='font-medium'>Gas</div>
-                              <div className={`${isMobile ? 'text-[7px]' : 'text-[9px]'} ${projectData.utilities?.gasMeter === 'separate' ? 'text-blue-100' : 'text-gray-500'}`}>
-                                {projectData.utilities?.gasMeter === 'separate' ? 'Separate' : 'Shared'}
+                              <div className={`${isMobile ? 'text-[7px]' : 'text-[9px]'} ${projectData.utilities?.gasMeter && projectData.utilities.gasMeter === 'separate' ? 'text-gray-200' : 'text-gray-500'}`}>
+                                {!projectData.utilities?.gasMeter || projectData.utilities.gasMeter === '' ? 'Select' : projectData.utilities.gasMeter === 'separate' ? 'Separate' : 'Shared'}
                               </div>
                             </button>
                             <button 
@@ -1148,7 +1223,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                                 console.log('⚡ Electric button clicked - event:', e);
                                 try {
                                   // Electric can be shared or separate despite types definition
-                                  const newElectricState = projectData.utilities?.electricMeter === 'shared' ? 'separate' : 'shared';
+                                  const newElectricState = (!projectData.utilities?.electricMeter || projectData.utilities.electricMeter === '') ? 'shared' : projectData.utilities.electricMeter === 'shared' ? 'separate' : 'shared';
                                   console.log('Electric utility clicked - toggling to:', newElectricState);
                                   updateProjectData({ 
                                     utilities: { 
@@ -1162,15 +1237,15 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               }}
                               className={`
                                 ${isMobile ? 'h-7 px-1 text-[8px]' : 'h-10 px-2 text-[11px]'} rounded border text-center font-medium inline-flex flex-col items-center justify-center
-                                ${projectData.utilities?.electricMeter === 'separate'
-                                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600'
+                                ${projectData.utilities?.electricMeter && projectData.utilities.electricMeter !== '' && projectData.utilities.electricMeter === 'separate'
+                                  ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue'
                                 }
                               `}
                             >
                               <div className='font-medium'>Electric</div>
-                              <div className={`${isMobile ? 'text-[7px]' : 'text-[9px]'} ${projectData.utilities?.electricMeter === 'separate' ? 'text-blue-100' : 'text-gray-500'}`}>
-                                {projectData.utilities?.electricMeter === 'separate' ? 'Separate' : 'Shared'}
+                              <div className={`${isMobile ? 'text-[7px]' : 'text-[9px]'} ${projectData.utilities?.electricMeter && projectData.utilities.electricMeter === 'separate' ? 'text-gray-200' : 'text-gray-500'}`}>
+                                {!projectData.utilities?.electricMeter || projectData.utilities.electricMeter === '' ? 'Select' : projectData.utilities.electricMeter === 'separate' ? 'Separate' : 'Shared'}
                               </div>
                             </button>
                           </div>
@@ -1181,7 +1256,11 @@ ${liveCalculation.finalTotal.toLocaleString()}
                       <div>
                         <label className={`block ${isMobile ? 'text-[9px]' : 'text-[11px]'} font-semibold mb-1`} style={{color: '#000000'}}>➕ Additional Services</label>
                         <div className='grid grid-cols-2 gap-1'>
-                          <label className={`cursor-pointer flex items-center gap-2 ${isMobile ? 'px-2 py-0.5' : 'px-3 py-1'} rounded border border-gray-300 bg-blue-50 transition-all hover:border-blue-400 hover:bg-blue-100 focus-within:ring-2 focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500`}>
+                          <label className={`cursor-pointer flex items-center gap-2 ${isMobile ? 'px-2 py-0.5' : 'px-3 py-1'} rounded border transition-all focus-within:ring-2 focus-within:ring-1 focus-within:ring-anchor-blue focus-within:border-anchor-blue ${
+                            pricingData.extraBathroom 
+                              ? 'border-anchor-blue bg-anchor-blue-light hover:border-anchor-blue-hover hover:bg-gray-100' 
+                              : 'border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50'
+                          }`}>
                             <input
                               type='checkbox'
                               checked={!!pricingData.extraBathroom}
@@ -1189,17 +1268,17 @@ ${liveCalculation.finalTotal.toLocaleString()}
                                 console.log('🛁 Extra Bathroom clicked:', e.target.checked);
                                 updatePricingData({ extraBathroom: e.target.checked ? 8000 : 0 });
                               }}
-                              className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-blue-600 rounded focus:ring-1 focus:ring-blue-500`}
+                              className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-anchor-blue rounded focus:ring-1 focus:ring-anchor-blue`}
                             />
                             <div className='flex-1'>
                               <span className={`${isMobile ? 'text-[9px]' : 'text-[11px]'} font-medium text-gray-800 block`}>Extra Bathroom</span>
-                              <span className={`${isMobile ? 'text-[9px]' : 'text-[11px]'} text-blue-600 font-medium`}>+$8,000</span>
+                              <span className={`${isMobile ? 'text-[9px]' : 'text-[11px]'} text-anchor-blue font-medium`}>+$8,000</span>
                             </div>
                           </label>
-                          <label className={`cursor-pointer flex items-center gap-2 ${isMobile ? 'px-2 py-0.5' : 'px-3 py-1'} rounded border transition-all focus-within:ring-2 focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500 ${
+                          <label className={`cursor-pointer flex items-center gap-2 ${isMobile ? 'px-2 py-0.5' : 'px-3 py-1'} rounded border transition-all focus-within:ring-2 focus-within:ring-1 focus-within:ring-anchor-blue focus-within:border-anchor-blue ${
                             pricingData.dedicatedDriveway 
-                              ? 'border-gray-300 bg-blue-50 hover:border-blue-400 hover:bg-blue-100' 
-                              : 'border-gray-300 bg-white hover:border-blue-400 hover:bg-blue-50'
+                              ? 'border-anchor-blue bg-anchor-blue-light hover:border-anchor-blue-hover hover:bg-gray-100' 
+                              : 'border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50'
                           }`}>
                             <input
                               type='checkbox'
@@ -1208,14 +1287,18 @@ ${liveCalculation.finalTotal.toLocaleString()}
                                 console.log('🚗 Dedicated Driveway clicked:', e.target.checked);
                                 updatePricingData({ dedicatedDriveway: e.target.checked ? 5000 : 0 });
                               }}
-                              className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-blue-600 rounded focus:ring-1 focus:ring-blue-500`}
+                              className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-anchor-blue rounded focus:ring-1 focus:ring-anchor-blue`}
                             />
                             <div className='flex-1'>
                               <span className={`${isMobile ? 'text-[9px]' : 'text-[11px]'} font-medium text-gray-800 block`}>Dedicated Driveway</span>
-                              <span className={`${isMobile ? 'text-[9px]' : 'text-[11px]'} font-medium ${pricingData.dedicatedDriveway ? 'text-blue-600' : 'text-gray-600'}`}>+$5,000</span>
+                              <span className={`${isMobile ? 'text-[9px]' : 'text-[11px]'} font-medium ${pricingData.dedicatedDriveway ? 'text-anchor-blue' : 'text-gray-600'}`}>+$5,000</span>
                             </div>
                           </label>
-                          <label className={`cursor-pointer flex items-center gap-2 ${isMobile ? 'px-2 py-0.5' : 'px-3 py-1'} rounded border border-gray-300 bg-blue-50 transition-all hover:border-blue-400 hover:bg-blue-100 focus-within:ring-2 focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500`}>
+                          <label className={`cursor-pointer flex items-center gap-2 ${isMobile ? 'px-2 py-0.5' : 'px-3 py-1'} rounded border transition-all focus-within:ring-2 focus-within:ring-1 focus-within:ring-anchor-blue focus-within:border-anchor-blue ${
+                            pricingData.basicLandscaping 
+                              ? 'border-anchor-blue bg-anchor-blue-light hover:border-anchor-blue-hover hover:bg-gray-100' 
+                              : 'border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50'
+                          }`}>
                             <input
                               type='checkbox'
                               checked={!!pricingData.basicLandscaping}
@@ -1223,11 +1306,11 @@ ${liveCalculation.finalTotal.toLocaleString()}
                                 console.log('🌿 Basic Landscaping clicked:', e.target.checked);
                                 updatePricingData({ basicLandscaping: e.target.checked ? 10000 : 0 });
                               }}
-                              className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-blue-600 rounded focus:ring-1 focus:ring-blue-500`}
+                              className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-anchor-blue rounded focus:ring-1 focus:ring-anchor-blue`}
                             />
                             <div className='flex-1'>
                               <span className={`${isMobile ? 'text-[9px]' : 'text-[11px]'} font-medium text-gray-800 block`}>Basic Landscaping</span>
-                              <span className={`${isMobile ? 'text-[9px]' : 'text-[11px]'} text-blue-600 font-medium`}>+$10,000</span>
+                              <span className={`${isMobile ? 'text-[9px]' : 'text-[11px]'} text-anchor-blue font-medium`}>+$10,000</span>
                             </div>
                           </label>
                           
@@ -1262,7 +1345,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                             type='button'
                             data-navigation
                             onClick={() => setShowAddMorePopup(true)}
-                            className='cursor-pointer flex items-center justify-center px-3 py-1 rounded-md border border-dashed border-gray-300 bg-blue-50 hover:border-blue-400 hover:bg-blue-50 transition-all focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none'
+                            className='cursor-pointer flex items-center justify-center px-3 py-1 rounded-md border border-dashed border-gray-300 bg-blue-50 hover:border-gray-400 hover:bg-gray-50 transition-all focus:border-anchor-blue focus:ring-1 focus:ring-anchor-blue focus:outline-none'
                           >
                             <span className='text-[11px] text-gray-900 font-medium'>+ Add More</span>
                           </button>
@@ -1278,7 +1361,11 @@ ${liveCalculation.finalTotal.toLocaleString()}
                     <div className='space-y-1.5'>
                       <div>
                         <div className='text-[11px] font-medium text-gray-900 mb-1'>Professional Design Services</div>
-                        <label className='cursor-pointer flex items-start gap-2 px-3 py-1 rounded border border-gray-300 bg-blue-50 transition-all hover:border-blue-400 hover:bg-blue-100 focus-within:ring-2 focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500'>
+                        <label className={`cursor-pointer flex items-start gap-2 px-3 py-1 rounded border transition-all focus-within:ring-2 focus-within:ring-1 focus-within:ring-anchor-blue focus-within:border-anchor-blue ${
+                          pricingData.designServices === 12500
+                            ? 'border-anchor-blue bg-anchor-blue-light hover:border-anchor-blue-hover hover:bg-gray-100'
+                            : 'border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50'
+                        }`}>
                           <input
                             type='checkbox'
                             checked={pricingData.designServices === 12500}
@@ -1286,12 +1373,12 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               console.log('📐 Design Services clicked:', e.target.checked);
                               updatePricingData({ designServices: e.target.checked ? 12500 : 0 });
                             }}
-                            className='w-4 h-4 text-blue-600 rounded mt-0.5 focus:ring-2 focus:ring-blue-200'
+                            className='w-4 h-4 text-anchor-blue rounded mt-0.5 focus:ring-2 focus:ring-anchor-blue'
                           />
                           <div className='flex-1'>
                             <div className='flex items-center justify-between'>
                               <span className='text-[11px] font-medium text-gray-800'>Include Design Services</span>
-                              <span className='font-bold text-blue-600 text-[11px]'>+$12,500</span>
+                              <span className='font-bold text-anchor-blue text-[11px]'>+$12,500</span>
                             </div>
                             <p className='text-[11px] text-gray-600 mt-0.5'>Architectural plans, structural engineering, and permit assistance</p>
                           </div>
@@ -1299,7 +1386,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                       </div>
 
                       <div className='space-y-0.5'>
-                        <label className='cursor-pointer flex items-center gap-2 px-3 py-1 rounded border border-gray-300 bg-white hover:border-blue-400 hover:bg-blue-50 transition-all focus-within:ring-2 focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500'>
+                        <label className='cursor-pointer flex items-center gap-2 px-3 py-1 rounded border border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50 transition-all focus-within:ring-2 focus-within:ring-1 focus-within:ring-anchor-blue focus-within:border-anchor-blue'>
                           <input
                             type='checkbox'
                             checked={!!pricingData.solarReady}
@@ -1307,12 +1394,12 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               console.log('Solar Ready clicked:', e.target.checked);
                               updatePricingData({ solarReady: e.target.checked });
                             }}
-                            className='w-4 h-4 text-blue-600 rounded focus:ring-1 focus:ring-blue-500'
+                            className='w-4 h-4 text-anchor-blue rounded focus:ring-1 focus:ring-anchor-blue'
                           />
                           <span className='text-[11px] font-medium text-gray-800'>Solar Ready</span>
                         </label>
 
-                        <label className='cursor-pointer flex items-center gap-2 px-3 py-1 rounded border border-gray-300 bg-white hover:border-blue-400 hover:bg-blue-50 transition-all focus-within:ring-2 focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500'>
+                        <label className='cursor-pointer flex items-center gap-2 px-3 py-1 rounded border border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50 transition-all focus-within:ring-2 focus-within:ring-1 focus-within:ring-anchor-blue focus-within:border-anchor-blue'>
                           <input
                             type='checkbox'
                             checked={!!pricingData.femaCompliance}
@@ -1320,7 +1407,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                               console.log('FEMA Compliance clicked:', e.target.checked);
                               updatePricingData({ femaCompliance: e.target.checked });
                             }}
-                            className='w-4 h-4 text-blue-600 rounded focus:ring-1 focus:ring-blue-500'
+                            className='w-4 h-4 text-anchor-blue rounded focus:ring-1 focus:ring-anchor-blue'
                           />
                           <span className='text-[11px] font-medium text-gray-800'>FEMA Compliance</span>
                         </label>
@@ -1338,7 +1425,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                           updateProjectData({ additionalNotes: sanitizedNotes });
                         }}
                         placeholder='Any special requirements, preferences, or project details...'
-                        className='w-full h-12 px-3 py-1 border border-gray-300 rounded-md text-[11px] text-gray-900 bg-white resize-none transition-all focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none hover:border-gray-400'
+                        className='w-full h-12 px-3 py-1 border border-gray-300 rounded-md text-[11px] text-gray-900 bg-white resize-none transition-all focus:border-anchor-blue focus:ring-1 focus:ring-anchor-blue focus:outline-none hover:border-gray-400'
                       />
                     </div>
                   )}
@@ -1357,15 +1444,15 @@ ${liveCalculation.finalTotal.toLocaleString()}
               <div className='space-y-1.5 text-[11px]'>
                 <div className='flex justify-between'>
                   <span className='text-slate-600'>Client:</span>
-                  <span className={`font-medium ${projectData.clientName ? 'text-blue-600' : 'text-red-600'}`}>{projectData.clientName || 'Missing'}</span>
+                  <span className={`font-medium ${projectData.clientName ? 'text-anchor-blue' : 'text-red-600'}`}>{projectData.clientName || 'Missing'}</span>
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-600'>Address:</span>
-                  <span className={`font-medium ${projectData.propertyAddress ? 'text-blue-600' : 'text-red-600'}`}>{projectData.propertyAddress || 'Missing'}</span>
+                  <span className={`font-medium ${projectData.propertyAddress ? 'text-anchor-blue' : 'text-red-600'}`}>{projectData.propertyAddress || 'Missing'}</span>
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-600'>ADU Type:</span>
-                  <span className={`font-medium ${projectData.aduType ? 'text-blue-600' : 'text-red-600'}`}>
+                  <span className={`font-medium ${projectData.aduType ? 'text-anchor-blue' : 'text-red-600'}`}>
                     {projectData.aduType 
                       ? projectData.aduType === 'jadu' 
                         ? 'JADU' 
@@ -1376,20 +1463,11 @@ ${liveCalculation.finalTotal.toLocaleString()}
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-600'>Size:</span>
-                  <span className={`font-medium ${projectData.squareFootage ? 'text-blue-600' : 'text-red-600'}`}>{projectData.squareFootage ? `${projectData.squareFootage} sq ft` : 'Missing'}</span>
-                </div>
-                <div className='flex justify-between'>
-                  <span className='text-slate-600'>Layout:</span>
-                  <span className={`font-medium ${(projectData.bedrooms !== undefined && projectData.bathrooms !== undefined) ? 'text-blue-600' : 'text-red-600'}`}>
-                    {(projectData.bedrooms !== undefined && projectData.bathrooms !== undefined) 
-                      ? `${projectData.bedrooms === 0 ? 'Studio' : projectData.bedrooms + 'BR'} / ${projectData.bathrooms}BA` 
-                      : 'Not Selected'
-                    }
-                  </span>
+                  <span className={`font-medium ${projectData.squareFootage ? 'text-anchor-blue' : 'text-red-600'}`}>{projectData.squareFootage ? `${projectData.squareFootage} sq ft` : 'Missing'}</span>
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-600'>HVAC:</span>
-                  <span className={`font-medium ${projectData.hvacType ? 'text-blue-600' : 'text-red-600'}`}>
+                  <span className={`font-medium ${projectData.hvacType ? 'text-anchor-blue' : 'text-red-600'}`}>
                     {projectData.hvacType 
                       ? projectData.hvacType === 'central-ac' 
                         ? 'Central AC'
@@ -1405,10 +1483,10 @@ ${liveCalculation.finalTotal.toLocaleString()}
                   <div className='text-right'>
                     {projectData.utilities ? (
                       <div className='space-y-0'>
-                        {projectData.utilities.waterMeter === 'separate' && <div className='font-medium text-[10px]'>Water: Separate</div>}
-                        {projectData.utilities.gasMeter === 'separate' && <div className='font-medium text-[10px]'>Gas: Separate</div>}
-                        {projectData.utilities.sewerMeter === 'separate' && <div className='font-medium text-[10px]'>Sewer: Separate</div>}
-                        {projectData.utilities.electricMeter === 'separate' && <div className='font-medium text-[10px]'>Electric: Separate</div>}
+                        {projectData.utilities.waterMeter === 'separate' && <div className='font-medium text-[10px] text-anchor-blue'>Water: Separate</div>}
+                        {projectData.utilities.gasMeter === 'separate' && <div className='font-medium text-[10px] text-anchor-blue'>Gas: Separate</div>}
+                        {projectData.utilities.sewerMeter === 'separate' && <div className='font-medium text-[10px] text-anchor-blue'>Sewer: Separate</div>}
+                        {projectData.utilities.electricMeter === 'separate' && <div className='font-medium text-[10px] text-anchor-blue'>Electric: Separate</div>}
                         {(!projectData.utilities.waterMeter || projectData.utilities.waterMeter === 'shared') && 
                          (!projectData.utilities.gasMeter || projectData.utilities.gasMeter === 'shared') && 
                          (!projectData.utilities.sewerMeter || projectData.utilities.sewerMeter === 'shared') && 
@@ -1428,15 +1506,15 @@ ${liveCalculation.finalTotal.toLocaleString()}
                 <div className='flex justify-between'>
                   <span className='text-slate-600'>Add-ons:</span>
                   <div className='text-right'>
-                    {pricingData.extraBathroom && <div className='font-medium'>Extra Bathroom: +$8,000</div>}
-                    {pricingData.dedicatedDriveway && <div className='font-medium'>Dedicated Driveway: +$5,000</div>}
-                    {pricingData.basicLandscaping && <div className='font-medium'>Landscaping: +$10,000</div>}
+                    {pricingData.extraBathroom && <div className='font-medium text-[10px]'><span className='text-anchor-blue'>Extra Bathroom:</span> <span className='text-green-600'>+$8,000</span></div>}
+                    {pricingData.dedicatedDriveway && <div className='font-medium text-[10px]'><span className='text-anchor-blue'>Dedicated Driveway:</span> <span className='text-green-600'>+$5,000</span></div>}
+                    {pricingData.basicLandscaping && <div className='font-medium text-[10px]'><span className='text-anchor-blue'>Landscaping:</span> <span className='text-green-600'>+$10,000</span></div>}
                     {customServices.map((service, index) => (
-                      <div key={index} className='font-medium'>
-                        {service.description}: +${service.price.toLocaleString()}
+                      <div key={index} className='font-medium text-[10px]'>
+                        <span className='text-anchor-blue'>{service.description}:</span> <span className='text-green-600'>+${service.price.toLocaleString()}</span>
                       </div>
                     ))}
-                    {!pricingData.extraBathroom && !pricingData.dedicatedDriveway && !pricingData.basicLandscaping && customServices.length === 0 && <span className='font-medium'>None</span>}
+                    {!pricingData.extraBathroom && !pricingData.dedicatedDriveway && !pricingData.basicLandscaping && customServices.length === 0 && <span className='font-medium text-slate-600'>None</span>}
                   </div>
                 </div>
               </div>
@@ -1448,7 +1526,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                 </div>
                 <div className='space-y-1 text-[11px] ml-4'>
                   <div className='flex justify-between'>
-                    <span className='text-slate-600'>Base:</span>
+                    <span className='text-slate-600'>Base Construction:</span>
                     <span className='font-medium'>${liveCalculation.basePrice.toLocaleString()}</span>
                   </div>
                   {pricingData.designServices && (
@@ -1460,9 +1538,13 @@ ${liveCalculation.finalTotal.toLocaleString()}
                   {liveCalculation.utilitiesCost > 0 && (
                     <div className='flex justify-between'>
                       <span className='text-slate-600'>Utilities:</span>
-                      <span className='font-medium'>${liveCalculation.utilitiesCost.toLocaleString()}</span>
+                      <span className='font-medium text-anchor-blue'>${liveCalculation.utilitiesCost.toLocaleString()}</span>
                     </div>
                   )}
+                  <div className='flex justify-between border-t pt-1 mt-1'>
+                    <span className='text-slate-600 font-medium'>Base Subtotal:</span>
+                    <span className='font-medium'>${(liveCalculation.basePrice + (pricingData.designServices || 0) + liveCalculation.utilitiesCost).toLocaleString()}</span>
+                  </div>
                   {(pricingData.extraBathroom || pricingData.dedicatedDriveway || pricingData.basicLandscaping || customServices.length > 0) && (
                     <div className='flex justify-between'>
                       <span className='text-slate-600'>Add-ons:</span>
@@ -1472,27 +1554,39 @@ ${liveCalculation.finalTotal.toLocaleString()}
                   {pricingData.extraBathroom && (
                     <div className='flex justify-between ml-4'>
                       <span className='text-slate-600'>• Extra Bathroom:</span>
-                      <span className='font-medium text-blue-600'>$8,000</span>
+                      <span className='font-medium text-green-600'>+$8,000</span>
                     </div>
                   )}
                   {pricingData.dedicatedDriveway && (
                     <div className='flex justify-between ml-4'>
                       <span className='text-slate-600'>• Dedicated Driveway:</span>
-                      <span className='font-medium text-blue-600'>$5,000</span>
+                      <span className='font-medium text-green-600'>+$5,000</span>
                     </div>
                   )}
                   {pricingData.basicLandscaping && (
                     <div className='flex justify-between ml-4'>
                       <span className='text-slate-600'>• Basic Landscaping:</span>
-                      <span className='font-medium text-blue-600'>$10,000</span>
+                      <span className='font-medium text-green-600'>+$10,000</span>
                     </div>
                   )}
                   {customServices.map((service, index) => (
                     <div key={index} className='flex justify-between ml-4'>
                       <span className='text-slate-600'>• {service.description}:</span>
-                      <span className='font-medium text-green-600'>${service.price.toLocaleString()}</span>
+                      <span className='font-medium text-green-600'>+${service.price.toLocaleString()}</span>
                     </div>
                   ))}
+                  {(pricingData.extraBathroom || pricingData.dedicatedDriveway || pricingData.basicLandscaping || customServices.length > 0) && (
+                    <div className='flex justify-between border-t pt-1 mt-1'>
+                      <span className='text-slate-600 font-medium'>Add-ons Subtotal:</span>
+                      <span className='font-medium text-green-600'>${liveCalculation.addOnsCost.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {pricingData.friendsAndFamilyDiscount && (
+                    <div className='flex justify-between text-red-600'>
+                      <span className='font-medium'>Friends & Family (10% off):</span>
+                      <span className='font-medium'>-${(liveCalculation.finalTotal * 0.1111).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1508,7 +1602,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
               <div className='flex gap-2 mt-4'>
                 <button 
                   onClick={handleGenerateProposal}
-                  className='flex-1 bg-gradient-to-r from-blue-700 to-blue-800 text-white px-4 py-3 rounded-lg font-medium hover:from-blue-800 hover:to-blue-900 transition-all shadow-md hover:shadow-lg'
+                  className='flex-1 bg-gradient-to-r from-gray-700 to-gray-800 text-white px-4 py-3 rounded-lg font-medium hover:from-gray-800 hover:to-gray-900 transition-all shadow-md hover:shadow-lg'
                 >
                   Generate Proposal
                 </button>
@@ -1537,7 +1631,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                   type='text'
                   value={customServiceDescription}
                   onChange={(e) => setCustomServiceDescription(e.target.value)}
-                  className='w-full px-3 py-1 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500'
+                  className='w-full px-3 py-1 border border-gray-300 rounded-md focus:ring-1 focus:ring-anchor-blue focus:border-anchor-blue'
                   placeholder='Enter service description'
                 />
               </div>
@@ -1548,7 +1642,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                   type='number'
                   value={customServicePrice}
                   onChange={(e) => setCustomServicePrice(e.target.value)}
-                  className='w-full px-3 py-1 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500'
+                  className='w-full px-3 py-1 border border-gray-300 rounded-md focus:ring-1 focus:ring-anchor-blue focus:border-anchor-blue'
                   placeholder='Enter price (numbers only)'
                 />
               </div>
@@ -1563,7 +1657,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
               </button>
               <button
                 onClick={handleAddCustomService}
-                className='px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 border border-blue-600 transition-colors'
+                className='px-4 py-2 bg-anchor-blue text-white rounded-md hover:bg-anchor-blue-hover border border-anchor-blue transition-colors'
               >
                 Add Service
               </button>

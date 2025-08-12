@@ -1,5 +1,6 @@
 // Anchor Builders ADU Pricing Configuration - Real System
-// Based on actual Excel pricing model
+// Based on actual Excel pricing model and validated from real proposals
+// Updated 2025-08-12 with CORRECT pricing from PDF analysis
 
 export interface AduTypePricing {
   name: string;
@@ -28,77 +29,77 @@ export interface DesignServices {
   description: string;
 }
 
-// ADU Type Pricing - Real Anchor Builders Model
+// ADU Type Pricing - CORRECTED to $240/sqft base rate
 export const aduTypePricing: AduTypePricing[] = [
   {
     name: 'Detached ADU (1-Story)',
     type: 'detached',
     stories: 1,
-    pricePerSqFt: 220,
+    pricePerSqFt: 240, // CORRECTED from 220 to 240
     description: 'Single level standalone unit',
   },
   {
     name: 'Detached ADU (2-Story)',
     type: 'detached',
     stories: 2,
-    pricePerSqFt: 240,
+    pricePerSqFt: 240, // Confirmed correct at 240
     description: 'Two level standalone unit',
   },
   {
     name: 'Attached ADU',
     type: 'attached',
-    pricePerSqFt: 200,
+    pricePerSqFt: 240, // CORRECTED from 200 to 240
     description: 'Connected to existing home',
   },
 ];
 
-// Design Services - Fixed Fee
+// Design Services - Updated ranges
 export const designServices: DesignServices = {
-  planningDesign: 12500,
+  planningDesign: 8500, // Default for 1-story, can be 8500-12500
   description: 'ADU Plan Design, Structural Engineering, MEP Design, Zoning & Site Planning',
 };
 
-// Utility Options - Separate vs Shared
+// Utility Options - To be configured in admin panel
 export const utilityOptions: UtilityOption[] = [
   {
     name: 'Water Meter',
-    separatePrice: 1000,
+    separatePrice: 0, // To be set in admin panel
     sharedPrice: 0,
     required: true,
     description: 'Water service connection',
   },
   {
     name: 'Gas Meter',
-    separatePrice: 1500,
+    separatePrice: 0, // To be set in admin panel
     sharedPrice: 0,
     required: false,
     description: 'Natural gas service connection',
   },
   {
     name: 'Electric Meter',
-    separatePrice: 2000,
+    separatePrice: 0, // To be set in admin panel
     sharedPrice: 0,
     required: true,
     description: 'Electrical service connection',
   },
 ];
 
-// Add-On Options - Real Anchor Builders Options
+// Add-On Options - CONFIRMED correct pricing
 export const addOnOptions: AddOnOption[] = [
   {
     name: 'Extra Bathroom',
-    price: 8000,
+    price: 8000, // CONFIRMED correct
     description: 'Additional bathroom beyond standard',
   },
   {
     name: 'Driveway',
-    price: 5000,
+    price: 5000, // CONFIRMED correct
     description:
       'Dedicated driveway for ADU (does not include driveway approach - requires separate civil work)',
   },
   {
     name: 'Basic Landscaping',
-    price: 10000,
+    price: 10000, // CONFIRMED correct
     description: 'Basic landscaping around ADU',
   },
 ];
@@ -108,6 +109,7 @@ export const businessSettings = {
   standardMarkup: 0.15, // 15% standard markup
   proposalValidityDays: 30,
   defaultCity: 'Westminster',
+  minSizeForStandardPricing: 600, // NEW: Units <600 sqft get $250/sqft
 };
 
 // Finish Levels - Standard finish included in base price
@@ -193,7 +195,7 @@ export const milestonePayments: MilestonePayment[] = [
 // Calculate milestone payments exactly like Excel formulas
 export const calculateMilestonePayments = (
   totalAmount: number,
-  designAmount: number = 12500,
+  designAmount: number = 8500, // Updated default
   deposit: number = 1000
 ) => {
   // Excel-style calculation: (Total - Design - Deposit) for construction amount
@@ -235,4 +237,31 @@ export const calculateMilestonePayments = (
   }
 
   return payments;
+};
+
+// Helper function to get price per sqft with size adjustment
+export const getPricePerSqFt = (
+  aduType: 'detached' | 'attached',
+  stories: 1 | 2 = 1,
+  squareFootage: number
+): number => {
+  // Find base pricing configuration
+  let baseConfig;
+  if (aduType === 'detached') {
+    baseConfig = aduTypePricing.find(type => type.type === 'detached' && type.stories === stories);
+  } else {
+    baseConfig = aduTypePricing.find(type => type.type === 'attached');
+  }
+
+  if (!baseConfig) {
+    return 240; // Default fallback
+  }
+
+  // Apply size-based pricing adjustment
+  if (squareFootage < businessSettings.minSizeForStandardPricing) {
+    // Premium pricing for smaller units ($250/sqft for <600 sqft)
+    return 250;
+  }
+
+  return baseConfig.pricePerSqFt;
 };

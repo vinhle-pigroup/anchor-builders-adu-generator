@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADU Construction Proposal - Anchor Builders</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: #f9fafb;
+            color: #374151;
+            /* Force color printing */
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        
+        .proposal-container {
+            width: 8.5in;
+            min-height: 11in;
+            margin: 15px auto;
+            background: white;
+            font-size: 10px;
+            line-height: 1.2;
+            color: #374151;
+            padding: 0.75in;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            /* Force color printing */
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        
+        @media print {
+            @page {
+                margin: 0.5in;
+                size: letter;
+                background: white !important;
+            }
+            
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                width: 100% !important;
+                height: 100% !important;
+                /* Force color printing in print mode */
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            .proposal-container {
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 auto !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                background: white !important;
+                min-height: auto !important;
+                /* Force color printing */
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            /* Force all elements to print colors */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+        
+        /* TEMPORARY: Template Variable Highlighting for Data Mapping */
+        .template-var-highlight {
+            background: #ffeb3b !important;
+            border: 2px solid #f57f17 !important;
+            padding: 2px 4px !important;
+            border-radius: 3px !important;
+            font-weight: bold !important;
+            color: #e65100 !important;
+            text-shadow: none !important;
+            box-shadow: 0 0 5px rgba(245, 127, 23, 0.5) !important;
+        }
+        
+        .header {
+            margin-bottom: 6px;
+            background: white;
+            border-bottom: 2px solid #374151;
+            padding-bottom: 8px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+        
+        .company-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-box {
+            width: 58px;
+            height: 58px;
+            background: white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .logo-box img {
+            max-width: 52px;
+            max-height: 52px;
+            object-fit: contain;
+        }
+        
+        .company-details h1 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #374151;
+            margin: 0 0 4px 0;
+        }
+        
+        .company-details .contact {
+            font-size: 10px;
+            color: #6b7280;
+            line-height: 1.3;
+        }
+        
+        .proposal-info {
+            background: #f9fafb;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #d1d5db;
+            min-width: 180px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .info-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+        }
+        
+        .info-value {
+            font-size: 10px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .title-banner {
+            background: white;
+            color: #1f2937;
+            text-align: center;
+            padding: 10px 0;
+            margin: 0 -8px;
+            border-top: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .title-banner h2 {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        
+        .project-overview {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+        }
+        
+        .overview-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+        
+        .section-header {
+            font-size: 9px;
+            font-weight: 700;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #d1d5db;
+            padding-bottom: 3px;
+        }
+        
+        .client-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 12px;
+        }
+        
+        .field-label {
+            font-size: 9px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            margin-bottom: 1px;
+        }
+        
+        .field-value {
+            font-size: 9px;
+            color: #374151;
+            font-weight: 600;
+            line-height: 1.1;
+        }
+        
+        .section-box {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .section-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: #1f2937;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 6px;
+            padding: 4px 8px;
+            border-bottom: 2px solid #e5e7eb;
+            background: #e2e8f0;
+            border-radius: 3px;
+        }
+        
+        .work-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        
+        .work-category {
+            font-size: 9px;
+            font-weight: 700;
+            padding: 3px 5px;
+            text-align: center;
+            border-radius: 2px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+        }
+        
+        .work-category.design {
+            background: #fef9e7;
+            color: #713f12;
+        }
+        
+        .work-category.construction {
+            background: #e0f2fe;
+            color: #0c4a6e;
+        }
+        
+        .work-category.assurance {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .work-list {
+            list-style: none;
+            padding: 0;
+            margin: 4px 0;
+        }
+        
+        .work-item {
+            padding: 0.5px 0;
+            font-size: 7px;
+            position: relative;
+            padding-left: 8px;
+            line-height: 1.0;
+        }
+        
+        .work-item::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #059669;
+            font-weight: bold;
+            font-size: 9px;
+        }
+        
+        .pricing-layout {
+            display: grid;
+            grid-template-columns: 1fr 160px;
+            gap: 15px;
+            align-items: start;
+        }
+        
+        .pricing-table {
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+        
+        /* Force page break before pricing table */
+        .pricing-section {
+            page-break-before: always;
+        }
+        
+        @media print {
+            .pricing-section {
+                page-break-before: always !important;
+                break-before: page !important;
+            }
+        }
+        
+        .pricing-table table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9px;
+        }
+        
+        .pricing-table th {
+            background: #f9fafb;
+            color: #374151;
+            font-weight: 600;
+            text-align: left;
+            padding: 3px 5px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+        }
+        
+        .pricing-table th:first-child {
+            width: 35px;
+        }
+        
+        .pricing-table th:last-child {
+            width: 120px;
+            text-align: right;
+        }
+        
+        .pricing-table td {
+            padding: 2px 4px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 9px;
+        }
+        
+        .pricing-table .phase-header {
+            background: #fef9e7;
+            color: #713f12;
+            font-weight: 700;
+            text-align: center;
+            padding: 4px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+        }
+        
+        .pricing-table .construction-header {
+            background: #e0f2fe;
+            color: #0c4a6e;
+        }
+        
+        .pricing-table .total-row {
+            background: white;
+            color: #1f2937;
+            font-weight: 800;
+            font-size: 9px;
+            border-top: 2px solid #1f2937;
+        }
+        
+        .pricing-table .total-row td:last-child {
+            font-size: 11px;
+            font-weight: 800;
+        }
+        
+        .timeline-visual {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 3px;
+            padding: 8px;
+            margin: 10px 0;
+        }
+        
+        .timeline-phase {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .timeline-phase:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .phase-label {
+            font-size: 9px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .phase-label.design {
+            color: #713f12;
+        }
+        
+        .phase-label.construction {
+            color: #0c4a6e;
+        }
+        
+        .milestone-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .milestone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 60px;
+        }
+        
+        .milestone-circle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 700;
+            border: 2px solid;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        .milestone-circle.design {
+            background: #fef9e7;
+            color: #713f12;
+            border-color: #f59e0b;
+        }
+        
+        .milestone-circle.construction {
+            background: #e0f2fe;
+            color: #0c4a6e;
+            border-color: #0284c7;
+        }
+        
+        .milestone-label {
+            font-size: 9px;
+            text-align: center;
+            font-weight: 600;
+            color: #374151;
+            margin-top: 3px;
+            line-height: 1.0;
+        }
+        
+        .milestone-amount {
+            font-size: 10px;
+            color: #9ca3af;
+            font-weight: 500;
+            text-align: center;
+            margin-top: 1px;
+        }
+        
+        .payment-schedule-detail {
+            margin-top: 8px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 3px;
+            padding: 8px;
+        }
+        
+        .payment-schedule-title {
+            font-size: 9px;
+            font-weight: 700;
+            color: #1f2937;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        
+        .payment-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 15px;
+            font-size: 9px;
+        }
+        
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .payment-item:last-child {
+            border-bottom: none;
+        }
+        
+        .payment-milestone {
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .payment-description {
+            color: #6b7280;
+            font-size: 9px;
+            margin-left: 3px;
+        }
+        
+        .payment-amount {
+            font-weight: 700;
+            color: #374151;
+        }
+        
+        /* Vertical Timeline Styles */
+        .timeline-sidebar {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 10px 8px;
+            position: relative;
+        }
+
+        .timeline-title {
+            font-size: 9px;
+            font-weight: 700;
+            color: #374151;
+            text-align: center;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+        }
+
+        .timeline-vertical {
+            position: relative;
+            padding-left: 16px;
+        }
+
+        .timeline-vertical::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #f59e0b 0%, #f59e0b 25%, #0284c7 25%, #0284c7 100%);
+            border-radius: 1px;
+        }
+
+        .milestone {
+            position: relative;
+            margin-bottom: 18px;
+            padding-left: 25px;
+        }
+
+        .milestone:last-child {
+            margin-bottom: 0;
+        }
+
+        .milestone-circle {
+            position: absolute;
+            left: -20px;
+            top: 2px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            border: 2px solid;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .milestone-circle.design {
+            background: #fef9e7;
+            color: #713f12;
+            border-color: #f59e0b;
+        }
+
+        .milestone-circle.construction {
+            background: #e0f2fe;
+            color: #0c4a6e;
+            border-color: #0284c7;
+        }
+
+        .milestone-info {
+            text-align: left;
+        }
+
+        .milestone-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: #374151;
+            line-height: 1.2;
+            margin-bottom: 2px;
+        }
+
+        .milestone-amount {
+            font-size: 10px;
+            font-weight: 700;
+            color: #059669;
+        }
+
+        .milestone-phase {
+            font-size: 10px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .exclusions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .exclusion-category {
+            margin-bottom: 12px;
+        }
+        
+        .category-title {
+            font-size: 10px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #374151;
+        }
+        
+        .exclusion-list {
+            list-style: disc;
+            padding-left: 12px;
+            margin: 0;
+            font-size: 10px;
+            line-height: 1.3;
+            color: #4b5563;
+        }
+        
+        .terms-text {
+            font-size: 10px;
+            line-height: 1.5;
+            color: #374151;
+        }
+        
+        .terms-text p {
+            margin-bottom: 10px;
+        }
+        
+        .signature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 25px;
+        }
+        
+        .signature-box {
+            padding: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            background: #f9fafb;
+            text-align: center;
+        }
+        
+        .signature-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .signature-line {
+            height: 40px;
+            border-bottom: 2px solid #1f2937;
+            margin: 15px 0;
+        }
+        
+        .signature-info {
+            font-size: 10px;
+            color: #6b7280;
+            line-height: 1.3;
+        }
+        
+        .footer {
+            margin-top: 25px;
+            padding: 15px 0;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            font-size: 10px;
+            color: #6b7280;
+        }
+        
+        .footer-company {
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+    </style>
+<!-- TEMPLATE: ENHANCED - Generated: 2025-08-06T06:11:17.789Z -->
+</head>
+<body><div style="position: fixed; top: 0; right: 0; background: green; color: white; padding: 2px 8px; font-size: 10px; z-index: 9999;">TEMPLATE: ENHANCED</div>
+    <div class="proposal-container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="header-content">
+                <div class="company-info">
+                    <div class="logo-box">
+                        <img src="data:image/png;base64,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AAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAMAAAAAAAAEIRADAAAAAAAABCEQAwAAAAAAAAQhEAM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AAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAAAAAgCIEYAAAAAAAAIAiBGAAAAAAAACAIgRgAAAAA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AAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIARiAAAAAAAAgCAEYgAAAAAAAIAgBGIAAAAAAACAIP4/KhxnTfpfWN4AAAAASUVORK5CYII=" alt="Anchor Builders Logo" />
+                    </div>
+                    <div class="company-details">
+                        <h1>ANCHOR BUILDERS</h1>
+                        <div class="contact">
+                            License #1029392 | (408) 836-2534<br/>
+                            info@anchorbuilders.com<br/>
+                            12962 Main Street, Garden Grove, CA 92840
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="proposal-info">
+                    <div class="info-row">
+                        <span class="info-label">Proposal Date:</span>
+                        <span class="info-value">August 5, 2025</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Proposal #:</span>
+                        <span class="info-value">677408</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Valid Until:</span>
+                        <span class="info-value">30 Days</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="title-banner">
+                <h2>ADU Construction Proposal</h2>
+            </div>
+        </header>
+
+        <!-- Project Overview -->
+        <section class="project-overview">
+            <div class="overview-grid">
+                <!-- Client Information Column -->
+                <div>
+                    <h4 class="section-header">Client Information</h4>
+                    <div class="client-grid">
+                        <div>
+                            <div class="field-label">Client Name</div>
+                            <div class="field-value">{{CLIENT_NAME}}</div>
+                        </div>
+                        <div>
+                            <div class="field-label">Phone</div>
+                            <div class="field-value">{{CLIENT_PHONE}}</div>
+                        </div>
+                        <div>
+                            <div class="field-label">Email</div>
+                            <div class="field-value">{{CLIENT_EMAIL}}</div>
+                        </div>
+                        <div>
+                            <div class="field-label">Project Address</div>
+                            <div class="field-value">{{CLIENT_ADDRESS}}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Project Details Column -->
+                <div>
+                    <h4 class="section-header">Project Details</h4>
+                    <div style="display: grid; gap: 10px;">
+                        <div>
+                            <div class="field-label">Living Area</div>
+                            <div class="field-value" style="font-size: 9px; font-weight: 700;">{{SQUARE_FOOTAGE}} sqft</div>
+                        </div>
+                        <div>
+                            <div class="field-label">Layout</div>
+                            <div class="field-value">{{BEDROOMS}} bed / {{BATHROOMS}} bath</div>
+                        </div>
+                        <div>
+                            <div class="field-label">ADU Type</div>
+                            <div class="field-value">{{ADU_TYPE}} ADU</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project Summary Column -->
+                <div>
+                    <h4 class="section-header">Project Summary</h4>
+                    <div style="display: grid; gap: 10px;">
+                        <div>
+                            <div class="field-label">Total Project Cost</div>
+                            <div class="field-value">${{GRAND_TOTAL}}</div>
+                        </div>
+                        <div>
+                            <div class="field-label">Cost per Sq Ft</div>
+                            <div class="field-value" style="font-size: 9px; font-weight: 700;">${{COST_PER_SQFT}}/sqft</div>
+                        </div>
+                        <div>
+                            <div class="field-label">Timeline</div>
+                            <div class="field-value" style="line-height: 1.3;">{{TIMELINE}}<br/>from approval</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Scope of Work -->
+        <div class="section-box">
+            <h3 class="section-title">Scope of Work</h3>
+
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; margin-bottom: 12px;">
+                <h4 style="font-size: 10px; font-weight: 700; color: #1e293b; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.3px;">Project Overview</h4>
+                <p style="font-size: 10px; line-height: 1.5; color: #475569; margin-bottom: 8px;">
+                    {{PROJECT_OVERVIEW_TEXT}}
+                </p>
+                <p style="font-size: 10px; line-height: 1.5; color: #475569;">
+                    The project encompasses everything from initial architectural design through final Certificate of Occupancy, including all structural work, mechanical systems (Mini-Split), electrical, plumbing, finishes, and appliances. Our comprehensive approach ensures code compliance, quality construction, and a seamless process from concept to completion.
+                </p>
+            </div>
+            
+            <div class="work-grid">
+                <div>
+                    <div class="work-category design">✓ Design & Engineering</div>
+                    <ul class="work-list">
+                        <li class="work-item">Architectural plans & renderings</li>
+                        <li class="work-item">Structural engineering</li>
+                        <li class="work-item">MEP coordination</li>
+                        <li class="work-item">Permit assistance</li>
+                        <li class="work-item">Construction documents</li>
+                        <li class="work-item">Plan revisions</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="work-category construction">✓ Construction Work</div>
+                    <ul class="work-list">
+                        <li class="work-item">Concrete foundation with drainage</li>
+                        <li class="work-item">Electrical system with {{ELECTRICAL_PANEL}} subpanel</li>
+                        <li class="work-item">Full plumbing with water heater</li>
+                        <li class="work-item">Mini-Split installation</li>
+                        <li class="work-item">Insulation package (R-13/R-30)</li>
+                        <li class="work-item">Drywall with texture & primer</li>
+                        <li class="work-item">• Appliances included</li>
+                        <li class="work-item">Cabinets & vanities</li>
+                        <li class="work-item">Interior & exterior doors</li>
+                        <li class="work-item">Double-pane vinyl windows</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="work-category assurance">✓ Included Assurances</div>
+                    <ul class="work-list">
+                        <li class="work-item">California Building Code compliance</li>
+                        <li class="work-item">Professional city inspections</li>
+                        <li class="work-item">Third-party testing & commissioning</li>
+                        <li class="work-item">Certificate of Occupancy coordination</li>
+                        <li class="work-item">1-year construction warranty</li>
+                        <li class="work-item">Licensed contractor (CA #1029392)</li>
+                        <li class="work-item">Quality control inspections</li>
+                        <li class="work-item">Material warranties transferred</li>
+                        <li class="work-item">Final walkthrough & punch list</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="margin-top: 15px; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px;">
+                <div style="font-size: 10px; font-weight: 600; color: #475569; margin-bottom: 6px;">Utility Connections Included:</div>
+                <div style="font-size: 10px; color: #64748b; line-height: 1.3;">
+                    <strong>Water:</strong> Shared meter • <strong>Gas:</strong> Separate meter • <strong>Electric:</strong> Separate {{ELECTRICAL_PANEL}} service • <strong>Sewer:</strong> Connected to main line
+                </div>
+                <br>
+            </div>
+        </div>
+
+        <!-- Project Pricing -->
+        <div class="section-box pricing-section">
+            <h3 class="section-title">Project Pricing & Payment Schedule</h3>
+            
+            <div class="pricing-layout">
+                <div class="pricing-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Milestone Description</th>
+                            <th style="text-align: right;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Design Phase - Phase 1 (HOL Work) -->
+                        <tr>
+                            <td colspan="3" class="phase-header">Phase 1: Design & Engineering (HOL)</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #6b7280;">1.1</td>
+                            <td>ADU Plan Design</td>
+                            <td style="text-align: right; font-weight: 700; color: #374151;">${{DESIGN_AMOUNT}}</td>
+                        </tr>
+                        <tr style="background: #f9fafb;">
+                            <td style="text-align: center; font-weight: 600; color: #6b7280;">1.2</td>
+                            <td>Structural Engineering (Roof & Foundation Plan)</td>
+                            <td style="text-align: right; color: #9ca3af; font-weight: 500; font-style: italic;">included</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #6b7280;">1.3</td>
+                            <td>MEP Design (Mechanical, Electrical, Plumbing)</td>
+                            <td style="text-align: right; color: #9ca3af; font-weight: 500; font-style: italic;">included</td>
+                        </tr>
+                        <tr style="background: #f9fafb;">
+                            <td style="text-align: center; font-weight: 600; color: #6b7280;">1.4</td>
+                            <td>Zoning & Site Planning Review</td>
+                            <td style="text-align: right; color: #9ca3af; font-weight: 500; font-style: italic;">included</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #6b7280;">1.5</td>
+                            <td>Title 24 Energy Compliance</td>
+                            <td style="text-align: right; color: #9ca3af; font-weight: 500; font-style: italic;">included</td>
+                        </tr>
+
+                        <!-- Permits & Coordination Phase - Phase 2 -->
+                        <tr>
+                            <td colspan="3" class="phase-header">Phase 2: Permits & Coordination Services</td>
+                        </tr>
+                        <tr style="background: #f9fafb;">
+                            <td style="text-align: center; font-weight: 600; color: #6b7280;">2.1</td>
+                            <td>Plan Check Coordination</td>
+                            <td style="text-align: right; color: #9ca3af; font-weight: 500; font-style: italic;">included</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #6b7280;">2.2</td>
+                            <td>Building Permit Coordination</td>
+                            <td style="text-align: right; color: #9ca3af; font-weight: 500; font-style: italic;">included</td>
+                        </tr>
+                        <tr style="background: #f9fafb;">
+                            <td style="text-align: center; font-weight: 600; color: #6b7280;">2.3</td>
+                            <td>Utility & Public Works Coordination</td>
+                            <td style="text-align: right; color: #9ca3af; font-weight: 500; font-style: italic;">included</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #6b7280;">2.4</td>
+                            <td>Solar Vendor Coordination</td>
+                            <td style="text-align: right; color: #9ca3af; font-weight: 500; font-style: italic;">included</td>
+                        </tr>
+
+                        <!-- Construction Phase - Phase 3 (Construction Work) -->
+                        <tr>
+                            <td colspan="3" class="phase-header construction-header">Phase 3: Construction Build Out</td>
+                        </tr>
+                        <tr style="background: #f9fafb;">
+                            <td style="text-align: center; font-weight: 600; color: #6b7280;">3.1</td>
+                            <td>Deposit</td>
+                            <td style="text-align: right; font-weight: 700; color: #374151;">$1,000</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #6b7280;">3.2</td>
+                            <td>Mobilization</td>
+                            <td style="text-align: right; color: #9ca3af; font-weight: 500; font-style: italic;">see payment schedule</td>
+                        </tr>
+                        <tr style="background: #f9fafb;">
+                            <td style="text-align: center; font-weight: 600; color: #6b7280;">3.3</td>
+                            <td>Trenching & Underground Plumbing</td>
+                            <td style="text-align: right; color: #9ca3af; font-weight: 500; font-style: italic;">see payment schedule</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #6b7280;">3.4</td>
+                            <td>Foundation</td>
+                            <td style="text-align: right; color: #9ca3af; font-weight: 500; font-style: italic;">see payment schedule</td>
+                        </tr>
+                        <tr style="background: #f9fafb;">
+                            <td style="text-align: center; font-weight: 600; color: #6b7280;">3.5</td>
+                            <td>Framing</td>
+                            <td style="text-align: right; color: #9ca3af; font-weight: 500; font-style: italic;">see payment schedule</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #6b7280;">3.6</td>
+                            <td>Mechanical, Electrical, Plumbing (MEP)</td>
+                            <td style="text-align: right; color: #9ca3af; font-weight: 500; font-style: italic;">see payment schedule</td>
+                        </tr>
+                        <tr style="background: #f9fafb;">
+                            <td style="text-align: center; font-weight: 600; color: #6b7280;">3.7</td>
+                            <td>Drywall</td>
+                            <td style="text-align: right; color: #9ca3af; font-weight: 500; font-style: italic;">see payment schedule</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #6b7280;">3.8</td>
+                            <td>Final Completion</td>
+                            <td style="text-align: right; color: #9ca3af; font-weight: 500; font-style: italic;">see payment schedule</td>
+                        </tr>
+
+                        <!-- Additional Services Section -->
+                        <tr>
+                            <td colspan="3" class="phase-header" style="background: #fef3c7; color: #92400e;">Additional Services</td>
+                        </tr>
+                        <tr class="milestone-row additional-service">
+                            <td class="milestone-number">A3</td>
+                            <td>Extra Bathroom - Additional bathroom beyond standard configuration</td>
+                            <td class="cost-value">$8,000</td>
+                        </tr>
+                        <tr class="milestone-row additional-service">
+                            <td class="milestone-number">A4</td>
+                            <td>Dedicated Driveway - Dedicated driveway and parking space</td>
+                            <td class="cost-value">$5,000</td>
+                        </tr>
+
+                        <!-- Phase Subtotals -->
+                        <tr style="background: #f8f9fa; border-top: 1px solid #dee2e6;">
+                            <td colspan="2" style="text-align: right; padding: 8px; font-weight: 600; color: #495057;">Phase I Total (Design & Deposits):</td>
+                            <td style="text-align: right; padding: 8px; font-weight: 600; color: #495057;">${{PHASE_1_TOTAL}}</td>
+                        </tr>
+                        <tr style="background: #f8f9fa;">
+                            <td colspan="2" style="text-align: right; padding: 8px; font-weight: 600; color: #495057;">Phase II Total (Permits & Coordination):</td>
+                            <td style="text-align: right; padding: 8px; font-weight: 600; color: #495057;">included</td>
+                        </tr>
+                        <tr style="background: #f8f9fa;">
+                            <td colspan="2" style="text-align: right; padding: 8px; font-weight: 600; color: #495057;">Phase III Total (Construction):</td>
+                            <td style="text-align: right; padding: 8px; font-weight: 600; color: #495057;">${{PHASE_3_TOTAL}}</td>
+                        </tr>
+                        <tr style="background: #f8f9fa;">
+                            <td colspan="2" style="text-align: right; padding: 8px; font-weight: 600; color: #495057;">Additional Services Total:</td>
+                            <td style="text-align: right; padding: 8px; font-weight: 600; color: #495057;">${{ADDITIONAL_SERVICES_TOTAL}}</td>
+                        </tr>
+
+                        <!-- Grand Total -->
+                        <tr class="total-row">
+                            <td colspan="2" style="text-align: right; padding: 8px;"><strong>GRAND TOTAL:</strong></td>
+                            <td style="text-align: right; padding: 8px;">${{GRAND_TOTAL}}</td>
+                        </tr>
+                        
+                        <tr style="background: #f3f4f6;">
+                            <td colspan="2" style="text-align: right; font-size: 10px; font-weight: 600; padding: 8px;">Base Construction Price per Square Foot:</td>
+                            <td style="text-align: right; font-size: 10px; font-weight: 600; padding: 8px;">${{COST_PER_SQFT}}/sqft</td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+                
+                <!-- Vertical Timeline -->
+                <div class="timeline-sidebar">
+                    <div class="timeline-title">Payment Schedule</div>
+                    <div style="font-size: 9px; color: #6b7280; text-align: center; margin-bottom: 12px; line-height: 1.3;">
+                        Payments due when work phase begins
+                    </div>
+                    <div class="timeline-vertical">
+                        <!-- Design Phase Milestones -->
+                        <div class="milestone">
+                            <div class="milestone-circle design">D1</div>
+                            <div class="milestone-info">
+                                <div class="milestone-phase">Upon Signing</div>
+                                <div class="milestone-label">Deposit</div>
+                                <div class="milestone-amount">$1,000</div>
+                            </div>
+                        </div>
+                        
+                        <div class="milestone">
+                            <div class="milestone-circle design">D2</div>
+                            <div class="milestone-info">
+                                <div class="milestone-phase">Design Phase</div>
+                                <div class="milestone-label">Plans Complete</div>
+                                <div class="milestone-amount">${{DESIGN_AMOUNT}}</div>
+                            </div>
+                        </div>
+
+                        <!-- Construction Phase Milestones -->
+                        <div class="milestone">
+                            <div class="milestone-circle construction">M1</div>
+                            <div class="milestone-info">
+                                <div class="milestone-phase">Milestone 1</div>
+                                <div class="milestone-label">Mobilization</div>
+                                <div class="milestone-amount">${{MILESTONE_1}}</div>
+                            </div>
+                        </div>
+
+                        <div class="milestone">
+                            <div class="milestone-circle construction">M2</div>
+                            <div class="milestone-info">
+                                <div class="milestone-phase">Milestone 2</div>
+                                <div class="milestone-label">Underground</div>
+                                <div class="milestone-amount">${{MILESTONE_2}}</div>
+                            </div>
+                        </div>
+
+                        <div class="milestone">
+                            <div class="milestone-circle construction">M3</div>
+                            <div class="milestone-info">
+                                <div class="milestone-phase">Milestone 3</div>
+                                <div class="milestone-label">Foundation</div>
+                                <div class="milestone-amount">${{MILESTONE_3}}</div>
+                            </div>
+                        </div>
+
+                        <div class="milestone">
+                            <div class="milestone-circle construction">M4</div>
+                            <div class="milestone-info">
+                                <div class="milestone-phase">Milestone 4</div>
+                                <div class="milestone-label">Framing</div>
+                                <div class="milestone-amount">${{MILESTONE_4}}</div>
+                            </div>
+                        </div>
+
+                        <div class="milestone">
+                            <div class="milestone-circle construction">M5</div>
+                            <div class="milestone-info">
+                                <div class="milestone-phase">Milestone 5</div>
+                                <div class="milestone-label">MEP</div>
+                                <div class="milestone-amount">${{MILESTONE_5}}</div>
+                            </div>
+                        </div>
+
+                        <div class="milestone">
+                            <div class="milestone-circle construction">M6</div>
+                            <div class="milestone-info">
+                                <div class="milestone-phase">Milestone 6</div>
+                                <div class="milestone-label">Drywall</div>
+                                <div class="milestone-amount">${{MILESTONE_6}}</div>
+                            </div>
+                        </div>
+
+                        <div class="milestone">
+                            <div class="milestone-circle construction">M7</div>
+                            <div class="milestone-info">
+                                <div class="milestone-phase">Milestone 7</div>
+                                <div class="milestone-label">Final</div>
+                                <div class="milestone-amount">${{MILESTONE_7}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Schedule Notes -->
+            <div style="margin-top: 20px; padding: 10px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; border-left: 4px solid #64748b;">
+                <h4 style="font-size: 9px; font-weight: 700; color: #475569; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.3px;">📋 Payment Schedule Notes</h4>
+                <br>
+                <div style="font-size: 10px; line-height: 1.5; color: #334155;">
+                    <p style="margin: 0 0 8px 0;">
+                        <strong>Important:</strong> The amounts shown in the Payment Schedule are milestone payments due when each work phase begins — they do NOT represent the individual cost of each construction phase.
+                    </p>
+                    <p style="margin: 0 0 8px 0;">
+                        <strong>Total Project Cost:</strong> ${{GRAND_TOTAL}} (lump sum pricing). This total covers all materials, labor, and services for the complete ADU construction.
+                    </p>
+                    <p style="margin: 0 0 8px 0;">
+                        <strong>Payment Timing:</strong> Milestone payments must be made when each construction phase begins to ensure work progresses smoothly without delays or interruptions.
+                    </p>
+                    <p style="margin: 0;">
+                        <strong>Example:</strong> "Milestone 1 - ${{MILESTONE_1}}" means you pay ${{MILESTONE_1}} toward the total project cost when mobilization work begins, NOT that mobilization itself costs ${{MILESTONE_1}}.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exclusions & Additional Services -->
+        <div class="section-box">
+            <h3 class="section-title">Exclusions & Additional Services</h3>
+            
+            <div class="exclusions-grid">
+                <div>
+                    <h4 style="font-size: 10px; font-weight: 700; color: #1f2937; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 12px; padding: 6px 10px; border-bottom: 1px solid #d1d5db; background: #e2e8f0; border-radius: 3px;">Exclusions</h4>
+                    <div style="font-size: 9px; color: #374151; margin-bottom: 8px;">
+                        <em>(Any work outside of the normal building of an ADU)</em>
+                    </div>
+                    
+                    <div class="exclusion-category">
+                        <h5 class="category-title">City-Related Costs</h5>
+                        <ul class="exclusion-list">
+                            <li>City permits, planning approval fees, and third-party inspections</li>
+                            <li>Land grading, surveys, and soil testing (if required), including grading beyond the building foundation area</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="exclusion-category">
+                        <h5 class="category-title">Site Prep & Exterior Work</h5>
+                        <ul class="exclusion-list">
+                            <li>Cleaning or demolishing any existing or unpermitted structures</li>
+                            <li>Landscaping, fencing, driveways, patios, rain gutters</li>
+                            <li>Potential damage to underground irrigation or tree roots</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="exclusion-category">
+                        <h5 class="category-title">Utilities & Unexpected Conditions</h5>
+                        <ul class="exclusion-list">
+                            <li>Utility connections (gas, water, electric) or fire sprinkler system installation (if required)</li>
+                            <li>Unforeseen repairs like structural issues, pests, or water damage</li>
+                            <li>Builder Risk Insurance or city-required bonds for construction</li>
+                        </ul>
+                    </div>
+
+                    <div class="exclusion-category">
+                        <h5 class="category-title">Security & Insurance</h5>
+                        <ul class="exclusion-list">
+                            <li>Job-site security or surveillance systems</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="font-size: 10px; font-weight: 700; color: #1f2937; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 12px; padding: 6px 10px; border-bottom: 1px solid #d1d5db; background: #e2e8f0; border-radius: 3px;">Additional Services (Add On)</h4>
+                    <div style="font-size: 9px; color: #374151; margin-bottom: 8px;">
+                        <em>(These are additional services that are not included)</em>
+                    </div>
+
+                    <div class="exclusion-category">
+                        <h5 class="category-title">1) Design Upgrades</h5>
+                        <div style="font-size: 9px; line-height: 1.3; color: #4b5563; padding-left: 8px;">
+                            a. Customized option to personalize your project beyond our Standardized Material Package.
+                        </div>
+                    </div>
+
+                    <div class="exclusion-category">
+                        <h5 class="category-title">2) Landscaping and Hardscaping Site Design</h5>
+                        <div style="font-size: 9px; line-height: 1.3; color: #4b5563; padding-left: 8px;">
+                            a. Landscape and hardscaping services to improve the appearance and functionality of your property.
+                        </div>
+                    </div>
+
+                    <div class="exclusion-category">
+                        <h5 class="category-title">3) Rental Plans</h5>
+                        <div style="font-size: 9px; line-height: 1.3; color: #4b5563; padding-left: 8px;">
+                            a. Creation of a site plan to designate a parking spot for tenants, ensuring separation between rental units.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terms & Conditions -->
+        <div class="section-box">
+            <h3 class="section-title">Terms & Conditions</h3>
+            
+            <div class="terms-text">
+                <p>
+                    A formal construction contract will be prepared and executed upon acceptance of this bid. The pricing outlined in this proposal is valid for 30 days from the proposal date. A detailed payment schedule will be included in the formal contract.
+                </p>
+                
+                <p>
+                    The overall project schedule is subject to factors such as city permitting timelines, material availability, and the client's responsiveness throughout the process.
+                </p>
+                
+                <p>
+                    Any changes to the agreed-upon scope of work, materials, layout, or finish levels must be requested in writing and formally approved. Approved change orders may result in adjustments to both the total project cost and construction timeline. All changes will be documented and reflected with an updated scope, revised pricing, and adjusted schedule as needed.
+                </p>
+                
+                <p style="font-style: italic; color: #6b7280; text-align: center; margin-top: 15px; font-size: 9px; font-weight: 600;">
+                    *This is a non-binding estimate. Final cost is subject to plan approval, scope adjustments, and change orders.*
+                </p>
+
+                <div style="margin-top: 15px; padding: 8px; background: #f8fafc; border-radius: 4px; font-size: 9px;">
+                    <div style="font-weight: 600; margin-bottom: 4px;">Footnotes & Clarifications:</div>
+                    <div>Interior Design - includes 2 sessions (each session 2 hours). Additional sessions billed at $150/hour.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Owner Acceptance & Signatures -->
+        <div class="section-box">
+            <h3 class="section-title">Owner Acceptance & Signatures</h3>
+
+            <div style="font-size: 10px; line-height: 1.4; color: #374151; margin-bottom: 25px; text-align: center;">
+                I, {{CLIENT_FIRST_NAME}}, accept the above scope of work, proposed to be completed by Anchor Builders for the amount of ${{GRAND_TOTAL}}.00.
+            </div>
+
+            <div class="signature-grid">
+                <div class="signature-box">
+                    <div class="signature-title">Client Signature</div>
+                    <div class="signature-line"></div>
+                    <div class="signature-info">
+                        {{CLIENT_NAME}}<br/>
+                        Date: _______________
+                    </div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-title">Anchor Builders Representative</div>
+                    <div class="signature-line"></div>
+                    <div class="signature-info">
+                        Authorized Representative<br/>
+                        Date: _______________
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-company">
+                Anchor Builders | 12962 Main Street, Garden Grove, CA 92840 | CSLB# 1029392
+            </div>
+            <div style="margin-top: 8px;">
+                Visit our website at www.AnchorBuilders.io
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

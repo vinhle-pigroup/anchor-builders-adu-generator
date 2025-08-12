@@ -39,7 +39,7 @@ import { SuccessNotification } from './components/SuccessNotification';
 import { ErrorNotification } from './components/ErrorNotification';
 import { PDFProgressIndicator } from './components/PDFProgressIndicator';
 // import { LoadingSpinner } from './components/LoadingSpinner';
-import { AdminTextEditor } from './components/AdminTextEditor';
+import { PricingAdmin } from './components/PricingAdmin';
 import { EnhancedProductionGrid } from './components/EnhancedProductionGrid';
 
 // Proposal management utility functions
@@ -1930,21 +1930,22 @@ function App() {
       zipCode: '',
     },
     project: {
-      aduType: 'detached',
-      squareFootage: 600,
-      bedrooms: 2,
-      bathrooms: 2,
-      appliancesIncluded: true,
-      hvacType: 'central-ac',
-      finishLevel: 'standard',
+      aduType: '' as any,
+      squareFootage: 0,
+      bedrooms: null as any,
+      bathrooms: null as any,
+      appliancesIncluded: false,
+      hvacType: '' as any,
+      finishLevel: '' as any,
       utilities: {
-        waterMeter: 'shared',
-        gasMeter: 'shared',
-        electricMeter: 'separate',
+        waterMeter: '' as any,
+        gasMeter: '' as any,
+        sewerMeter: '' as any,
+        electricMeter: '' as any,
         electricalPanel: 0,
       },
-      sewerConnection: 'existing-lateral',
-      needsDesign: true,
+      sewerConnection: '' as any,
+      needsDesign: false,
       solarDesign: false,
       femaIncluded: false,
       selectedAddOns: [],
@@ -1995,21 +1996,21 @@ function App() {
 
   // Pricing state for real-time updates
   const [pricingData, setPricingData] = useState({
-    aduType: 'detached-1story',
+    aduType: '' as any,
     pricePerSqFt: 220,
-    sqft: 600,
-    bedrooms: 0,  // Start with Studio (0 bedrooms)
-    bathrooms: 0, // Start with 0 bathrooms
-    hvacType: 'central-ac',
+    sqft: 0,
+    bedrooms: null as any,  // Start with no selection
+    bathrooms: null as any, // Start with no selection
+    hvacType: '' as any,
     utilities: {
-      waterMeter: 'separate' as 'shared' | 'separate',  // Default to separate
-      gasMeter: 'separate' as 'shared' | 'separate',
-      sewerMeter: 'separate' as 'shared' | 'separate',
-      electricMeter: 'separate' as 'shared' | 'separate',
+      waterMeter: '' as any,  // No default selection
+      gasMeter: '' as any,
+      sewerMeter: '' as any,
+      electricMeter: '' as any,
       electricalPanel: 0, // Default 200-amp panel has 0 cost
     },
     services: {
-      design: 12500,
+      design: 0,  // No pre-selected services
       solar: 0,
       fema: 0,
     },
@@ -2227,10 +2228,10 @@ function App() {
             additionalNotes: formData.project.additionalNotes,
             // Add utilities with correct property names
             utilities: {
-              waterMeter: (pricingData.utilities?.waterMeter || 'shared') as 'shared' | 'separate',
-              gasMeter: (pricingData.utilities?.gasMeter || 'separate') as 'shared' | 'separate',
-              sewerMeter: (pricingData.utilities?.sewerMeter || 'separate') as 'shared' | 'separate',
-              electricMeter: (pricingData.utilities?.electricMeter || 'separate') as 'separate',
+              waterMeter: pricingData.utilities?.waterMeter || '',
+              gasMeter: pricingData.utilities?.gasMeter || '',
+              sewerMeter: pricingData.utilities?.sewerMeter || '',
+              electricMeter: pricingData.utilities?.electricMeter || '',
             },
           }}
           pricingData={{
@@ -2586,7 +2587,7 @@ function App() {
                 }`}
               >
                 <Settings className='w-4 h-4' />
-                <span>Template Text</span>
+                <span>Pricing Configuration</span>
               </button>
               <button
                 onClick={() => setAdminSection('debug')}
@@ -2676,13 +2677,9 @@ function App() {
           )}
 
           {adminSection === 'templates' && (
-            <AdminTextEditor
-              onSave={() => {
-                setSuccessMessage(
-                  'Template text updated successfully! Changes will appear in all new PDFs.'
-                );
-                setTimeout(() => setSuccessMessage(null), 3000);
-              }}
+            <PricingAdmin
+              isVisible={true}
+              onClose={() => setAdminSection(null)}
             />
           )}
 

@@ -17,6 +17,7 @@ export class ServerPDFService {
       // Flatten the form data to match template variables like {{CLIENT_NAME}}
       const flattenedData = {
         CLIENT_NAME: `${formData.client.firstName} ${formData.client.lastName}`.trim(),
+        CLIENT_FIRST_NAME: formData.client.firstName || '',
         CLIENT_PHONE: formData.client.phone || '',
         CLIENT_EMAIL: formData.client.email || '',
         CLIENT_ADDRESS: formData.client.address || '',
@@ -26,6 +27,13 @@ export class ServerPDFService {
         ADU_TYPE: formData.project.aduType || 'Detached',
         GRAND_TOTAL: '150000', // TODO: Calculate from pricing
         COST_PER_SQFT: Math.round(150000 / (formData.project.squareFootage || 800)).toString(),
+        
+        // Additional template variables
+        PROJECT_OVERVIEW_TEXT: 'Complete ADU construction with all permits, utilities, and professional finishes.',
+        ELECTRICAL_PANEL: '100-amp',
+        DESIGN_AMOUNT: '12500',
+        ADDITIONAL_SERVICES_TOTAL: '0',
+        TIMELINE: '6-8 months',
       };
 
       console.log('📋 Payload data:', JSON.stringify(flattenedData, null, 2));

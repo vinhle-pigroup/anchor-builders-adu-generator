@@ -4,7 +4,13 @@ import {
   utilityOptions,
   addOnOptions,
   businessSettings,
+  getPricePerSqFt as getStaticPricePerSqFt,
 } from '../data/pricing-config';
+import { 
+  pricingConfigManager, 
+  DynamicPricingConfig, 
+  getPricingConfig 
+} from './pricing-config-manager';
 
 export interface PricingInputs {
   // Basic Project Info
@@ -34,13 +40,16 @@ export interface PricingInputs {
   solarDesign: boolean;
   femaIncluded: boolean;
 
-  // Price Overrides
+  // Price Overrides (legacy support)
   priceOverrides?: {
     basePricePerSqFt?: number;
     designServices?: number;
     addOnPrices?: Record<string, number>;
     markupPercentage?: number;
   };
+
+  // NEW: Use dynamic configuration
+  useDynamicConfig?: boolean;
 }
 
 export interface PricingLineItem {
@@ -60,34 +69,61 @@ export interface PricingBreakdown {
   totalBeforeMarkup: number;
   grandTotal: number;
   pricePerSqFt: number;
+  // NEW: Configuration source info
+  configurationSource: 'static' | 'dynamic' | 'override';
+  configurationVersion?: string;
 }
 
 export class AnchorPricingEngine {
+  private dynamicConfig: DynamicPricingConfig | null = null;
+
+  constructor(useDynamicConfig: boolean = true) {
+    if (useDynamicConfig) {
+      this.dynamicConfig = getPricingConfig();
+    }
+  }
+
   calculateProposal(inputs: PricingInputs): PricingBreakdown {
     const lineItems: PricingLineItem[] = [];
-
+    const useDynamic = inputs.useDynamicConfig !== false && this.dynamicConfig !== null;
+    
     // 1. Base ADU Construction Cost ($/sqft model)
-    this.calculateBaseConstructionCost(inputs, lineItems);
+    this.calculateBaseConstructionCost(inputs, lineItems, useDynamic);
 
     // 2. Design Services (if selected)
     if (inputs.needsDesign) {
-      this.calculateDesignServices(inputs, lineItems);
+      this.calculateDesignServices(inputs, lineItems, useDynamic);
     }
 
     // 3. Utility Connections
-    this.calculateUtilityConnections(inputs, lineItems);
+    this.calculateUtilityConnections(inputs, lineItems, useDynamic);
 
     // 4. Add-ons
-    this.calculateAddOns(inputs, lineItems);
+    this.calculateAddOns(inputs, lineItems, useDynamic);
 
     // Calculate subtotal
     const subtotal = lineItems.reduce((sum, item) => sum + item.totalPrice, 0);
 
-    // Apply markup (use override if available)
-    const markupPercentage =
-      inputs.priceOverrides?.markupPercentage ?? businessSettings.standardMarkup;
+    // Apply markup (check override, then dynamic config, then static)
+    let markupPercentage: number;
+    if (inputs.priceOverrides?.markupPercentage !== undefined) {
+      markupPercentage = inputs.priceOverrides.markupPercentage;
+    } else if (useDynamic && this.dynamicConfig) {
+      markupPercentage = this.dynamicConfig.businessSettings.standardMarkup;
+    } else {
+      markupPercentage = businessSettings.standardMarkup;
+    }
+
     const markupAmount = subtotal * markupPercentage;
     const grandTotal = subtotal + markupAmount;
+
+    // Determine configuration source
+    let configurationSource: 'static' | 'dynamic' | 'override' = 'static';
+    if (inputs.priceOverrides) {
+      configurationSource = 'override';
+    } else if (useDynamic) {
+      configurationSource = 'dynamic';
+    }
 
     return {
       lineItems,
@@ -97,31 +133,46 @@ export class AnchorPricingEngine {
       totalBeforeMarkup: subtotal,
       grandTotal,
       pricePerSqFt: grandTotal / inputs.squareFootage,
+      configurationSource,
+      configurationVersion: this.dynamicConfig?.version,
     };
   }
 
-  private calculateBaseConstructionCost(inputs: PricingInputs, lineItems: PricingLineItem[]) {
-    // Get price per sqft based on ADU type and stories
-    let aduType;
-    if (inputs.aduType === 'detached') {
-      // For detached, find by stories (default to 1-story if not specified)
-      const stories = inputs.stories || 1;
-      aduType = aduTypePricing.find(type => type.type === 'detached' && type.stories === stories);
+  private calculateBaseConstructionCost(inputs: PricingInputs, lineItems: PricingLineItem[], useDynamic: boolean) {
+    let pricePerSqFt: number;
+    let aduTypeName: string;
+    
+    // Check for override first
+    if (inputs.priceOverrides?.basePricePerSqFt !== undefined) {
+      pricePerSqFt = inputs.priceOverrides.basePricePerSqFt;
+      aduTypeName = this.getAduTypeName(inputs.aduType, inputs.stories);
+    } else if (useDynamic && this.dynamicConfig) {
+      // Use dynamic configuration with size-based adjustments
+      pricePerSqFt = pricingConfigManager.getPricePerSqFt(
+        inputs.aduType as 'detached' | 'attached',
+        inputs.stories,
+        inputs.squareFootage
+      );
+      aduTypeName = this.getAduTypeNameFromDynamic(inputs.aduType, inputs.stories);
     } else {
-      // For attached, just find by type
-      aduType = aduTypePricing.find(type => type.type === 'attached');
+      // Use static configuration with size-based adjustments
+      pricePerSqFt = getStaticPricePerSqFt(
+        inputs.aduType as 'detached' | 'attached',
+        inputs.stories,
+        inputs.squareFootage
+      );
+      aduTypeName = this.getAduTypeName(inputs.aduType, inputs.stories);
     }
 
-    if (!aduType) return;
-
-    // Use override price if available, otherwise use default
-    const pricePerSqFt = inputs.priceOverrides?.basePricePerSqFt ?? aduType.pricePerSqFt;
     const baseConstructionCost = inputs.squareFootage * pricePerSqFt;
     const isOverridden = inputs.priceOverrides?.basePricePerSqFt !== undefined;
+    const isDynamic = useDynamic && !isOverridden;
+    const overrideIndicator = isOverridden ? ' *' : '';
+    const dynamicIndicator = isDynamic ? ' (Dynamic)' : '';
 
     lineItems.push({
       category: 'Base Construction',
-      description: `${aduType.name} (${inputs.squareFootage} sq ft @ $${pricePerSqFt}/sq ft)${isOverridden ? ' *' : ''}`,
+      description: aduTypeName + ' (' + inputs.squareFootage + ' sq ft @ $' + pricePerSqFt + '/sq ft)' + overrideIndicator + dynamicIndicator,
       quantity: inputs.squareFootage,
       unitPrice: pricePerSqFt,
       totalPrice: baseConstructionCost,
@@ -129,14 +180,33 @@ export class AnchorPricingEngine {
     });
   }
 
-  private calculateDesignServices(inputs: PricingInputs, lineItems: PricingLineItem[]) {
-    // Use override price if available, otherwise use default
-    const designPrice = inputs.priceOverrides?.designServices ?? designServices.planningDesign;
+  private calculateDesignServices(inputs: PricingInputs, lineItems: PricingLineItem[], useDynamic: boolean) {
+    let designPrice: number;
+    let description: string;
+
+    // Check for override first
+    if (inputs.priceOverrides?.designServices !== undefined) {
+      designPrice = inputs.priceOverrides.designServices;
+      description = designServices.description;
+    } else if (useDynamic && this.dynamicConfig) {
+      // Use dynamic configuration with story-based pricing
+      const designPricing = pricingConfigManager.getDesignServicesPricing(inputs.stories);
+      designPrice = designPricing.default;
+      description = this.dynamicConfig.designServices.description;
+    } else {
+      // Use static configuration
+      designPrice = designServices.planningDesign;
+      description = designServices.description;
+    }
+
     const isOverridden = inputs.priceOverrides?.designServices !== undefined;
+    const isDynamic = useDynamic && !isOverridden;
+    const overrideIndicator = isOverridden ? ' *' : '';
+    const dynamicIndicator = isDynamic ? ' (Dynamic)' : '';
 
     lineItems.push({
       category: 'Design Services',
-      description: `${designServices.description}${isOverridden ? ' *' : ''}`,
+      description: description + overrideIndicator + dynamicIndicator,
       quantity: 1,
       unitPrice: designPrice,
       totalPrice: designPrice,
@@ -144,14 +214,19 @@ export class AnchorPricingEngine {
     });
   }
 
-  private calculateUtilityConnections(inputs: PricingInputs, lineItems: PricingLineItem[]) {
+  private calculateUtilityConnections(inputs: PricingInputs, lineItems: PricingLineItem[], useDynamic: boolean) {
+    const utilityConfig = useDynamic && this.dynamicConfig 
+      ? this.dynamicConfig.utilityOptions 
+      : utilityOptions;
+    const dynamicIndicator = useDynamic ? ' (Dynamic)' : '';
+
     // Water Meter
     if (inputs.utilities.waterMeter === 'separate') {
-      const waterUtility = utilityOptions.find(u => u.name === 'Water Meter');
+      const waterUtility = utilityConfig.find(u => u.name === 'Water Meter');
       if (waterUtility) {
         lineItems.push({
           category: 'Utilities',
-          description: 'Separate Water Meter Connection',
+          description: 'Separate Water Meter Connection' + dynamicIndicator,
           quantity: 1,
           unitPrice: waterUtility.separatePrice,
           totalPrice: waterUtility.separatePrice,
@@ -162,11 +237,11 @@ export class AnchorPricingEngine {
 
     // Gas Meter
     if (inputs.utilities.gasMeter === 'separate') {
-      const gasUtility = utilityOptions.find(u => u.name === 'Gas Meter');
+      const gasUtility = utilityConfig.find(u => u.name === 'Gas Meter');
       if (gasUtility) {
         lineItems.push({
           category: 'Utilities',
-          description: 'Separate Gas Meter Connection',
+          description: 'Separate Gas Meter Connection' + dynamicIndicator,
           quantity: 1,
           unitPrice: gasUtility.separatePrice,
           totalPrice: gasUtility.separatePrice,
@@ -176,11 +251,11 @@ export class AnchorPricingEngine {
     }
 
     // Electric Meter (always separate)
-    const electricUtility = utilityOptions.find(u => u.name === 'Electric Meter');
+    const electricUtility = utilityConfig.find(u => u.name === 'Electric Meter');
     if (electricUtility) {
       lineItems.push({
         category: 'Utilities',
-        description: 'Separate Electric Meter Connection',
+        description: 'Separate Electric Meter Connection' + dynamicIndicator,
         quantity: 1,
         unitPrice: electricUtility.separatePrice,
         totalPrice: electricUtility.separatePrice,
@@ -189,18 +264,24 @@ export class AnchorPricingEngine {
     }
   }
 
-  private calculateAddOns(inputs: PricingInputs, lineItems: PricingLineItem[]) {
+  private calculateAddOns(inputs: PricingInputs, lineItems: PricingLineItem[], useDynamic: boolean) {
+    const addOnConfig = useDynamic && this.dynamicConfig 
+      ? this.dynamicConfig.addOnOptions 
+      : addOnOptions;
+
     inputs.selectedAddOns.forEach(addOnName => {
-      const addOn = addOnOptions.find(a => a.name === addOnName);
+      const addOn = addOnConfig.find(a => a.name === addOnName);
       if (!addOn) return;
 
-      // Use override price if available, otherwise use default
+      // Use override price if available, otherwise use config (dynamic or static)
       const addOnPrice = inputs.priceOverrides?.addOnPrices?.[addOnName] ?? addOn.price;
       const isOverridden = inputs.priceOverrides?.addOnPrices?.[addOnName] !== undefined;
+      const overrideIndicator = isOverridden ? ' *' : '';
+      const dynamicIndicator = useDynamic && !isOverridden ? ' (Dynamic)' : '';
 
       lineItems.push({
         category: 'Add-Ons',
-        description: `${addOn.description}${isOverridden ? ' *' : ''}`,
+        description: addOn.description + overrideIndicator + dynamicIndicator,
         quantity: 1,
         unitPrice: addOnPrice,
         totalPrice: addOnPrice,
@@ -211,18 +292,82 @@ export class AnchorPricingEngine {
 
   // Helper methods for form components
   getAduTypeOptions() {
+    if (this.dynamicConfig) {
+      return this.dynamicConfig.aduTypePricing;
+    }
     return aduTypePricing;
   }
 
   getUtilityOptions() {
+    if (this.dynamicConfig) {
+      return this.dynamicConfig.utilityOptions;
+    }
     return utilityOptions;
   }
 
   getAddOnOptions() {
+    if (this.dynamicConfig) {
+      return this.dynamicConfig.addOnOptions;
+    }
     return addOnOptions;
   }
 
   getDesignServices() {
+    if (this.dynamicConfig) {
+      return {
+        planningDesign: this.dynamicConfig.designServices.oneStory.default,
+        description: this.dynamicConfig.designServices.description,
+      };
+    }
     return designServices;
   }
+
+  getBusinessSettings() {
+    if (this.dynamicConfig) {
+      return this.dynamicConfig.businessSettings;
+    }
+    return businessSettings;
+  }
+
+  // NEW: Configuration management methods
+  refreshConfiguration(): void {
+    this.dynamicConfig = getPricingConfig();
+  }
+
+  getCurrentConfiguration(): DynamicPricingConfig | null {
+    return this.dynamicConfig;
+  }
+
+  private getAduTypeName(aduType: string, stories?: 1 | 2): string {
+    if (aduType === 'detached') {
+      return 'Detached ADU (' + (stories || 1) + '-Story)';
+    }
+    return 'Attached ADU';
+  }
+
+  private getAduTypeNameFromDynamic(aduType: string, stories?: 1 | 2): string {
+    if (!this.dynamicConfig) return this.getAduTypeName(aduType, stories);
+
+    if (aduType === 'detached') {
+      const config = this.dynamicConfig.aduTypePricing.find(
+        type => type.type === 'detached' && type.stories === (stories || 1)
+      );
+      return config?.name || 'Detached ADU (' + (stories || 1) + '-Story)';
+    } else {
+      const config = this.dynamicConfig.aduTypePricing.find(type => type.type === 'attached');
+      return config?.name || 'Attached ADU';
+    }
+  }
 }
+
+// Export a default instance for easy use
+export const anchorPricingEngine = new AnchorPricingEngine(true);
+
+// Export utility functions
+export const calculateProposal = (inputs: PricingInputs): PricingBreakdown => {
+  return anchorPricingEngine.calculateProposal(inputs);
+};
+
+export const refreshPricingConfiguration = (): void => {
+  anchorPricingEngine.refreshConfiguration();
+};

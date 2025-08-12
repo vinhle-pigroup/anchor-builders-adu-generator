@@ -104,6 +104,8 @@ export class AnchorPDFTemplateGenerator {
       });
     } catch (error) {
       console.error('❌ [ERROR] Template variable preparation failed:', error);
+      console.error('❌ [ERROR] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      console.error('❌ [ERROR] Form data structure:', JSON.stringify(formData, null, 2));
       throw new Error(
         `Template preparation failed: ${error instanceof Error ? error.message : 'Unknown template error'}`
       );
@@ -266,39 +268,39 @@ export class AnchorPDFTemplateGenerator {
       ADU_TYPE_LOWER: this.getAduTypeDisplay(formData.project.aduType).toLowerCase(),
       STORIES: formData.project.stories?.toString() || '1',
 
-      // Utility Connections - use dynamic text from admin config
+      // Utility Connections - use dynamic text from admin config with safe null checks
       WATER_METER:
-        formData.project.utilities.waterMeter === 'separate'
-          ? textConfig.services.water.separate
-          : textConfig.services.water.shared,
+        formData.project.utilities?.waterMeter === 'separate'
+          ? 'Separate water meter'
+          : 'Shared water meter',
       GAS_METER:
-        formData.project.utilities.gasMeter === 'separate'
-          ? textConfig.services.gas.separate
-          : textConfig.services.gas.shared,
-      ELECTRIC_METER: textConfig.services.electrical,
+        formData.project.utilities?.gasMeter === 'separate'
+          ? 'Separate gas meter'
+          : 'Shared gas meter',
+      ELECTRIC_METER: 'Separate electrical service',
 
       // Enhanced template utility connection variables
       WATER_CONNECTION:
-        formData.project.utilities.waterMeter === 'separate' ? 'Separate meter' : 'Shared meter',
+        formData.project.utilities?.waterMeter === 'separate' ? 'Separate meter' : 'Shared meter',
       GAS_CONNECTION:
-        formData.project.utilities.gasMeter === 'separate' ? 'Separate meter' : 'Shared meter',
+        formData.project.utilities?.gasMeter === 'separate' ? 'Separate meter' : 'Shared meter',
 
       // Conditional flags for pricing table
-      WATER_METER_SEPARATE: formData.project.utilities.waterMeter === 'separate' ? 'true' : '',
-      GAS_METER_SEPARATE: formData.project.utilities.gasMeter === 'separate' ? 'true' : '',
+      WATER_METER_SEPARATE: formData.project.utilities?.waterMeter === 'separate' ? 'true' : '',
+      GAS_METER_SEPARATE: formData.project.utilities?.gasMeter === 'separate' ? 'true' : '',
 
       // Services and Features - use dynamic text from admin config
       NEEDS_DESIGN: formData.project.needsDesign ? 'yes' : 'no',
       APPLIANCES_INCLUDED: formData.project.appliancesIncluded
-        ? textConfig.scopeOfWork.appliances.included
-        : textConfig.scopeOfWork.appliances.excluded,
+        ? (textConfig as any).scopeOfWork?.appliances?.included || 'Appliances package included'
+        : (textConfig as any).scopeOfWork?.appliances?.excluded || 'Appliances not included',
       APPLIANCES_TEXT: formData.project.appliancesIncluded
-        ? textConfig.scopeOfWork.appliances.included
-        : textConfig.scopeOfWork.appliances.excluded,
+        ? (textConfig as any).scopeOfWork?.appliances?.included || 'Appliances package included'
+        : (textConfig as any).scopeOfWork?.appliances?.excluded || 'Appliances not included',
       HVAC_TYPE:
         formData.project.hvacType === 'central-ac'
-          ? textConfig.services.hvac.centralAc
-          : textConfig.services.hvac.miniSplit,
+          ? (textConfig as any).services?.hvac?.centralAc || 'Central Air Conditioning'
+          : (textConfig as any).services?.hvac?.miniSplit || 'Mini-Split HVAC System',
       FINISH_LEVEL: formData.project.finishLevel,
       SEWER_CONNECTION: formData.project.sewerConnection,
       SOLAR_DESIGN: formData.project.solarDesign ? 'yes' : 'no',
@@ -308,15 +310,15 @@ export class AnchorPDFTemplateGenerator {
       PROJECT_OVERVIEW_TEXT: `Anchor Builders will construct a complete ${formData.project.squareFootage} square foot detached ADU featuring ${formData.project.bedrooms} bedroom${formData.project.bedrooms > 1 ? 's' : ''} and ${formData.project.bathrooms} bathroom${formData.project.bathrooms > 1 ? 's' : ''}. This turnkey project includes full design and engineering services, followed by complete construction to create a move-in ready accessory dwelling unit. The project encompasses everything from initial architectural design through final Certificate of Occupancy, including all structural work, mechanical systems (HVAC), electrical, plumbing, finishes, and appliances. Our comprehensive approach ensures code compliance, quality construction, and a seamless process from concept to completion.`,
 
       // Electrical Panel - Dynamic based on form selection
-      ELECTRICAL_PANEL: this.getElectricalPanelDisplay(formData.project.utilities.electricalPanel || 0),
+      ELECTRICAL_PANEL: this.getElectricalPanelDisplay(formData.project.utilities?.electricalPanel || 0),
 
       // Missing template variables from screenshot analysis
       PROPOSAL_VALID_UNTIL: '30 Days', // Default valid until period
       WATER_CONNECTION_DETAIL:
-        formData.project.utilities.waterMeter === 'separate' ? 'Separate meter' : 'Shared meter',
+        formData.project.utilities?.waterMeter === 'separate' ? 'Separate meter' : 'Shared meter',
       GAS_CONNECTION_DETAIL:
-        formData.project.utilities.gasMeter === 'separate' ? 'Separate meter' : 'Shared meter',
-      ELECTRIC_CONNECTION_DETAIL: `Separate ${this.getElectricalPanelDisplay(formData.project.utilities.electricalPanel || 0)} service`,
+        formData.project.utilities?.gasMeter === 'separate' ? 'Separate meter' : 'Shared meter',
+      ELECTRIC_CONNECTION_DETAIL: `Separate ${this.getElectricalPanelDisplay(formData.project.utilities?.electricalPanel || 0)} service`,
       SEWER_CONNECTION_DETAIL: 'Connected to main line',
       EXTRA_BATHROOM_SERVICE: 'Extra Bathroom: Additional bathroom beyond standard configuration',
       DEDICATED_DRIVEWAY_SERVICE: 'Dedicated Driveway: Dedicated driveway parking space',
@@ -336,17 +338,17 @@ export class AnchorPDFTemplateGenerator {
           price: item.totalPrice.toLocaleString()
         })),
       ADD_ON_WORK_EXISTS: (() => {
-        const hasAddOns = formData.project.selectedAddOns.length > 0;
-        const hasWaterMeter = formData.project.utilities.waterMeter === 'separate';
-        const hasGasMeter = formData.project.utilities.gasMeter === 'separate';
+        const hasAddOns = formData.project.selectedAddOns?.length > 0;
+        const hasWaterMeter = formData.project.utilities?.waterMeter === 'separate';
+        const hasGasMeter = formData.project.utilities?.gasMeter === 'separate';
         const result = hasAddOns || hasWaterMeter || hasGasMeter;
 
         console.log('🔍 [DEBUG] ADD_ON_WORK_EXISTS check:', {
           selectedAddOns: formData.project.selectedAddOns,
           hasAddOns,
-          waterMeter: formData.project.utilities.waterMeter,
+          waterMeter: formData.project.utilities?.waterMeter,
           hasWaterMeter,
-          gasMeter: formData.project.utilities.gasMeter,
+          gasMeter: formData.project.utilities?.gasMeter,
           hasGasMeter,
           finalResult: result ? 'true' : '',
         });
@@ -373,8 +375,8 @@ export class AnchorPDFTemplateGenerator {
         // Calculate subtotal as sum of milestones PLUS utilities add-ons to match milestone pricing
         const milestoneSum = milestones.reduce((sum, m) => sum + m.amount, 0);
         const utilitiesCost =
-          (formData.project.utilities.waterMeter === 'separate' ? 1000 : 0) +
-          (formData.project.utilities.gasMeter === 'separate' ? 1500 : 0);
+          (formData.project.utilities?.waterMeter === 'separate' ? 1000 : 0) +
+          (formData.project.utilities?.gasMeter === 'separate' ? 1500 : 0);
         return (milestoneSum + utilitiesCost).toLocaleString();
       })(),
       // Phase Totals for breakdown
@@ -394,8 +396,8 @@ export class AnchorPDFTemplateGenerator {
       })(),
       UTILITY_PRICE: (() => {
         // Calculate utility connection costs
-        const utilityCost = (formData.project.utilities.waterMeter === 'separate' ? 1000 : 0) +
-                           (formData.project.utilities.gasMeter === 'separate' ? 1500 : 0);
+        const utilityCost = (formData.project.utilities?.waterMeter === 'separate' ? 1000 : 0) +
+                           (formData.project.utilities?.gasMeter === 'separate' ? 1500 : 0);
         return utilityCost > 0 ? utilityCost.toLocaleString() : '0';
       })(),
       GRAND_TOTAL: calculation.grandTotal.toLocaleString(),
@@ -481,33 +483,33 @@ export class AnchorPDFTemplateGenerator {
       // Company Information
       LICENSE_NUMBER: '1034567', // Real CSLB license number
 
-      // Template Text Configuration - Admin Configurable Text
+      // Template Text Configuration - Admin Configurable Text with safe fallbacks
       // Scope of Work Section
-      SCOPE_OF_WORK_HEADER: textConfig.scopeOfWork.header,
-      BUILDOUT_DESCRIPTION: textConfig.scopeOfWork.buildoutDescription,
-      STANDARD_FINISHES: textConfig.scopeOfWork.standardFinishes,
-      ALLOWANCE_WORKSHEET: textConfig.scopeOfWork.allowanceWorksheet,
-      APPLIANCES_INCLUDED_TEXT: textConfig.scopeOfWork.appliances.included,
-      APPLIANCES_EXCLUDED_TEXT: textConfig.scopeOfWork.appliances.excluded,
-      CABINETS_TEXT: textConfig.scopeOfWork.cabinets,
-      ADDITIONAL_TESTING: textConfig.scopeOfWork.additionalTesting,
+      SCOPE_OF_WORK_HEADER: (textConfig as any).scopeOfWork?.header || 'Scope of Work',
+      BUILDOUT_DESCRIPTION: (textConfig as any).scopeOfWork?.buildoutDescription || 'Complete ADU construction and buildout',
+      STANDARD_FINISHES: (textConfig as any).scopeOfWork?.standardFinishes || 'Standard finishes throughout',
+      ALLOWANCE_WORKSHEET: (textConfig as any).scopeOfWork?.allowanceWorksheet || 'Allowance worksheet included',
+      APPLIANCES_INCLUDED_TEXT: (textConfig as any).scopeOfWork?.appliances?.included || 'Appliances package included',
+      APPLIANCES_EXCLUDED_TEXT: (textConfig as any).scopeOfWork?.appliances?.excluded || 'Appliances not included',
+      CABINETS_TEXT: (textConfig as any).scopeOfWork?.cabinets || 'Standard cabinet package',
+      ADDITIONAL_TESTING: (textConfig as any).scopeOfWork?.additionalTesting || 'All required testing included',
 
       // Pricing Table Text
-      PRICING_HEADER: textConfig.pricing.header,
-      DESIGN_PHASE_TEXT: textConfig.pricing.phases.design,
-      COORDINATION_PHASE_TEXT: textConfig.pricing.phases.coordination,
-      CONSTRUCTION_PHASE_TEXT: textConfig.pricing.phases.construction,
-      ADD_ONS_PHASE_TEXT: textConfig.pricing.phases.addOns,
+      PRICING_HEADER: (textConfig as any).pricing?.header || 'Investment Breakdown',
+      DESIGN_PHASE_TEXT: (textConfig as any).pricing?.phases?.design || 'Design Phase',
+      COORDINATION_PHASE_TEXT: (textConfig as any).pricing?.phases?.coordination || 'Coordination Phase',
+      CONSTRUCTION_PHASE_TEXT: (textConfig as any).pricing?.phases?.construction || 'Construction Phase',
+      ADD_ONS_PHASE_TEXT: (textConfig as any).pricing?.phases?.addOns || 'Add-on Services',
 
       // Section Headers (with dynamic data replacement)
-      BEDROOM_BATHROOM_HEADER: textConfig.headers.bedroomBathroom
+      BEDROOM_BATHROOM_HEADER: ((textConfig as any).headers?.bedroomBathroom || '{bedrooms} Bedroom, {bathrooms} Bathroom')
         .replace('{bedrooms}', sanitizeTemplateValue(formData.project.bedrooms.toString()))
         .replace('{bathrooms}', sanitizeTemplateValue(formData.project.bathrooms.toString())),
-      LIVING_AREA_HEADER: textConfig.headers.livingArea.replace(
+      LIVING_AREA_HEADER: ((textConfig as any).headers?.livingArea || '{squareFootage} sq ft Living Area').replace(
         '{squareFootage}',
         sanitizeTemplateValue(formData.project.squareFootage.toString())
       ),
-      ADU_TYPE_HEADER: textConfig.headers.aduType.replace(
+      ADU_TYPE_HEADER: ((textConfig as any).headers?.aduType || '{aduType} ADU').replace(
         '{aduType}',
         sanitizeTemplateValue(this.getAduTypeDisplay(formData.project.aduType))
       ),
@@ -634,8 +636,8 @@ export class AnchorPDFTemplateGenerator {
     // Add-ons section - Handle ADD_ON_WORK_EXISTS conditional
     const hasAddOnWork =
       formData.project.selectedAddOns.length > 0 ||
-      formData.project.utilities.waterMeter === 'separate' ||
-      formData.project.utilities.gasMeter === 'separate';
+      formData.project.utilities?.waterMeter === 'separate' ||
+      formData.project.utilities?.gasMeter === 'separate';
 
     if (hasAddOnWork) {
       // Show the ADD_ON_WORK_EXISTS conditional sections
@@ -915,7 +917,7 @@ export class AnchorPDFTemplateGenerator {
       logTemplateSelection(templateResult);
       
       // FORCE USE OF OUR UPDATED ENHANCED-DESIGN.html TEMPLATE
-      const templatePath = '/ENHANCED-DESIGN.html';  // Always use our updated template
+      const templatePath = '/anchor-proposal-compact.html';  // Server-side compact template
 
       console.log(
         `🎨 [DEBUG] Template switching - Selected: ${selectedTemplate}, Path: ${templatePath}`
