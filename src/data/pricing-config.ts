@@ -102,6 +102,16 @@ export const addOnOptions: AddOnOption[] = [
     price: 10000, // CONFIRMED correct
     description: 'Basic landscaping around ADU',
   },
+  {
+    name: 'Central AC System',
+    price: 0, // To be set in admin panel
+    description: 'Central air conditioning system with ductwork',
+  },
+  {
+    name: 'Mini-Split HVAC System',
+    price: 0, // To be set in admin panel
+    description: 'Ductless mini-split heat pump system',
+  },
 ];
 
 // Business Settings - From Excel Configuration

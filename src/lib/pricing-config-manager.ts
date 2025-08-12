@@ -114,6 +114,16 @@ export const DEFAULT_PRICING_CONFIG: DynamicPricingConfig = {
       price: 10000, // Confirmed correct
       description: 'Basic landscaping around ADU',
     },
+    {
+      name: 'Central AC System',
+      price: 0, // To be set in admin panel
+      description: 'Central air conditioning system with ductwork',
+    },
+    {
+      name: 'Mini-Split HVAC System',
+      price: 0, // To be set in admin panel
+      description: 'Ductless mini-split heat pump system',
+    },
   ],
   
   businessSettings: {

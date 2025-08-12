@@ -2369,6 +2369,10 @@ function App() {
               return newState;
             });
           }}
+          onNavigateToAdmin={() => {
+            setCurrentPage('admin');
+            setAdminSection('templates'); // Go directly to pricing admin
+          }}
         />
       </>
     );

@@ -1,4 +1,12 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { 
+  checkUtilityPricing, 
+  checkHVACPricing, 
+  checkProjectUtilityPricing,
+  checkProjectHVACPricing,
+  showPricingNotification,
+  showMultiplePricingNotifications
+} from '../lib/pricing-notifications';
 
 // Add wiggle animation CSS and custom color
 const wiggleStyle = `
@@ -72,6 +80,7 @@ interface EnhancedProductionGridProps {
   pricingData: PricingData;
   onProjectDataUpdate: (data: Partial<ProjectData>) => void;
   onPricingDataUpdate: (data: Partial<PricingData>) => void;
+  onNavigateToAdmin?: () => void;
 }
 
 export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
@@ -79,6 +88,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
   pricingData,
   onProjectDataUpdate,
   onPricingDataUpdate,
+  onNavigateToAdmin,
 }) => {
   // Removed unused currentSection state
   const initialIsMobile = window.innerWidth < 640; // Use mobile-only breakpoint (not tablets)
@@ -377,6 +387,29 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
   const handleGenerateProposal = async () => {
     console.log('🔥 PDF BUTTON CLICKED - Starting handleGenerateProposal function');
     
+    // Check for pricing configuration issues before generating PDF
+    const pricingNotifications = [];
+    
+    // Check utility pricing for separate meters
+    const utilityNotifications = checkProjectUtilityPricing(projectData.utilities || {});
+    pricingNotifications.push(...utilityNotifications);
+    
+    // Check HVAC pricing
+    if (projectData.hvacType) {
+      const hvacNotification = checkProjectHVACPricing(projectData.hvacType);
+      if (hvacNotification) {
+        pricingNotifications.push(hvacNotification);
+      }
+    }
+    
+    // If there are pricing issues, show notification and stop
+    if (pricingNotifications.length > 0 && onNavigateToAdmin) {
+      const userWantsToConfigurePricing = showMultiplePricingNotifications(pricingNotifications, onNavigateToAdmin);
+      if (userWantsToConfigurePricing) {
+        return; // Don't generate PDF, user went to admin
+      }
+    }
+    
     // Check if utilities have been selected
     const hasUtilitySelection = pricingData.utilities && (
       pricingData.utilities.waterMeter || 
@@ -650,7 +683,9 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
               <div className='text-right hidden sm:block'>
                 <p className='text-xs text-gray-600'>Total</p>
                 <p className='text-xl font-bold text-gray-900'>
-${liveCalculation.finalTotal.toLocaleString()}
+${pricingData.friendsAndFamilyDiscount 
+  ? (liveCalculation.finalTotal * 0.9).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') 
+  : liveCalculation.finalTotal.toLocaleString()}
                 </p>
               </div>
               
@@ -1091,7 +1126,16 @@ ${liveCalculation.finalTotal.toLocaleString()}
                             <button
                               type='button'
                               data-navigation
-                              onClick={() => updateProjectData({ hvacType: 'central-ac' })}
+                              onClick={() => {
+                                const pricingNotification = checkHVACPricing('central-ac');
+                                if (pricingNotification && onNavigateToAdmin) {
+                                  const userWantsToConfigurePricing = showPricingNotification(pricingNotification, onNavigateToAdmin);
+                                  if (userWantsToConfigurePricing) {
+                                    return; // Don't update state, user went to admin
+                                  }
+                                }
+                                updateProjectData({ hvacType: 'central-ac' });
+                              }}
                               className={`
                                 ${isMobile ? 'px-1 py-0.5 h-6 text-[9px]' : 'px-3 py-1.5 h-10 text-[11px]'} rounded border transition-all flex flex-col items-center justify-center
                                 ${projectData.hvacType === 'central-ac'
@@ -1105,7 +1149,16 @@ ${liveCalculation.finalTotal.toLocaleString()}
                             <button
                               type='button'
                               data-navigation
-                              onClick={() => updateProjectData({ hvacType: 'mini-split' })}
+                              onClick={() => {
+                                const pricingNotification = checkHVACPricing('mini-split');
+                                if (pricingNotification && onNavigateToAdmin) {
+                                  const userWantsToConfigurePricing = showPricingNotification(pricingNotification, onNavigateToAdmin);
+                                  if (userWantsToConfigurePricing) {
+                                    return; // Don't update state, user went to admin
+                                  }
+                                }
+                                updateProjectData({ hvacType: 'mini-split' });
+                              }}
                               className={`
                                 ${isMobile ? 'px-1 py-0.5 h-6 text-[9px]' : 'px-3 py-1.5 h-10 text-[11px]'} rounded border transition-all flex flex-col items-center justify-center
                                 ${projectData.hvacType === 'mini-split'
@@ -1131,6 +1184,18 @@ ${liveCalculation.finalTotal.toLocaleString()}
                                 try {
                                   const newWaterState = (!projectData.utilities?.waterMeter || projectData.utilities.waterMeter === '') ? 'shared' : projectData.utilities.waterMeter === 'shared' ? 'separate' : 'shared';
                                   console.log('Water utility clicked - toggling to:', newWaterState);
+                                  
+                                  // Check pricing if switching to separate
+                                  if (newWaterState === 'separate') {
+                                    const pricingNotification = checkUtilityPricing('water');
+                                    if (pricingNotification && onNavigateToAdmin) {
+                                      const userWantsToConfigurePricing = showPricingNotification(pricingNotification, onNavigateToAdmin);
+                                      if (userWantsToConfigurePricing) {
+                                        return; // Don't update state, user went to admin
+                                      }
+                                    }
+                                  }
+                                  
                                   updateProjectData({ 
                                     utilities: { 
                                       ...projectData.utilities,
@@ -1193,6 +1258,18 @@ ${liveCalculation.finalTotal.toLocaleString()}
                                 try {
                                   const newGasState = (!projectData.utilities?.gasMeter || projectData.utilities.gasMeter === '') ? 'shared' : projectData.utilities.gasMeter === 'shared' ? 'separate' : 'shared';
                                   console.log('Gas utility clicked - toggling to:', newGasState);
+                                  
+                                  // Check pricing if switching to separate
+                                  if (newGasState === 'separate') {
+                                    const pricingNotification = checkUtilityPricing('gas');
+                                    if (pricingNotification && onNavigateToAdmin) {
+                                      const userWantsToConfigurePricing = showPricingNotification(pricingNotification, onNavigateToAdmin);
+                                      if (userWantsToConfigurePricing) {
+                                        return; // Don't update state, user went to admin
+                                      }
+                                    }
+                                  }
+                                  
                                   updateProjectData({ 
                                     utilities: { 
                                       ...projectData.utilities,
@@ -1225,6 +1302,18 @@ ${liveCalculation.finalTotal.toLocaleString()}
                                   // Electric can be shared or separate despite types definition
                                   const newElectricState = (!projectData.utilities?.electricMeter || projectData.utilities.electricMeter === '') ? 'shared' : projectData.utilities.electricMeter === 'shared' ? 'separate' : 'shared';
                                   console.log('Electric utility clicked - toggling to:', newElectricState);
+                                  
+                                  // Check pricing if switching to separate
+                                  if (newElectricState === 'separate') {
+                                    const pricingNotification = checkUtilityPricing('electric');
+                                    if (pricingNotification && onNavigateToAdmin) {
+                                      const userWantsToConfigurePricing = showPricingNotification(pricingNotification, onNavigateToAdmin);
+                                      if (userWantsToConfigurePricing) {
+                                        return; // Don't update state, user went to admin
+                                      }
+                                    }
+                                  }
+                                  
                                   updateProjectData({ 
                                     utilities: { 
                                       ...projectData.utilities,
@@ -1584,7 +1673,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                   {pricingData.friendsAndFamilyDiscount && (
                     <div className='flex justify-between text-red-600'>
                       <span className='font-medium'>Friends & Family (10% off):</span>
-                      <span className='font-medium'>-${(liveCalculation.finalTotal * 0.1111).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</span>
+                      <span className='font-medium'>-${(liveCalculation.finalTotal * 0.1).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</span>
                     </div>
                   )}
                 </div>
@@ -1594,7 +1683,9 @@ ${liveCalculation.finalTotal.toLocaleString()}
                 <div className='flex justify-between items-center'>
                   <span className='text-[11px] font-bold text-slate-800'>Total:</span>
                   <span className='text-[11px] font-bold text-slate-800'>
-${liveCalculation.finalTotal.toLocaleString()}
+${pricingData.friendsAndFamilyDiscount 
+  ? (liveCalculation.finalTotal * 0.9).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') 
+  : liveCalculation.finalTotal.toLocaleString()}
                   </span>
                 </div>
               </div>
