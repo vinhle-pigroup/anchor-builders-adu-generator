@@ -861,26 +861,30 @@ export class AnchorPDFTemplateGenerator {
 
   private async htmlToPdfBlob(html: string): Promise<void> {
     console.log('🖨️ [DEBUG] Opening Enhanced template in new window for PDF printing');
+    console.log('🔍 [DEBUG] Final HTML length:', html.length, 'First 200 chars:', html.substring(0, 200));
 
     try {
       // Create a new window with our Enhanced template
-      const printWindow = window.open('', '_blank', 'width=1200,height=800');
+      const printWindow = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
       
       if (!printWindow) {
         throw new Error('Popup blocked - cannot open print window');
       }
 
       // Write our Enhanced template to the new window
+      printWindow.document.open();
       printWindow.document.write(html);
       printWindow.document.close();
 
       // Wait for the content to load, then trigger print dialog
-      printWindow.onload = () => {
+      printWindow.addEventListener('load', () => {
+        console.log('✅ [DEBUG] Print window loaded successfully');
         setTimeout(() => {
           printWindow.focus();
+          console.log('🖨️ [DEBUG] Triggering print dialog...');
           printWindow.print();
-        }, 500);
-      };
+        }, 1000); // Increased timeout to ensure everything loads
+      });
 
       console.log('✅ [DEBUG] Enhanced template opened for printing - use browser "Print to PDF" option');
 
@@ -893,13 +897,13 @@ export class AnchorPDFTemplateGenerator {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Anchor-Builders-ADU-Proposal-Enhanced-${Date.now()}.html`;
+      link.download = `Anchor-Builders-ADU-Proposal-DEBUG-${Date.now()}.html`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      alert('A print window was blocked. An HTML file has been downloaded instead. Open it in your browser and use Ctrl+P → "Save as PDF" to create the PDF.');
+      console.log('💾 [DEBUG] HTML file downloaded for debugging. Open it to see the processed template with all variables replaced.');
     }
   }
 
@@ -910,17 +914,8 @@ export class AnchorPDFTemplateGenerator {
       const templateResult = getActiveTemplate();
       logTemplateSelection(templateResult);
       
-      // Direct template mapping with resolver fallback
-      const templateFiles = {
-        historical: '/ENHANCED-DESIGN.html',  // Use existing template
-        modern: '/ENHANCED-DESIGN.html',       // Use existing template
-        premium: '/ENHANCED-DESIGN.html',      // Use existing template
-        classic: '/ENHANCED-DESIGN.html',      // Use existing template
-        enhanced: getTemplatePath(templateResult.filename), // Use resolver for enhanced template
-      };
-
-      const templatePath =
-        templateFiles[selectedTemplate as keyof typeof templateFiles] || getTemplatePath(templateResult.filename);
+      // FORCE USE OF OUR UPDATED ENHANCED-DESIGN.html TEMPLATE
+      const templatePath = '/ENHANCED-DESIGN.html';  // Always use our updated template
 
       console.log(
         `🎨 [DEBUG] Template switching - Selected: ${selectedTemplate}, Path: ${templatePath}`

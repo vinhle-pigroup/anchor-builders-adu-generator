@@ -21,15 +21,18 @@ export class AnchorPDFGenerator {
     formData: AnchorProposalFormData,
     selectedTemplate?: string
   ): Promise<void> {
-    // First try Railway PDF service for best quality
-    try {
-      console.log('🚀 Using Railway PDF service for professional PDF generation');
-      const serverPdfService = new ServerPDFService();
-      await serverPdfService.generateProposal(formData, selectedTemplate || 'enhanced');
-      return; // Success - exit early
-    } catch (error) {
-      console.warn('Railway PDF service failed, falling back to client-side:', error);
-    }
+    // TEMPORARILY SKIP Railway PDF service to test our local template fixes
+    console.log('🚧 Skipping Railway PDF service to test local template fixes');
+    
+    // First try Railway PDF service for best quality (DISABLED FOR TESTING)
+    // try {
+    //   console.log('🚀 Using Railway PDF service for professional PDF generation');
+    //   const serverPdfService = new ServerPDFService();
+    //   await serverPdfService.generateProposal(formData, selectedTemplate || 'enhanced');
+    //   return; // Success - exit early
+    // } catch (error) {
+    //   console.warn('Railway PDF service failed, falling back to client-side:', error);
+    // }
 
     // Fallback to client-side template generator
     try {
