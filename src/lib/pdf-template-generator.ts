@@ -798,23 +798,19 @@ export class AnchorPDFTemplateGenerator {
   }
 
   private async getAnchorLogoBase64(): Promise<string> {
-    // Fetch the actual PNG logo and convert to base64 for PDF embedding
+    // PRIORITY 1: Try to fetch the actual PNG logo and convert to base64
     try {
       console.log('🎨 Fetching anchor logo for PDF generation...');
       
-      // Use the full URL including the origin for the PDF
       const origin = window.location.origin;
       const logoUrl = `${origin}/anchor-logo-main.png`;
-      
       console.log('📍 Logo URL:', logoUrl);
       
-      // Fetch the image
       const response = await fetch(logoUrl);
       if (!response.ok) {
         throw new Error(`Failed to fetch logo: ${response.status}`);
       }
       
-      // Convert to blob and then to base64
       const blob = await response.blob();
       
       return new Promise((resolve, reject) => {
@@ -822,6 +818,7 @@ export class AnchorPDFTemplateGenerator {
         reader.onloadend = () => {
           const base64 = reader.result as string;
           console.log('✅ Logo converted to base64, size:', base64.length);
+          console.log('✅ Logo starts with:', base64.substring(0, 50));
           resolve(base64);
         };
         reader.onerror = () => {
@@ -831,15 +828,28 @@ export class AnchorPDFTemplateGenerator {
         reader.readAsDataURL(blob);
       });
     } catch (error) {
-      console.warn('⚠️ Failed to load PNG logo, using SVG fallback:', error);
-      // Fallback to SVG text logo
-      const svgLogo = `<svg width="200" height="60" xmlns="http://www.w3.org/2000/svg">
-        <rect width="200" height="60" fill="white"/>
-        <text x="100" y="35" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#1e3a8a" text-anchor="middle">ANCHOR</text>
-        <text x="100" y="55" font-family="Arial, sans-serif" font-size="16" fill="#1e3a8a" text-anchor="middle">BUILDERS</text>
+      console.warn('⚠️ PNG logo failed, trying SVG fallback:', error);
+      
+      // PRIORITY 2: High-quality SVG fallback with company colors
+      const svgLogo = `<svg width="200" height="60" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+        <rect width="200" height="60" fill="#ffffff" stroke="#1e40af" stroke-width="2"/>
+        <text x="100" y="25" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#1e40af" text-anchor="middle">ANCHOR</text>
+        <text x="100" y="45" font-family="Arial, sans-serif" font-size="14" fill="#1e40af" text-anchor="middle">BUILDERS</text>
+        <circle cx="30" cy="30" r="8" fill="#1e40af"/>
+        <circle cx="170" cy="30" r="8" fill="#1e40af"/>
       </svg>`;
-      const base64Svg = btoa(svgLogo);
-      return `data:image/svg+xml;base64,${base64Svg}`;
+      
+      try {
+        const base64Svg = btoa(svgLogo);
+        const dataUri = `data:image/svg+xml;base64,${base64Svg}`;
+        console.log('✅ SVG fallback created, length:', dataUri.length);
+        return dataUri;
+      } catch (svgError) {
+        console.error('❌ SVG fallback also failed:', svgError);
+        
+        // PRIORITY 3: Simple text fallback (guaranteed to work)
+        return 'data:text/plain;base64,QU5DSE9SIEJVSUxERVJT'; // "ANCHOR BUILDERS" in base64
+      }
     }
   }
 
