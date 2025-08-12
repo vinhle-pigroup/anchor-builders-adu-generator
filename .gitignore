@@ -41,16 +41,3 @@ coverage/
 *.tmp
 *.temp
 .cache/
-temp_venv/
-test-examples/
-pricing_structure_analysis.json
-*.png
-*.pdf
-*.xlsx
-*.xlsm
-
-# Documentation (keep only essential)
-ANCHOR_BUILDERS_PRICING_ANALYSIS.md
-SETUP_COMMANDS.md
-QUICK_DEPLOY.md
-RAILWAY_DEPLOYMENT.md.env.backup

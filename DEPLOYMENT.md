@@ -1,214 +1,182 @@
-# Deployment Guide - Anchor Builders ADU Generator
+# Railway Deployment Guide - Anchor Builders ADU Generator
 
-## 🚀 **Railway Deployment**
+## Problem Solved
+**Issue**: Vite preview binds to `localhost` instead of `0.0.0.0`, making Railway health checks fail  
+**Solution**: Express server with explicit `0.0.0.0` binding for containerized environments
 
-This application is configured for deployment on Railway with optimal production settings.
+## Architecture
 
-### **Quick Deploy**
-1. Connect your GitHub repository to Railway
-2. Set required environment variables (see below)
-3. Deploy automatically builds and starts the application
-
-### **Environment Variables (Required)**
-
-```bash
-# Essential Configuration
-NODE_ENV=production
-
-# Company Information (Optional - has defaults)
-VITE_COMPANY_NAME="Anchor Builders"
-VITE_COMPANY_WEBSITE="https://www.anchorbuilders.io"
-VITE_SUPPORT_EMAIL="support@anchorbuilders.io"
-VITE_SUPPORT_PHONE="(555) 123-4567"
-
-# Google Maps API (Optional - for property images)
-VITE_GOOGLE_MAPS_API_KEY="your-google-maps-api-key-here"
-VITE_GOOGLE_MAPS_DEFAULT_ZOOM=19
-VITE_GOOGLE_MAPS_IMAGE_SIZE="800x600"
-VITE_GOOGLE_MAPS_HEADER_SIZE="120x80"
-
-# PDF Generation API (Optional - for enhanced PDF features)
-VITE_API_URL="https://your-api-url.railway.app"
-VITE_API_KEY="your-api-key-here"
-
-# Feature Flags (Optional - defaults provided)
-VITE_ENABLE_PDF_GENERATION=true
-VITE_ENABLE_GOOGLE_MAPS=true
-VITE_ENABLE_ANALYTICS=false
-VITE_ENABLE_ERROR_REPORTING=false
+```
+Railway Container → Express Server (0.0.0.0:8080) → Static Files (dist/)
+                                  ↓
+                            Health Checks (/health, /healthz)
+                            SPA Routing (/* → index.html)
 ```
 
-### **Production Configuration**
+## Files Created
 
-**Port**: Application uses Railway's `$PORT` environment variable
-- Local development: 5000 (configured in package.json)
-- Production: Dynamic port assigned by Railway
+### Core Server
+- **`server.js`** - Express server with 0.0.0.0 binding
+- **`nixpacks.toml`** - Railway build configuration
+- **`Dockerfile`** - Alternative containerization option
 
-**Build Process**:
-1. `npm run build` - Creates optimized production build
-2. `npm run preview` - Serves built files with Vite preview server
+### Scripts & Testing
+- **`scripts/verify-build.js`** - Pre-deployment build verification
+- **`scripts/test-production.sh`** - Comprehensive deployment testing
 
-**Bundle Optimization**:
-- **Total Size**: ~1.4MB uncompressed, ~380KB gzipped
-- **Code Splitting**: 9 separate chunks for optimal loading
-- **Security**: Input sanitization and XSS protection enabled
-- **Performance**: Terser minification, tree-shaking, dead code elimination
+## Deployment Process
 
----
+### 1. Local Testing
+```bash
+# Build the app
+npm run build
 
-## 📋 **Deployment Checklist**
+# Verify build artifacts
+node scripts/verify-build.js
 
-### **Pre-Deployment**
-- [ ] All environment variables set in Railway dashboard
-- [ ] Google Maps API key configured (optional)
-- [ ] PDF generation API configured (optional)
-- [ ] Domain configured if using custom domain
+# Start production server locally
+npm run start:production
 
-### **Post-Deployment**
-- [ ] Application loads successfully at Railway URL
-- [ ] All form functionality working
-- [ ] PDF generation functional (if API configured)
-- [ ] Google Maps integration working (if API configured)
-- [ ] No console errors in browser developer tools
+# Test locally
+./scripts/test-production.sh local
+```
 
----
+### 2. Railway Deployment
+```bash
+# Commit changes
+git add .
+git commit -m "fix: add Express server for Railway deployment"
+git push origin main
 
-## 🔧 **Build Configuration**
+# Railway will auto-deploy using nixpacks.toml configuration
 
-### **Railway Configuration (`railway.toml`)**
+# Test production deployment
+./scripts/test-production.sh production
+```
+
+### 3. Verification
+```bash
+# Check health endpoints
+curl https://anchor-builders-adu-generator-production.up.railway.app/health
+curl https://anchor-builders-adu-generator-production.up.railway.app/healthz
+
+# Verify main app loads
+curl -I https://anchor-builders-adu-generator-production.up.railway.app/
+
+# Run full test suite
+./scripts/test-production.sh both
+```
+
+## Configuration Details
+
+### Express Server Features
+- ✅ **Explicit 0.0.0.0 binding** - Works in containers
+- ✅ **Static file serving** - Serves Vite build from `dist/`
+- ✅ **SPA routing support** - All routes serve `index.html`
+- ✅ **Health check endpoints** - `/health` and `/healthz`
+- ✅ **Compression** - Gzip compression for performance
+- ✅ **Security headers** - Basic security hardening
+- ✅ **Error handling** - Graceful error responses
+- ✅ **Graceful shutdown** - Proper SIGTERM handling
+
+### Railway Configuration (nixpacks.toml)
 ```toml
-[build]
-builder = "nixpacks"
+[phases.setup]
+nixPkgs = ["nodejs-18_x", "npm-9_x"]
 
-[deploy]
-startCommand = "npm run build && npm run preview -- --host 0.0.0.0 --port $PORT"
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 10
-healthcheckPath = "/"
-healthcheckTimeout = 30
-replicas = 1
+[phases.install]
+cmds = ["npm ci"]
 
-[variables]
-NODE_ENV = "production"
+[phases.build]
+cmds = ["npm run build"]
+
+[phases.start]
+cmd = "npm run start:production"
 ```
 
-### **Vite Configuration**
-- **Development**: Port 5000 with host binding
-- **Preview**: Port 5000 with Railway domain allowed
-- **Build**: Optimized chunks with Terser minification
+### Package.json Scripts
+```json
+{
+  "scripts": {
+    "start": "node server.js",
+    "start:production": "NODE_ENV=production node server.js",
+    "build": "tsc && vite build",
+    "test": "npm run lint && npm run build"
+  }
+}
+```
 
----
+## Troubleshooting
 
-## 🛡️ **Security Features**
+### Common Issues
 
-### **Input Validation**
-- XSS protection on all form inputs
-- HTML entity escaping for user data
-- Input length limits (500 chars for inputs, 2000 for textareas)
-- Email, phone, and address format validation
+| Issue | Symptom | Solution |
+|-------|---------|----------|
+| Health check fails | Railway shows unhealthy | Verify server binds to 0.0.0.0 |
+| 404 on routes | Client routing broken | Check SPA fallback in server.js |
+| Static assets missing | CSS/JS not loading | Verify `dist/` exists and is served |
+| Build fails | Railway build errors | Check `nixpacks.toml` configuration |
 
-### **API Security**
-- Rate limiting: 3 PDF generations per minute per user
-- Template injection prevention
-- Environment variable validation
-- Secure headers configuration ready
-
-### **Production Hardening**
-- Console logs removed in production
-- Debug statements stripped
-- Sensitive data not exposed in client
-- HTTPS enforcement recommended
-
----
-
-## 📊 **Performance Metrics**
-
-### **Bundle Analysis**
-- **Vendor Chunk**: 710KB (206KB gzipped) - React, React-DOM
-- **PDF Chunk**: 348KB (111KB gzipped) - jsPDF and dependencies
-- **Form Components**: 89KB (10KB gzipped) - Main form logic
-- **Services**: 15KB (5KB gzipped) - Utilities and security
-
-### **Load Times (Target)**
-- First Contentful Paint: <2s
-- Largest Contentful Paint: <3s
-- Time to Interactive: <4s
-
----
-
-## 🔍 **Troubleshooting**
-
-### **Common Issues**
-
-**Build Fails**:
-- Check Node.js version: Requires >=20.19.0
-- Clear node_modules: `rm -rf node_modules && npm ci`
-- Verify package.json scripts are intact
-
-**Application Won't Start**:
-- Check Railway logs for startup errors
-- Verify environment variables are set
-- Ensure PORT is not hardcoded
-
-**PDF Generation Not Working**:
-- Verify VITE_API_URL and VITE_API_KEY are set
-- Check API endpoint is accessible
-- Review browser console for rate limiting messages
-
-**Google Maps Not Loading**:
-- Verify VITE_GOOGLE_MAPS_API_KEY is set
-- Ensure Maps Static API is enabled in Google Cloud
-- Check browser console for API errors
-
-### **Debug Commands**
+### Debug Commands
 ```bash
-# Local production test
-npm run build && npm run preview
+# Check Railway logs
+railway logs --tail 100
 
-# Check environment configuration
-npm run build && node -e "console.log(process.env)"
+# Verify dist/ directory locally
+ls -la dist/
 
-# Verify bundle sizes
-npm run build && ls -la dist/assets/
+# Test server binding locally
+netstat -tlnp | grep 8080
+
+# Check health endpoint response
+curl -v https://anchor-builders-adu-generator-production.up.railway.app/health
 ```
 
+### Environment Variables
+Railway automatically sets:
+- `PORT=8080` (or Railway assigns)
+- `NODE_ENV=production`
+
+No additional environment variables required.
+
+## Expected Responses
+
+### Health Check (`/health`)
+```json
+{
+  "status": "ok",
+  "service": "anchor-builders-adu-generator",
+  "timestamp": "2025-08-12T...",
+  "uptime": 3600,
+  "version": "1.0.0"
+}
+```
+
+### Main App (`/`)
+- Returns Vite-built `index.html`
+- Loads React application
+- Client-side routing works
+
+## Rollback Procedure
+If deployment fails:
+
+1. **Immediate**: Railway dashboard → Previous deployment → Redeploy
+2. **Code rollback**: `git revert <commit-hash> && git push`
+3. **Emergency**: Switch Railway to previous working branch
+
+## Success Criteria
+- ✅ Railway deployment shows "Active" status
+- ✅ Health checks return 200 OK
+- ✅ Main app loads in browser
+- ✅ All client routes work (React Router)
+- ✅ No console errors in browser
+- ✅ PDF generation functional (if using server-side service)
+
+## Production URLs
+- **Main**: https://anchor-builders-adu-generator-production.up.railway.app
+- **Health**: https://anchor-builders-adu-generator-production.up.railway.app/health
+- **Health (Railway)**: https://anchor-builders-adu-generator-production.up.railway.app/healthz
+
 ---
 
-## 📈 **Monitoring & Maintenance**
-
-### **Health Checks**
-- Railway automatically monitors `/` endpoint
-- 30-second timeout configured
-- Auto-restart on failure (max 10 retries)
-
-### **Updates**
-1. Test changes locally: `npm run dev`
-2. Build and preview: `npm run build && npm run preview`
-3. Push to main branch
-4. Railway auto-deploys
-
-### **Scaling**
-- Current configuration: 1 replica
-- Horizontal scaling available via Railway dashboard
-- Application is stateless and scales efficiently
-
----
-
-## 🎯 **Production Readiness Score: 9.2/10**
-
-**Strengths**:
-- ✅ Comprehensive security implementation
-- ✅ Optimized bundle size and performance
-- ✅ Robust environment configuration
-- ✅ Automated deployment pipeline
-- ✅ Health monitoring and restart policies
-
-**Areas for Enhancement**:
-- Custom domain setup
-- Enhanced monitoring/alerting
-- CDN configuration for static assets
-- Database integration (if needed)
-
----
-
-*Last Updated: 2025-08-11 - Phase 6 Production Readiness*
+*This configuration replaces the broken `vite preview --host 0.0.0.0` approach with a production-ready Express server that properly binds to all network interfaces for Railway's containerized environment.*

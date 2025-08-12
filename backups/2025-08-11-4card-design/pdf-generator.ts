@@ -2,7 +2,6 @@
 import { AnchorProposalFormData } from '../types/proposal';
 import { AnchorPricingEngine } from './pricing-engine';
 import { AnchorPDFTemplateGenerator } from './pdf-template-generator';
-import { ServerPDFService } from './server-pdf-service';
 
 export class AnchorPDFGenerator {
   // private doc: jsPDF; // Not needed - using server-side PDF
@@ -21,29 +20,18 @@ export class AnchorPDFGenerator {
     formData: AnchorProposalFormData,
     selectedTemplate?: string
   ): Promise<void> {
-    // First try Railway PDF service for best quality
+    // Try to use the new template generator first
     try {
-      console.log('🚀 Using Railway PDF service for professional PDF generation');
-      const serverPdfService = new ServerPDFService();
-      await serverPdfService.generateProposal(formData, selectedTemplate || 'enhanced');
-      return; // Success - exit early
-    } catch (error) {
-      console.warn('Railway PDF service failed, falling back to client-side:', error);
-    }
-
-    // Fallback to client-side template generator
-    try {
-      console.log('📄 Using client-side template generator');
       const templateGenerator = new AnchorPDFTemplateGenerator();
       await templateGenerator.generateProposal(formData, selectedTemplate);
     } catch (error) {
-      console.warn('Template generator failed, falling back to HTML:', error);
-      // Final fallback - create HTML download
+      console.warn('Template generator failed, falling back to jsPDF:', error);
+      // Fallback to jsPDF generation - create download for this case
       const pdfBlob = this.generateWithJsPDF(formData);
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Anchor-Builders-ADU-Proposal-Fallback-${Date.now()}.html`;
+      link.download = `Anchor-Builders-ADU-Proposal-Fallback-${Date.now()}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -52,50 +40,24 @@ export class AnchorPDFGenerator {
   }
 
   private generateWithJsPDF(formData: AnchorProposalFormData): Blob {
-    // Since jsPDF is not available, create a simple HTML fallback
-    console.warn('jsPDF not available - creating HTML fallback');
-    
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Anchor Builders Proposal</title>
-        <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          h1 { color: #1e40af; }
-          .section { margin: 20px 0; }
-          .client-info { background: #f3f4f6; padding: 15px; border-radius: 8px; }
-        </style>
-      </head>
-      <body>
-        <h1>ADU Construction Proposal</h1>
-        <div class="section client-info">
-          <h2>Client Information</h2>
-          <p><strong>Name:</strong> ${formData.client.firstName} ${formData.client.lastName}</p>
-          <p><strong>Email:</strong> ${formData.client.email}</p>
-          <p><strong>Phone:</strong> ${formData.client.phone}</p>
-          <p><strong>Address:</strong> ${formData.client.address}, ${formData.client.city}, ${formData.client.state} ${formData.client.zipCode}</p>
-        </div>
-        <div class="section">
-          <h2>Project Details</h2>
-          <p><strong>ADU Type:</strong> ${formData.project.aduType}</p>
-          <p><strong>Square Footage:</strong> ${formData.project.squareFootage} sq ft</p>
-          <p><strong>Bedrooms:</strong> ${formData.project.bedrooms}</p>
-          <p><strong>Bathrooms:</strong> ${formData.project.bathrooms}</p>
-        </div>
-        <p style="margin-top: 40px; color: #666;">
-          This is a simplified proposal. For a professional PDF, please ensure the template files are properly configured.
-        </p>
-      </body>
-      </html>
-    `;
-    
-    return new Blob([html], { type: 'text/html' });
+    // Reset position
+    this.currentY = 20;
+
+    // Generate PDF sections
+    this.addHeader();
+    this.addClientInfo(formData.client);
+    this.addProjectDetails(formData.project);
+    this.addPricingBreakdown(formData);
+    this.addTermsAndConditions();
+
+    // Return PDF as blob
+    return this.doc.output('blob');
   }
 
   private addHeader() {
-    // Not used anymore - keeping for structure
-    return;
+    // Header background
+    this.doc.setFillColor(30, 64, 175); // Primary blue
+    this.doc.rect(0, 0, this.pageWidth, 45, 'F');
 
     // Company name
     this.doc.setTextColor(255, 255, 255); // White text

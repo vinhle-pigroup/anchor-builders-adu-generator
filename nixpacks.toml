@@ -1,0 +1,15 @@
+# Nixpacks configuration for anchor-builders-adu-generator (React frontend)
+[phases.setup]
+nixPkgs = ["nodejs-18_x"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "node server.js"
+
+[variables]
+NODE_ENV = "production"

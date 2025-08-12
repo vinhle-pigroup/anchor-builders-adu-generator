@@ -19,12 +19,6 @@ class RateLimiter {
     this.requests.push(now);
     return true;
   }
-
-  // Alias for compatibility with pdf-template-generator
-  isAllowed(clientId: string, maxRequests: number, timeWindow: number): boolean {
-    // For now, just use the default canMakeRequest
-    return this.canMakeRequest();
-  }
 }
 
 export const pdfRateLimiter = new RateLimiter();

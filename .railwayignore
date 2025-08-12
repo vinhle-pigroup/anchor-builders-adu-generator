@@ -1,0 +1,32 @@
+# Railway ignore file
+# Exclude Python virtual environment (not needed for React app)
+pdf_analysis_env/
+pdf_analysis_env/**
+
+# Exclude other large/unnecessary files
+*.pyc
+__pycache__/
+.pytest_cache/
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# Archives and backups
+archive/
+*.backup
+*.bak
+*.old
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+.idea/
+
+# Test coverage
+coverage/
+*.lcov
+.nyc_output/

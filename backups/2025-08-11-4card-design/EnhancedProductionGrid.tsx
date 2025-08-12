@@ -430,7 +430,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
       });
       
       const pdfGenerator = new AnchorPDFGenerator();
-      await pdfGenerator.generateProposal(mappedFormData, 'anchor-proposal');
+      await pdfGenerator.generateProposal(mappedFormData, 'enhanced');
       
     } catch (error) {
       console.error('❌ PDF generation failed:', error);
@@ -550,12 +550,8 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
               <button className='mr-2 p-1 text-gray-600 hover:text-gray-900 lg:hidden xl:mr-4 xl:p-2'>
                 <ArrowLeft className='w-4 h-4 xl:w-5 xl:h-5' />
               </button>
-              <div className='w-8 h-8 xl:w-12 xl:h-12 bg-white rounded-lg flex items-center justify-center mr-2 xl:mr-3 shadow-sm border border-slate-300 p-1'>
-                <img 
-                  src='/anchor-logo-main.png' 
-                  alt='Anchor Builders Logo' 
-                  className='w-full h-full object-contain'
-                />
+              <div className='w-8 h-8 xl:w-12 xl:h-12 bg-gradient-to-r from-slate-800 to-slate-900 rounded-lg flex items-center justify-center mr-2 xl:mr-3 shadow-sm border border-slate-300'>
+                <span className='text-white font-bold text-sm xl:text-lg'>⚓</span>
               </div>
               <div>
                 <h1 className='text-sm xl:text-lg font-bold text-gray-900'>
@@ -619,7 +615,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
           {/* Main Form */}
           <div className='space-y-3 lg:grid lg:grid-cols-[0.85fr,1.15fr] lg:gap-3 lg:space-y-0' data-cards-container>
             {sections.map((section, index) => (
-              <div key={section.id} className='bg-white rounded border flex flex-col mb-1 xl:mb-2 transition-transform duration-200 hover:scale-105 cursor-pointer' style={{border: '1px solid #d9d9d9', padding: isMobile ? '8px' : '12px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02)'}} {...(index === 0 ? {'data-first-card': true} : {})}>
+              <div key={section.id} className='bg-white rounded border flex flex-col mb-1 xl:mb-2' style={{border: '1px solid #d9d9d9', padding: isMobile ? '8px' : '12px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02)'}} {...(index === 0 ? {'data-first-card': true} : {})}>
                 {/* Card Header with Navy Background - compact on mobile */}
                 <div 
                   className='flex items-center justify-between mb-1 xl:mb-2 cursor-pointer'
@@ -1357,15 +1353,15 @@ ${liveCalculation.finalTotal.toLocaleString()}
               <div className='space-y-1.5 text-[11px]'>
                 <div className='flex justify-between'>
                   <span className='text-slate-600'>Client:</span>
-                  <span className={`font-medium ${projectData.clientName ? 'text-blue-600' : 'text-red-600'}`}>{projectData.clientName || 'Missing'}</span>
+                  <span className={`font-medium ${projectData.clientName ? '' : 'text-red-600'}`}>{projectData.clientName || 'Missing'}</span>
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-600'>Address:</span>
-                  <span className={`font-medium ${projectData.propertyAddress ? 'text-blue-600' : 'text-red-600'}`}>{projectData.propertyAddress || 'Missing'}</span>
+                  <span className={`font-medium ${projectData.propertyAddress ? '' : 'text-red-600'}`}>{projectData.propertyAddress || 'Missing'}</span>
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-600'>ADU Type:</span>
-                  <span className={`font-medium ${projectData.aduType ? 'text-blue-600' : 'text-red-600'}`}>
+                  <span className={`font-medium ${projectData.aduType ? '' : 'text-red-600'}`}>
                     {projectData.aduType 
                       ? projectData.aduType === 'jadu' 
                         ? 'JADU' 
@@ -1376,11 +1372,11 @@ ${liveCalculation.finalTotal.toLocaleString()}
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-600'>Size:</span>
-                  <span className={`font-medium ${projectData.squareFootage ? 'text-blue-600' : 'text-red-600'}`}>{projectData.squareFootage ? `${projectData.squareFootage} sq ft` : 'Missing'}</span>
+                  <span className={`font-medium ${projectData.squareFootage ? '' : 'text-red-600'}`}>{projectData.squareFootage ? `${projectData.squareFootage} sq ft` : 'Missing'}</span>
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-600'>Layout:</span>
-                  <span className={`font-medium ${(projectData.bedrooms !== undefined && projectData.bathrooms !== undefined) ? 'text-blue-600' : 'text-red-600'}`}>
+                  <span className={`font-medium ${(projectData.bedrooms !== undefined && projectData.bathrooms !== undefined) ? '' : 'text-red-600'}`}>
                     {(projectData.bedrooms !== undefined && projectData.bathrooms !== undefined) 
                       ? `${projectData.bedrooms === 0 ? 'Studio' : projectData.bedrooms + 'BR'} / ${projectData.bathrooms}BA` 
                       : 'Not Selected'
@@ -1389,7 +1385,7 @@ ${liveCalculation.finalTotal.toLocaleString()}
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-600'>HVAC:</span>
-                  <span className={`font-medium ${projectData.hvacType ? 'text-blue-600' : 'text-red-600'}`}>
+                  <span className={`font-medium ${projectData.hvacType ? '' : 'text-red-600'}`}>
                     {projectData.hvacType 
                       ? projectData.hvacType === 'central-ac' 
                         ? 'Central AC'
