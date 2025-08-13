@@ -268,7 +268,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
       const baseConstructionItem = calculation.lineItems.find(item => item.category === 'Base Construction');
       const designItem = calculation.lineItems.find(item => item.category === 'Design Services');
       const utilityItems = calculation.lineItems.filter(item => item.category === 'Utilities');
-      const addOnItems = calculation.lineItems.filter(item => item.category === 'Add-ons');
+      const addOnItems = calculation.lineItems.filter(item => item.category === 'Add-Ons');
       
       return {
         basePrice: baseConstructionItem?.totalPrice || 0,
@@ -1590,7 +1590,9 @@ ${pricingData.friendsAndFamilyDiscount
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-600'>Design:</span>
-                  <span className={`font-medium ${pricingData.designServices ? 'text-green-600' : 'text-red-600'}`}>{pricingData.designServices ? '+$12,500' : 'Not included'}</span>
+                  <span className={`font-medium ${pricingData.designServices ? 'text-green-600' : 'text-red-600'}`}>
+                    {pricingData.designServices ? `+$${pricingData.designServices.toLocaleString()}` : 'Not included'}
+                  </span>
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-slate-600'>Add-ons:</span>
