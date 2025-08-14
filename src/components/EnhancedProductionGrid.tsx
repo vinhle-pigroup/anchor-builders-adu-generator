@@ -236,7 +236,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
     }
 
     try {
-      const pricingEngine = new AnchorPricingEngine();
+      const pricingEngine = new AnchorPricingEngine(false); // Use static config only
       const pricingInputs = {
         squareFootage: projectData.squareFootage || 800,
         aduType: projectData.aduType || 'detached',
@@ -260,6 +260,13 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
         sewerConnection: 'existing-lateral' as const,
         solarDesign: !!pricingData.solarReady,
         femaIncluded: !!pricingData.femaCompliance,
+        useDynamicConfig: false, // Force static configuration for simplicity
+        priceOverrides: {
+          addOnPrices: customServices.reduce((acc, service) => ({
+            ...acc,
+            [service.description]: service.price
+          }), {})
+        }
       };
 
       const calculation = pricingEngine.calculateProposal(pricingInputs);
@@ -270,7 +277,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
       const utilityItems = calculation.lineItems.filter(item => item.category === 'Utilities');
       const addOnItems = calculation.lineItems.filter(item => item.category === 'Add-Ons');
       
-      return {
+      const result = {
         basePrice: baseConstructionItem?.totalPrice || 0,
         designCost: designItem?.totalPrice || 0,
         utilitiesCost: utilityItems.reduce((sum, item) => sum + item.totalPrice, 0),
@@ -279,6 +286,17 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
         pricePerSqFt: Math.round(calculation.pricePerSqFt),
         calculation, // Full calculation object for detailed breakdown
       };
+      
+      console.log('🧮 STATIC CONFIG CALCULATION:');
+      console.log('  Configuration Source:', calculation.configurationSource);
+      console.log('  Base Price:', result.basePrice);
+      console.log('  Design Cost:', result.designCost);
+      console.log('  Utilities Cost:', result.utilitiesCost);
+      console.log('  Add-ons Cost:', result.addOnsCost);
+      console.log('  Markup Amount:', calculation.markupAmount);
+      console.log('  Final Total:', result.finalTotal);
+      
+      return result;
     } catch (error) {
       console.error('Pricing calculation error:', error);
       return {
@@ -336,7 +354,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
 
     updatePricingData({
       designServices: 12500,
-      solarReady: true,
+      solarReady: true, // Selected by default (no cost)
       utilities: {
         water: 2500,
         gas: 1800,
@@ -1208,8 +1226,10 @@ ${pricingData.friendsAndFamilyDiscount
                               }}
                               className={`
                                 ${isMobile ? 'h-7 px-1 text-[8px]' : 'h-10 px-2 text-[11px]'} rounded border text-center font-medium inline-flex flex-col items-center justify-center
-                                ${projectData.utilities?.waterMeter && projectData.utilities.waterMeter !== '' && projectData.utilities.waterMeter === 'separate'
-                                  ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                ${projectData.utilities?.waterMeter && projectData.utilities.waterMeter !== ''
+                                  ? (projectData.utilities.waterMeter === 'separate' 
+                                      ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                      : 'bg-green-100 border-green-400 text-green-800 shadow-sm')
                                   : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue'
                                 }
                               `}
@@ -1239,8 +1259,10 @@ ${pricingData.friendsAndFamilyDiscount
                               }}
                               className={`
                                 ${isMobile ? 'h-7 px-1 text-[8px]' : 'h-10 px-2 text-[11px]'} rounded border text-center font-medium inline-flex flex-col items-center justify-center
-                                ${projectData.utilities?.sewerMeter && projectData.utilities.sewerMeter !== '' && projectData.utilities.sewerMeter === 'separate'
-                                  ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                ${projectData.utilities?.sewerMeter && projectData.utilities.sewerMeter !== ''
+                                  ? (projectData.utilities.sewerMeter === 'separate' 
+                                      ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                      : 'bg-green-100 border-green-400 text-green-800 shadow-sm')
                                   : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue'
                                 }
                               `}
@@ -1282,8 +1304,10 @@ ${pricingData.friendsAndFamilyDiscount
                               }}
                               className={`
                                 ${isMobile ? 'h-7 px-1 text-[8px]' : 'h-10 px-2 text-[11px]'} rounded border text-center font-medium inline-flex flex-col items-center justify-center
-                                ${projectData.utilities?.gasMeter && projectData.utilities.gasMeter !== '' && projectData.utilities.gasMeter === 'separate'
-                                  ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                ${projectData.utilities?.gasMeter && projectData.utilities.gasMeter !== ''
+                                  ? (projectData.utilities.gasMeter === 'separate' 
+                                      ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                      : 'bg-green-100 border-green-400 text-green-800 shadow-sm')
                                   : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue'
                                 }
                               `}
@@ -1326,8 +1350,10 @@ ${pricingData.friendsAndFamilyDiscount
                               }}
                               className={`
                                 ${isMobile ? 'h-7 px-1 text-[8px]' : 'h-10 px-2 text-[11px]'} rounded border text-center font-medium inline-flex flex-col items-center justify-center
-                                ${projectData.utilities?.electricMeter && projectData.utilities.electricMeter !== '' && projectData.utilities.electricMeter === 'separate'
-                                  ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                ${projectData.utilities?.electricMeter && projectData.utilities.electricMeter !== ''
+                                  ? (projectData.utilities.electricMeter === 'separate' 
+                                      ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
+                                      : 'bg-green-100 border-green-400 text-green-800 shadow-sm')
                                   : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue'
                                 }
                               `}
@@ -1459,8 +1485,12 @@ ${pricingData.friendsAndFamilyDiscount
                             type='checkbox'
                             checked={pricingData.designServices === 12500}
                             onChange={e => {
+                              console.log('🎯 DESIGN SERVICES BUTTON CLICKED!');
                               console.log('📐 Design Services clicked:', e.target.checked);
+                              console.log('📐 Current pricingData.designServices:', pricingData.designServices);
+                              console.log('📐 Will set designServices to:', e.target.checked ? 12500 : 0);
                               updatePricingData({ designServices: e.target.checked ? 12500 : 0 });
+                              console.log('📐 updatePricingData called with designServices:', e.target.checked ? 12500 : 0);
                             }}
                             className='w-4 h-4 text-anchor-blue rounded mt-0.5 focus:ring-2 focus:ring-anchor-blue'
                           />
@@ -1594,6 +1624,12 @@ ${pricingData.friendsAndFamilyDiscount
                     {pricingData.designServices ? `+$${pricingData.designServices.toLocaleString()}` : 'Not included'}
                   </span>
                 </div>
+                {pricingData.solarReady && (
+                  <div className='flex justify-between'>
+                    <span className='text-slate-600'>Solar Ready:</span>
+                    <span className='font-medium text-blue-600'>$0 (included)</span>
+                  </div>
+                )}
                 <div className='flex justify-between'>
                   <span className='text-slate-600'>Add-ons:</span>
                   <div className='text-right'>
@@ -1634,12 +1670,11 @@ ${pricingData.friendsAndFamilyDiscount
                   )}
                   <div className='flex justify-between border-t pt-1 mt-1'>
                     <span className='text-slate-600 font-medium'>Base Subtotal:</span>
-                    <span className='font-medium'>${(liveCalculation.basePrice + (pricingData.designServices || 0) + liveCalculation.utilitiesCost).toLocaleString()}</span>
+                    <span className='font-medium'>${(liveCalculation.basePrice + liveCalculation.designCost + liveCalculation.utilitiesCost).toLocaleString()}</span>
                   </div>
                   {(pricingData.extraBathroom || pricingData.dedicatedDriveway || pricingData.basicLandscaping || customServices.length > 0) && (
                     <div className='flex justify-between'>
                       <span className='text-slate-600'>Add-ons:</span>
-                      <span className='font-medium'></span>
                     </div>
                   )}
                   {pricingData.extraBathroom && (

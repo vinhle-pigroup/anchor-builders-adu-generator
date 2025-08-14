@@ -1,0 +1,73 @@
+{
+  "aduTypes": {
+    "detachedOneStory": {
+      "name": "Detached ADU (1-Story)",
+      "pricePerSqFt": 240
+    },
+    "detachedTwoStory": {
+      "name": "Detached ADU (2-Story)", 
+      "pricePerSqFt": 250
+    },
+    "attachedOneStory": {
+      "name": "Attached ADU (1-Story)",
+      "pricePerSqFt": 220
+    },
+    "garageConversion": {
+      "name": "Garage Conversion",
+      "pricePerSqFt": 180
+    }
+  },
+  "designServices": {
+    "oneStory": {
+      "name": "Design Services (1-Story)",
+      "price": 12500
+    },
+    "twoStory": {
+      "name": "Design Services (2-Story)",
+      "price": 15000
+    }
+  },
+  "utilities": {
+    "waterMeter": {
+      "name": "Separate Water Meter",
+      "price": 3500
+    },
+    "gasMeter": {
+      "name": "Separate Gas Meter", 
+      "price": 3500
+    },
+    "electricMeter": {
+      "name": "Separate Electric Meter",
+      "price": 0
+    }
+  },
+  "addOns": {
+    "extraBathroom": {
+      "name": "Extra Bathroom",
+      "price": 8000
+    },
+    "dedicatedDriveway": {
+      "name": "Dedicated Driveway",
+      "price": 5000
+    },
+    "basicLandscaping": {
+      "name": "Basic Landscaping",
+      "price": 10000
+    }
+  },
+  "hvac": {
+    "centralAc": {
+      "name": "Central AC",
+      "price": 6000
+    },
+    "miniSplit": {
+      "name": "Mini-Split System",
+      "price": 4500
+    }
+  },
+  "settings": {
+    "markup": 0.0,
+    "friendsAndFamilyDiscount": 0.1,
+    "version": "1.0.0"
+  }
+}

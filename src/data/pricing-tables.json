@@ -1,0 +1,38 @@
+{
+  "basePrices": {
+    "detached": {
+      "oneStory": 240,
+      "twoStory": 250
+    },
+    "attached": {
+      "oneStory": 220,
+      "twoStory": 230
+    },
+    "garage": {
+      "conversion": 180
+    }
+  },
+  "designServices": {
+    "oneStory": 12500,
+    "twoStory": 15000
+  },
+  "utilities": {
+    "waterMeter": 3500,
+    "gasMeter": 3500,
+    "electricMeter": 0
+  },
+  "addOns": {
+    "extraBathroom": 8000,
+    "dedicatedDriveway": 5000,
+    "basicLandscaping": 10000
+  },
+  "hvac": {
+    "centralAc": 6000,
+    "miniSplit": 4500
+  },
+  "discounts": {
+    "friendsAndFamily": 0.1
+  },
+  "markup": 0.0,
+  "version": "1.0.0"
+}

@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { logConfigStatus } from './lib/env-config';
+import { AnchorPricingEditor } from './components/AnchorPricingEditor';
+import { useAnchorPricing } from './hooks/useAnchorPricing';
 import {
   FileText,
   Users,
@@ -81,6 +83,7 @@ function FullPageDebugTool({ onBack }: { onBack: () => void }) {
   const [__highlightMode, __setHighlightMode] = useState(false); // Pure color highlighting mode
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(0.7); // Start at better zoom for full page
+  const { pricing: anchorPricing } = useAnchorPricing();
   const [visibleSections, setVisibleSections] = useState<Record<string, boolean>>({
     'Customer Info': true,
     'Project Details': true,
@@ -625,6 +628,19 @@ function FullPageDebugTool({ onBack }: { onBack: () => void }) {
     }
   };
 
+  // Pricing updates from the new system are handled by the component itself
+
+  // Listen for pricing updates
+  useEffect(() => {
+    const handlePricingUpdate = () => {
+      // Force re-render when pricing updates
+      console.log('Pricing updated via anchor:pricing-updated event');
+    };
+    
+    window.addEventListener('anchor:pricing-updated', handlePricingUpdate);
+    return () => window.removeEventListener('anchor:pricing-updated', handlePricingUpdate);
+  }, []);
+
   // Template injection effect
   useEffect(() => {
     if (!iframeLoaded) return;
@@ -750,6 +766,7 @@ function FullPageDebugTool({ onBack }: { onBack: () => void }) {
 
   return (
     <div className='min-h-screen bg-slate-50'>
+      <AnchorPricingEditor />
       {/* Header */}
       <div className='bg-white border-b border-slate-200 px-6 py-4'>
         <div className='flex items-center justify-between'>
@@ -2235,7 +2252,7 @@ function App() {
             },
           }}
           pricingData={{
-            designServices: pricingData.services?.design || 0,
+            designServices: pricingData.designServices || 0,
             utilities: Object.entries(pricingData.utilities || {}).reduce((acc, [key, value]) => {
               acc[key] = typeof value === 'number' ? value : 0;
               return acc;
