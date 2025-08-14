@@ -58,7 +58,15 @@ const formatPercent = (value: number) => {
   return `${(value * 100).toFixed(1)}%`;
 };
 
-export const AnchorPricingEditor: React.FC = () => {
+interface AnchorPricingEditorProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export const AnchorPricingEditor: React.FC<AnchorPricingEditorProps> = ({ 
+  isOpen: externalIsOpen, 
+  onClose: externalOnClose 
+}) => {
   const {
     pricing,
     updatePrice,
@@ -70,17 +78,24 @@ export const AnchorPricingEditor: React.FC = () => {
     MAX_PRICE
   } = useAnchorPricing();
 
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(externalIsOpen ?? false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['basePrices']));
   const [editingField, setEditingField] = useState<string | null>(null);
   const [tempValue, setTempValue] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [editorName, setEditorName] = useState(localStorage.getItem('anchorEditorName') || '');
 
-  // Keyboard shortcut (Ctrl+Shift+P for Pricing)
+  // Update state when external prop changes
+  useEffect(() => {
+    if (externalIsOpen !== undefined) {
+      setIsOpen(externalIsOpen);
+    }
+  }, [externalIsOpen]);
+
+  // Keyboard shortcut (Ctrl+Shift+E for Edit Pricing)
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && e.key === 'P') {
+      if (e.ctrlKey && e.shiftKey && e.key === 'E') {
         e.preventDefault();
         setIsOpen(prev => !prev);
       }
@@ -247,7 +262,7 @@ export const AnchorPricingEditor: React.FC = () => {
         className="fixed bottom-4 right-4 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition-colors flex items-center gap-2 z-50"
       >
         <Settings size={20} />
-        Pricing Editor (Ctrl+Shift+P)
+        Pricing Editor (Ctrl+Shift+E)
       </button>
     );
   }
@@ -264,7 +279,12 @@ export const AnchorPricingEditor: React.FC = () => {
             </p>
           </div>
           <button
-            onClick={() => setIsOpen(false)}
+            onClick={() => {
+              setIsOpen(false);
+              if (externalOnClose) {
+                externalOnClose();
+              }
+            }}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <X size={24} />
@@ -350,7 +370,7 @@ export const AnchorPricingEditor: React.FC = () => {
         <div className="p-4 border-t bg-gray-50 text-center text-sm text-gray-600">
           Press <kbd className="px-2 py-1 bg-white border rounded">Ctrl</kbd> + 
           <kbd className="px-2 py-1 bg-white border rounded ml-1">Shift</kbd> + 
-          <kbd className="px-2 py-1 bg-white border rounded ml-1">P</kbd> to toggle this editor
+          <kbd className="px-2 py-1 bg-white border rounded ml-1">E</kbd> to toggle this editor
         </div>
       </div>
     </div>

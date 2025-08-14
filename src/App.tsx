@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { logConfigStatus } from './lib/env-config';
-import { AnchorPricingEditor } from './components/AnchorPricingEditor';
+import { AnchorPricingEditorV2 } from './components/AnchorPricingEditorV2';
 import { useAnchorPricing } from './hooks/useAnchorPricing';
+import { usePricingEditorSync } from './hooks/usePricingEditorSync';
 import {
   FileText,
   Users,
@@ -41,7 +42,6 @@ import { SuccessNotification } from './components/SuccessNotification';
 import { ErrorNotification } from './components/ErrorNotification';
 import { PDFProgressIndicator } from './components/PDFProgressIndicator';
 // import { LoadingSpinner } from './components/LoadingSpinner';
-import { PricingAdmin } from './components/PricingAdmin';
 import { EnhancedProductionGrid } from './components/EnhancedProductionGrid';
 
 // Proposal management utility functions
@@ -84,6 +84,10 @@ function FullPageDebugTool({ onBack }: { onBack: () => void }) {
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(0.7); // Start at better zoom for full page
   const { pricing: anchorPricing } = useAnchorPricing();
+  
+  // Sync pricing editor with calculation engine
+  usePricingEditorSync();
+  
   const [visibleSections, setVisibleSections] = useState<Record<string, boolean>>({
     'Customer Info': true,
     'Project Details': true,
@@ -766,7 +770,7 @@ function FullPageDebugTool({ onBack }: { onBack: () => void }) {
 
   return (
     <div className='min-h-screen bg-slate-50'>
-      <AnchorPricingEditor />
+      {/* Pricing Editor is now controlled by state */}
       {/* Header */}
       <div className='bg-white border-b border-slate-200 px-6 py-4'>
         <div className='flex items-center justify-between'>
@@ -1911,6 +1915,7 @@ function App() {
   const [savedProposals, setSavedProposals] = useState<AnchorProposalFormData[]>([]);
   const [editingProposal, setEditingProposal] = useState<AnchorProposalFormData | null>(null);
   const [adminSection, setAdminSection] = useState<'data' | 'templates' | 'debug'>('data');
+  const [showPricingEditor, setShowPricingEditor] = useState(false);
 
   // Error Handling
   const { error, clearError, handleError } = useErrorHandler();
@@ -2320,11 +2325,11 @@ function App() {
               setPricingData(prev => ({ ...prev, sqft: updates.squareFootage || prev.sqft }));
             if (updates.bedrooms !== undefined) {
               console.log('🏠 Updating bedrooms in pricingData:', updates.bedrooms);
-              setPricingData(prev => ({ ...prev, bedrooms: updates.bedrooms || prev.bedrooms }));
+              setPricingData(prev => ({ ...prev, bedrooms: updates.bedrooms ?? prev.bedrooms }));
             }
             if (updates.bathrooms !== undefined) {
               console.log('🚿 Updating bathrooms in pricingData:', updates.bathrooms);
-              setPricingData(prev => ({ ...prev, bathrooms: updates.bathrooms || prev.bathrooms }));
+              setPricingData(prev => ({ ...prev, bathrooms: updates.bathrooms ?? prev.bathrooms }));
             }
             if (updates.hvacType) updateProjectData({ hvacType: updates.hvacType as 'central-ac' | 'mini-split' });
             if (updates.additionalNotes !== undefined)
@@ -2342,6 +2347,7 @@ function App() {
               }));
             }
           }}
+          onOpenPricingEditor={() => setShowPricingEditor(true)}
           onPricingDataUpdate={(updates: any) => {
             console.log('💰 onPricingDataUpdate called with:', updates);
             console.log('💰 Current pricingData before update:', pricingData);
@@ -2391,6 +2397,13 @@ function App() {
             setAdminSection('templates'); // Go directly to pricing admin
           }}
         />
+        {/* Render the Anchor Pricing Editor V2 controlled by state */}
+        {showPricingEditor && (
+          <AnchorPricingEditorV2 
+            isOpen={showPricingEditor}
+            onClose={() => setShowPricingEditor(false)}
+          />
+        )}
       </>
     );
   }
@@ -2698,10 +2711,10 @@ function App() {
           )}
 
           {adminSection === 'templates' && (
-            <PricingAdmin
-              isVisible={true}
-              onClose={() => setAdminSection(null)}
-            />
+            <div className="max-w-4xl mx-auto p-8">
+              <h2 className="text-2xl font-bold mb-4">Template Configuration</h2>
+              <p className="text-gray-600">Template configuration is coming soon.</p>
+            </div>
           )}
 
           {adminSection === 'debug' && (
