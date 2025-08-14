@@ -903,18 +903,81 @@
             </div>
         </div>
 
-        <!-- Estimate Total Summary -->
-        <div class="section-box" style="margin-bottom: 20px;">
-            <h3 class="section-title">Project Estimate</h3>
-            <div style="background: #f1f5f9; border: 2px solid #1e88e5; border-radius: 8px; padding: 16px; text-align: center;">
-                <div style="font-size: 12px; font-weight: 600; color: #1e293b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
-                    Total Project Investment
+        <!-- Project Timeline -->
+        <div class="section-box">
+            <h3 class="section-title">Project Timeline</h3>
+            
+            <!-- Timeline Progress Bar -->
+            <div style="position: relative; margin: 20px 0; padding: 0 20px;">
+                <!-- Background Track -->
+                <div style="height: 4px; background: #e5e7eb; border-radius: 2px; position: absolute; top: 20px; left: 40px; right: 40px;"></div>
+                
+                <!-- Progress Fill -->
+                <div style="height: 4px; background: linear-gradient(to right, #f59e0b 0%, #f59e0b 40%, #0284c7 60%, #0284c7 100%); border-radius: 2px; position: absolute; top: 20px; left: 40px; right: 40px;"></div>
+                
+                <!-- Timeline Markers -->
+                <div style="display: flex; justify-content: space-between; position: relative;">
+                    <!-- Phase 1: Design -->
+                    <div style="text-align: center; flex: 1;">
+                        <div style="width: 16px; height: 16px; background: #f59e0b; border: 3px solid white; border-radius: 50%; margin: 0 auto 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+                        <div style="font-size: 8px; font-weight: 600; color: #1f2937; margin-bottom: 2px;">DESIGN</div>
+                        <div style="font-size: 7px; color: #6b7280; line-height: 1.2;">Plans &<br>Permits</div>
+                        <div style="font-size: 8px; font-weight: 600; color: #f59e0b; margin-top: 4px;">4-6 weeks</div>
+                    </div>
+                    
+                    <!-- Phase 2: Foundation -->
+                    <div style="text-align: center; flex: 1;">
+                        <div style="width: 16px; height: 16px; background: #f59e0b; border: 3px solid white; border-radius: 50%; margin: 0 auto 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+                        <div style="font-size: 8px; font-weight: 600; color: #1f2937; margin-bottom: 2px;">FOUNDATION</div>
+                        <div style="font-size: 7px; color: #6b7280; line-height: 1.2;">Excavation &<br>Concrete</div>
+                        <div style="font-size: 8px; font-weight: 600; color: #f59e0b; margin-top: 4px;">2-3 weeks</div>
+                    </div>
+                    
+                    <!-- Phase 3: Framing -->
+                    <div style="text-align: center; flex: 1;">
+                        <div style="width: 16px; height: 16px; background: #0284c7; border: 3px solid white; border-radius: 50%; margin: 0 auto 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+                        <div style="font-size: 8px; font-weight: 600; color: #1f2937; margin-bottom: 2px;">FRAMING</div>
+                        <div style="font-size: 7px; color: #6b7280; line-height: 1.2;">Structure &<br>Roof</div>
+                        <div style="font-size: 8px; font-weight: 600; color: #0284c7; margin-top: 4px;">3-4 weeks</div>
+                    </div>
+                    
+                    <!-- Phase 4: MEP -->
+                    <div style="text-align: center; flex: 1;">
+                        <div style="width: 16px; height: 16px; background: #0284c7; border: 3px solid white; border-radius: 50%; margin: 0 auto 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+                        <div style="font-size: 8px; font-weight: 600; color: #1f2937; margin-bottom: 2px;">MEP</div>
+                        <div style="font-size: 7px; color: #6b7280; line-height: 1.2;">Electrical &<br>Plumbing</div>
+                        <div style="font-size: 8px; font-weight: 600; color: #0284c7; margin-top: 4px;">2-3 weeks</div>
+                    </div>
+                    
+                    <!-- Phase 5: Finishes -->
+                    <div style="text-align: center; flex: 1;">
+                        <div style="width: 16px; height: 16px; background: #0284c7; border: 3px solid white; border-radius: 50%; margin: 0 auto 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+                        <div style="font-size: 8px; font-weight: 600; color: #1f2937; margin-bottom: 2px;">FINISHES</div>
+                        <div style="font-size: 7px; color: #6b7280; line-height: 1.2;">Drywall &<br>Flooring</div>
+                        <div style="font-size: 8px; font-weight: 600; color: #0284c7; margin-top: 4px;">4-5 weeks</div>
+                    </div>
+                    
+                    <!-- Phase 6: Completion -->
+                    <div style="text-align: center; flex: 1;">
+                        <div style="width: 16px; height: 16px; background: #10b981; border: 3px solid white; border-radius: 50%; margin: 0 auto 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+                        <div style="font-size: 8px; font-weight: 600; color: #1f2937; margin-bottom: 2px;">COMPLETE</div>
+                        <div style="font-size: 7px; color: #6b7280; line-height: 1.2;">Final<br>Inspection</div>
+                        <div style="font-size: 8px; font-weight: 600; color: #10b981; margin-top: 4px;">1 week</div>
+                    </div>
                 </div>
-                <div style="font-size: 24px; font-weight: 800; color: #1e88e5; margin-bottom: 4px;">
-                    {{GRAND_TOTAL}}
-                </div>
-                <div style="font-size: 11px; color: #64748b; font-style: italic;">
-                    Comprehensive ADU solution from design to completion
+            </div>
+            
+            <!-- Timeline Summary -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 10px; font-weight: 600; color: #1f2937; margin-bottom: 2px;">Total Project Duration</div>
+                        <div style="font-size: 8px; color: #6b7280;">From permit approval to Certificate of Occupancy</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 14px; font-weight: 700; color: #1e88e5;">16-22 weeks</div>
+                        <div style="font-size: 8px; color: #6b7280;">Average timeline</div>
+                    </div>
                 </div>
             </div>
         </div>
