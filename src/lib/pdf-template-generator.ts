@@ -242,7 +242,7 @@ export class AnchorPDFTemplateGenerator {
     return {
       // Date - use form data if available, otherwise use today's date
       PROPOSAL_DATE: formData.proposalDate || formattedDate,
-      PROPOSAL_NUMBER: Date.now().toString().slice(-6), // Last 6 digits of timestamp
+      PROPOSAL_NUMBER: formData.id || 'AB-1001', // Use form ID with AB- prefix
 
       // Client Info  
       CLIENT_FIRST_NAME: sanitizeTemplateValue(formData.client.firstName),
@@ -513,6 +513,54 @@ export class AnchorPDFTemplateGenerator {
         '{aduType}',
         sanitizeTemplateValue(this.getAduTypeDisplay(formData.project.aduType))
       ),
+
+      // V1.1+ NEW TEMPLATE VARIABLES
+      // Proposal Metadata
+      PROPOSAL_VALIDITY_DAYS: '30', // Default 30 days validity
+
+      // Enhanced Form Fields
+      HVAC_SYSTEM: formData.project.hvacType || 'HVAC system',
+      
+      // Build utility connections string
+      UTILITY_CONNECTIONS: (() => {
+        const utilities = formData.project.utilities;
+        const connections = [];
+        
+        if (utilities.waterMeter) {
+          connections.push(`Water: ${utilities.waterMeter === 'separate' ? 'Separate meter' : 'Shared meter'}`);
+        }
+        if (utilities.gasMeter) {
+          connections.push(`Gas: ${utilities.gasMeter === 'separate' ? 'Separate meter' : 'Shared meter'}`);
+        }
+        if (utilities.electricMeter) {
+          connections.push(`Electric: ${utilities.electricMeter === 'separate' ? 'Separate meter' : 'Shared meter'}`);
+        }
+        if (utilities.sewerMeter || formData.project.sewerConnection) {
+          connections.push(`Sewer: Connected to main line`);
+        }
+        
+        return connections.length > 0 
+          ? connections.join(' • ') 
+          : 'Water: Shared meter • Gas: Separate meter • Electric: Separate service • Sewer: Connected to main line';
+      })(),
+      
+      // Deposit amount (default $1,000)
+      DEPOSIT_AMOUNT: '1,000',
+      
+      // Extra costs from pricing calculation
+      EXTRA_BATHROOM_COST: (() => {
+        const bathroomItem = calculation.lineItems.find(
+          (item: any) => item.description && item.description.toLowerCase().includes('extra bathroom')
+        );
+        return bathroomItem ? bathroomItem.totalPrice.toLocaleString() : '8,000';
+      })(),
+      
+      DRIVEWAY_COST: (() => {
+        const drivewayItem = calculation.lineItems.find(
+          (item: any) => item.description && item.description.toLowerCase().includes('driveway')
+        );
+        return drivewayItem ? drivewayItem.totalPrice.toLocaleString() : '5,000';
+      })(),
     };
   }
 
