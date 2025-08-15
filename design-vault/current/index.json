@@ -1,0 +1,21 @@
+{
+  "use": "v1.1",
+  "active_file": "anchor-proposal-compact-v1.1.html",
+  "deployment_date": "2025-08-15",
+  "git_commit": "pending",
+  "features": [
+    "Dynamic Variables Update",
+    "HVAC System Variable",
+    "Utility Connections Variable", 
+    "Project Deposit Integration",
+    "Enhanced Form Integration",
+    "All v1.0 Timeline Features Preserved"
+  ],
+  "new_variables": [
+    "{{HVAC_SYSTEM}}",
+    "{{UTILITY_CONNECTIONS}}", 
+    "{{DEPOSIT_AMOUNT}}",
+    "{{EXTRA_BATHROOM_COST}}",
+    "{{DRIVEWAY_COST}}"
+  ]
+}

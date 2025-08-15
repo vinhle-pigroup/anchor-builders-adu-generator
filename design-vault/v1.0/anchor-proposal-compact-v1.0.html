@@ -753,11 +753,11 @@
                 <div class="proposal-info">
                     <div class="info-row">
                         <span class="info-label">Proposal Date:</span>
-                        <span class="info-value">{{PROPOSAL_DATE}}</span>
+                        <span class="info-value">August 5, 2025</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Proposal #:</span>
-                        <span class="info-value">{{PROPOSAL_NUMBER}}</span>
+                        <span class="info-value">677408</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Valid Until:</span>
@@ -847,7 +847,7 @@
                     {{PROJECT_OVERVIEW_TEXT}}
                 </p>
                 <p style="font-size: 9px; line-height: 1.5; color: #475569;">
-                    The project encompasses everything from initial architectural design through final Certificate of Occupancy, including all structural work, mechanical systems, electrical, plumbing, finishes, and appliances. Our comprehensive approach ensures code compliance, quality construction, and a seamless process from start to finish.
+                    The project encompasses everything from initial architectural design through final Certificate of Occupancy, including all structural work, mechanical systems (Mini-Split), electrical, plumbing, finishes, and appliances. Our comprehensive approach ensures code compliance, quality construction, and a seamless process from concept to completion.
                 </p>
             </div>
             
@@ -869,10 +869,10 @@
                         <li class="work-item">Concrete foundation with drainage</li>
                         <li class="work-item">Electrical system with {{ELECTRICAL_PANEL}} subpanel</li>
                         <li class="work-item">Full plumbing with water heater</li>
-                        <li class="work-item">{{HVAC_SYSTEM}} installation</li>
-                        <li class="work-item">Insulation package</li>
+                        <li class="work-item">Mini-Split installation</li>
+                        <li class="work-item">Insulation package (R-13/R-30)</li>
                         <li class="work-item">Drywall with texture & primer</li>
-                        <li class="work-item">Appliances included</li>
+                        <li class="work-item">• Appliances included</li>
                         <li class="work-item">Cabinets & vanities</li>
                         <li class="work-item">Interior & exterior doors</li>
                         <li class="work-item">Double-pane vinyl windows</li>
@@ -897,7 +897,7 @@
             <div style="margin-top: 15px; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px;">
                 <div style="font-size: 9px; font-weight: 600; color: #475569; margin-bottom: 6px;">Utility Connections Included:</div>
                 <div style="font-size: 9px; color: #64748b; line-height: 1.3;">
-                    {{UTILITY_CONNECTIONS}}
+                    <strong>Water:</strong> Shared meter • <strong>Gas:</strong> Separate meter • <strong>Electric:</strong> Separate {{ELECTRICAL_PANEL}} service • <strong>Sewer:</strong> Connected to main line
                 </div>
                 <br>
             </div>
@@ -963,13 +963,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Deposit -->
-                        <tr>
-                            <td style="text-align: center; font-weight: 600; color: #6b7280;">D</td>
-                            <td>Project Deposit (upon contract signing)</td>
-                            <td style="text-align: right; font-weight: 700; color: #374151;">${{DEPOSIT_AMOUNT}}</td>
-                        </tr>
-                        
                         <!-- Design Phase - Phase 1 (HOL Work) -->
                         <tr>
                             <td colspan="3" class="phase-header">Phase 1: Design & Engineering (HOL)</td>
@@ -1032,7 +1025,7 @@
                         <tr style="background: #f9fafb;">
                             <td style="text-align: center; font-weight: 600; color: #6b7280;">3.1</td>
                             <td>Deposit</td>
-                            <td style="text-align: right; font-weight: 700; color: #374151;">${{DEPOSIT_AMOUNT}}</td>
+                            <td style="text-align: right; font-weight: 700; color: #374151;">$1,000</td>
                         </tr>
                         <tr>
                             <td style="text-align: center; font-weight: 600; color: #6b7280;">3.2</td>
@@ -1077,12 +1070,12 @@
                         <tr class="milestone-row additional-service">
                             <td class="milestone-number">A3</td>
                             <td>Extra Bathroom - Additional bathroom beyond standard configuration</td>
-                            <td class="cost-value">${{EXTRA_BATHROOM_COST}}</td>
+                            <td class="cost-value">$8,000</td>
                         </tr>
                         <tr class="milestone-row additional-service">
                             <td class="milestone-number">A4</td>
                             <td>Dedicated Driveway - Dedicated driveway and parking space</td>
-                            <td class="cost-value">${{DRIVEWAY_COST}}</td>
+                            <td class="cost-value">$5,000</td>
                         </tr>
 
                         <!-- Phase Subtotals -->
@@ -1130,7 +1123,7 @@
                             <div class="milestone-info">
                                 <div class="milestone-phase">Upon Signing</div>
                                 <div class="milestone-label">Deposit</div>
-                                <div class="milestone-amount">${{DEPOSIT_AMOUNT}}</div>
+                                <div class="milestone-amount">$1,000</div>
                             </div>
                         </div>
                         
@@ -1312,7 +1305,7 @@
             
             <div class="terms-text">
                 <p>
-                    A formal construction contract will be prepared and executed upon acceptance of this bid. The pricing outlined in this proposal is valid for {{PROPOSAL_VALIDITY_DAYS}} days from the proposal date. A detailed payment schedule will be included in the formal contract.
+                    A formal construction contract will be prepared and executed upon acceptance of this bid. The pricing outlined in this proposal is valid for 30 days from the proposal date. A detailed payment schedule will be included in the formal contract.
                 </p>
                 
                 <p>
@@ -1329,7 +1322,7 @@
 
                 <div style="margin-top: 15px; padding: 8px; background: #f8fafc; border-radius: 4px; font-size: 9px;">
                     <div style="font-weight: 600; margin-bottom: 4px;">Footnotes & Clarifications:</div>
-                    <div>¹ADU Plan Design - includes 2 sessions (each session 2 hours). Additional sessions billed at $150/hour.</div>
+                    <div>Interior Design - includes 2 sessions (each session 2 hours). Additional sessions billed at $150/hour.</div>
                 </div>
             </div>
         </div>

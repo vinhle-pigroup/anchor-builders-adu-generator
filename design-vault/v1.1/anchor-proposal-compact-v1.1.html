@@ -1,4 +1,55 @@
 <!DOCTYPE html>
+<!--
+    ANCHOR BUILDERS ADU PROPOSAL TEMPLATE - VERSION 1.1
+    ===================================================
+    
+    VERSION: 1.1 (Dynamic Variables Update)
+    CREATED: 2025-08-15
+    BASED ON: v1.0 (Timeline Enhanced Design)
+    
+    MAJOR CHANGES IN V1.1:
+    ----------------------
+    1. TEXT UPDATES:
+       - Removed "Mini-Split" → Dynamic {{HVAC_SYSTEM}} variable
+       - "concept to completion" → "start to finish" 
+       - "Interior Design" → "ADU Plan Design¹" with footnote
+       - Removed bullet point from "Appliances included"
+    
+    2. NEW DYNAMIC VARIABLES:
+       - {{HVAC_SYSTEM}} - HVAC system type from form
+       - {{UTILITY_CONNECTIONS}} - Dynamic utility list
+       - {{DEPOSIT_AMOUNT}} - Project deposit ($1000 default)
+       - {{EXTRA_BATHROOM_COST}} - Additional bathroom pricing
+       - {{DRIVEWAY_COST}} - Dedicated driveway pricing
+    
+    3. TEMPLATE IMPROVEMENTS:
+       - Added deposit line to pricing table (identifier: D)
+       - Made utility connections dynamic vs hardcoded
+       - Removed R-13/R-30 from insulation specs
+    
+    PRESERVED FROM V1.0:
+    -------------------
+    - 120px horizontal timeline connecting line
+    - Centered vertical milestone line (Payment Schedule)
+    - Single-line phase descriptions
+    - Professional 9px compact typography
+    - Two-phase timeline (Design & Permitting, Construction)
+    
+    INTEGRATION REQUIREMENTS:
+    ------------------------
+    - Form must collect HVAC system selection
+    - Form must collect utility connection preferences  
+    - Pricing engine must include deposit calculations
+    - PDF generator must pass all 5 new variables
+    
+    DEFAULT VALUES:
+    --------------
+    - DEPOSIT_AMOUNT: "$1,000"
+    - HVAC_SYSTEM: "HVAC system"
+    - UTILITY_CONNECTIONS: "Water: Shared meter • Gas: Separate meter • Electric: Separate service • Sewer: Connected to main line"
+    - EXTRA_BATHROOM_COST: "$8,000"
+    - DRIVEWAY_COST: "$5,000"
+-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -753,11 +804,11 @@
                 <div class="proposal-info">
                     <div class="info-row">
                         <span class="info-label">Proposal Date:</span>
-                        <span class="info-value">{{PROPOSAL_DATE}}</span>
+                        <span class="info-value">August 5, 2025</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Proposal #:</span>
-                        <span class="info-value">{{PROPOSAL_NUMBER}}</span>
+                        <span class="info-value">677408</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Valid Until:</span>
@@ -1032,7 +1083,7 @@
                         <tr style="background: #f9fafb;">
                             <td style="text-align: center; font-weight: 600; color: #6b7280;">3.1</td>
                             <td>Deposit</td>
-                            <td style="text-align: right; font-weight: 700; color: #374151;">${{DEPOSIT_AMOUNT}}</td>
+                            <td style="text-align: right; font-weight: 700; color: #374151;">$1,000</td>
                         </tr>
                         <tr>
                             <td style="text-align: center; font-weight: 600; color: #6b7280;">3.2</td>
@@ -1130,7 +1181,7 @@
                             <div class="milestone-info">
                                 <div class="milestone-phase">Upon Signing</div>
                                 <div class="milestone-label">Deposit</div>
-                                <div class="milestone-amount">${{DEPOSIT_AMOUNT}}</div>
+                                <div class="milestone-amount">$1,000</div>
                             </div>
                         </div>
                         
@@ -1312,7 +1363,7 @@
             
             <div class="terms-text">
                 <p>
-                    A formal construction contract will be prepared and executed upon acceptance of this bid. The pricing outlined in this proposal is valid for {{PROPOSAL_VALIDITY_DAYS}} days from the proposal date. A detailed payment schedule will be included in the formal contract.
+                    A formal construction contract will be prepared and executed upon acceptance of this bid. The pricing outlined in this proposal is valid for 30 days from the proposal date. A detailed payment schedule will be included in the formal contract.
                 </p>
                 
                 <p>

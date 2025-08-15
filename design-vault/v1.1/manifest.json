@@ -1,0 +1,82 @@
+{
+  "version": "1.1",
+  "semver": "1.1",
+  "title": "Dynamic Template Variables Update",
+  "created": "2025-08-15",
+  "author": "Claude Code",
+  "based_on": "v1.0",
+  "description": "Enhanced template with dynamic variables for HVAC, utilities, deposit, and updated terminology",
+  
+  "changes": [
+    {
+      "category": "Text Updates",
+      "items": [
+        "Removed 'Mini-Split' references, replaced with dynamic {{HVAC_SYSTEM}} variable",
+        "Changed 'concept to completion' to 'start to finish' in project overview",
+        "Changed 'Interior Design' to 'ADU Plan Design¹' with footnote reference",
+        "Removed bullet point (•) from 'Appliances included' line item"
+      ]
+    },
+    {
+      "category": "Dynamic Variables Added",
+      "items": [
+        "{{HVAC_SYSTEM}} - Dynamic HVAC system type based on form selection",
+        "{{UTILITY_CONNECTIONS}} - Dynamic utility connections based on form selections",
+        "{{DEPOSIT_AMOUNT}} - Project deposit amount (default $1000)",
+        "{{EXTRA_BATHROOM_COST}} - Additional bathroom pricing from form",
+        "{{DRIVEWAY_COST}} - Dedicated driveway pricing from form"
+      ]
+    },
+    {
+      "category": "Specification Updates",
+      "items": [
+        "Removed R-13/R-30 specifications from insulation package",
+        "Made utility connections dynamic instead of hardcoded",
+        "Added project deposit line to pricing table with 'D' identifier"
+      ]
+    },
+    {
+      "category": "Template Structure",
+      "items": [
+        "Added deposit row to pricing table before Phase 1",
+        "Updated footnote section with ADU Plan Design clarification",
+        "Maintained all v1.0 timeline enhancements and styling"
+      ]
+    }
+  ],
+  
+  "new_variables": [
+    "{{HVAC_SYSTEM}}",
+    "{{UTILITY_CONNECTIONS}}",
+    "{{DEPOSIT_AMOUNT}}",
+    "{{EXTRA_BATHROOM_COST}}",
+    "{{DRIVEWAY_COST}}"
+  ],
+  
+  "removed_variables": [],
+  
+  "technical_notes": [
+    "All v1.0 timeline features preserved (120px connecting line, centered vertical line)",
+    "9px body text and consistent typography maintained",
+    "Professional compact layout preserved",
+    "Form integration requires updates to pass new variables",
+    "Default values should be: DEPOSIT_AMOUNT=$1000, HVAC_SYSTEM='HVAC system'"
+  ],
+  
+  "deployment_requirements": [
+    "Update form processing to collect HVAC system selection",
+    "Update form processing to collect utility preferences",
+    "Update pricing engine to include deposit calculations",
+    "Update PDF generation to pass all new variables"
+  ],
+  
+  "backwards_compatibility": "Partial - new variables need default values",
+  
+  "testing_checklist": [
+    "Verify all new variables render correctly in PDF",
+    "Test deposit amount displays in pricing table",
+    "Confirm HVAC system shows dynamically",
+    "Validate utility connections display properly",
+    "Check extra bathroom and driveway costs from form"
+  ]
+}
