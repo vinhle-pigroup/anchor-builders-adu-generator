@@ -11,7 +11,6 @@ export const PricingEditor: React.FC<PricingEditorProps> = ({ isAdminMode, onClo
   const [editingField, setEditingField] = useState<string | null>(null);
   const [tempValue, setTempValue] = useState<string>('');
   const [editorName, setEditorName] = useState<string>(localStorage.getItem('pricingEditorName') || '');
-  const [showAuditLog, setShowAuditLog] = useState(false);
 
   // Save editor name to localStorage when it changes
   useEffect(() => {
@@ -34,9 +33,7 @@ export const PricingEditor: React.FC<PricingEditorProps> = ({ isAdminMode, onClo
       return;
     }
 
-    // Get old price for audit
-    const oldPrice = (pricingData as any)[category]?.[item]?.[field] || 0;
-    const newPrice = parseFloat(tempValue) || 0;
+    // Price validation happens in updatePrice function
 
     // Pass the raw string value - updatePrice will handle parsing
     const success = updatePrice(category as any, item, field, tempValue);
@@ -189,8 +186,7 @@ export const PricingEditor: React.FC<PricingEditorProps> = ({ isAdminMode, onClo
                 </button>
                 <button
                   onClick={() => {
-                    const filename = `hol-pricing-${new Date().toISOString().slice(0, 10)}.json`;
-                    // exportPricingJSON(filename, pricingData);
+                    // TODO: Implement export functionality with filename
                     console.log('Export functionality to be implemented');
                   }}
                   className="px-3 py-1 text-sm font-medium text-green-700 bg-green-100 border border-green-300 rounded hover:bg-green-200"

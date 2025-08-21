@@ -215,7 +215,7 @@ export const calculateMilestonePayments = (
   const payments: Array<MilestonePayment & { amount: number; baseAmount: number }> = [];
 
   // Calculate all milestones first with their base percentages
-  milestonePayments.forEach((milestone, index) => {
+  milestonePayments.forEach((milestone) => {
     const baseAmount = (constructionAmount * milestone.percentage) / 100;
     const roundedAmount = Math.round(baseAmount / 1000) * 1000; // ROUND(amount, -3)
 

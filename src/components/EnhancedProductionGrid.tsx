@@ -1375,7 +1375,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
 
   // Milestone payments calculation
   // Calculate 9 milestones exactly as PDF template expects: D1, D2, then M1-M7
-  const calculateMilestones = useCallback((total: number, type: string = 'standard') => {
+  const calculateMilestones = useCallback((total: number) => {
     const finalTotal = pricingData.friendsAndFamilyDiscount 
       ? total * (1 - (pricingData.friendsAndFamilyDiscountType === 'custom' 
           ? (pricingData.friendsAndFamilyDiscountCustom || 0) / 100
