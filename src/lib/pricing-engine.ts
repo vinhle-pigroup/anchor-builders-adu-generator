@@ -20,7 +20,7 @@ export interface PricingInputs {
   utilities: {
     waterMeter: 'shared' | 'separate';
     gasMeter: 'shared' | 'separate';
-    electricMeter: 'separate'; // Always separate
+    electricMeter: 'shared' | 'separate'; // Allow both shared and separate
   };
 
   // Services

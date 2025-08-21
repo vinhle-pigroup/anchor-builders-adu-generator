@@ -78,15 +78,49 @@ export class ServerPDFService {
       const pdfBlob = await response.blob();
       console.log('✅ Received PDF from Railway service, size:', pdfBlob.size);
 
-      // Download the PDF
+      // Download the PDF with enhanced settings
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Anchor-Builders-ADU-Proposal-${Date.now()}.pdf`;
+      
+      // Generate filename with proposal number, client names, and street name
+      const proposalNumber = (formData as any).proposalNumber || 'AB-2025-TEST';
+      const firstName = formData.client.firstName || 'Client';
+      const lastName = formData.client.lastName || 'Name';
+      const streetName = (formData.client.address || '').split(' ').slice(1).join(' ').replace(/[^a-zA-Z0-9\s]/g, '').trim() || 'Street';
+      const cleanStreetName = streetName.replace(/\s+/g, '_');
+      
+      const filename = `${proposalNumber}_${firstName}_${lastName}_${cleanStreetName}.pdf`;
+      link.download = filename;
+      
+      // Get download preferences from localStorage
+      const downloadPrefs = localStorage.getItem('anchor-download-preferences');
+      const preferences = downloadPrefs ? JSON.parse(downloadPrefs) : { 
+        autoOpen: false, 
+        showNotification: true 
+      };
+      
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      
+      // Handle auto-open preference
+      if (preferences.autoOpen) {
+        setTimeout(() => {
+          window.open(url, '_blank');
+        }, 1000); // Delay to ensure download starts first
+      }
+      
+      // Show notification if enabled
+      if (preferences.showNotification) {
+        console.log(`📁 PDF downloaded successfully: ${filename}`);
+        console.log(`📂 Check your Downloads folder for: ${filename}`);
+      }
+      
+      // Clean up URL after delay
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 2000);
 
       console.log('✅ PDF downloaded successfully');
     } catch (error) {

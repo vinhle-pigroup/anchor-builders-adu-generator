@@ -59,25 +59,25 @@ export const designServices: DesignServices = {
   description: 'ADU Plan Design, Structural Engineering, MEP Design, Zoning & Site Planning',
 };
 
-// Utility Options - To be configured in admin panel
+// Utility Options - CORRECTED to $3,500 for separate meters (from CLAUDE.md documentation)
 export const utilityOptions: UtilityOption[] = [
   {
     name: 'Water Meter',
-    separatePrice: 0, // To be set in admin panel
+    separatePrice: 3500, // CORRECTED: $3,500 for separate meter connection
     sharedPrice: 0,
     required: true,
     description: 'Water service connection',
   },
   {
     name: 'Gas Meter',
-    separatePrice: 0, // To be set in admin panel
+    separatePrice: 3500, // CORRECTED: $3,500 for separate meter connection
     sharedPrice: 0,
     required: false,
     description: 'Natural gas service connection',
   },
   {
     name: 'Electric Meter',
-    separatePrice: 0, // To be set in admin panel
+    separatePrice: 3500, // CORRECTED: $3,500 for separate meter connection  
     sharedPrice: 0,
     required: true,
     description: 'Electrical service connection',

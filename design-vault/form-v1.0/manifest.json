@@ -1,0 +1,69 @@
+{
+  "version": "1.0",
+  "semver": "1.0",
+  "date": "2025-08-15",
+  "name": "Enhanced Production Grid Form v1.0",
+  "description": "Complete form with all v1.1 template variables integrated",
+  "author": "Claude Code",
+  "changes": [
+    "Added Proposal Number field with auto-generation and manual edit capability",
+    "Added Proposal Date field with today's date default and manual edit capability", 
+    "Added Proposal Validity Days field with 30-day default and 1-365 day range",
+    "Added Deposit Amount field with $1,000 default and manual edit capability",
+    "Integrated all 4 new fields into PDF generation mappedFormData",
+    "Updated AnchorProposalFormData type to include new fields",
+    "Connected form values to PDF template variables"
+  ],
+  "features": {
+    "proposalMetadata": {
+      "proposalNumber": "Auto-generated AB-2025-XXXXXX format, editable",
+      "proposalDate": "Today's date auto-filled, editable",
+      "proposalValidityDays": "Default 30 days, range 1-365",
+      "depositAmount": "Default $1,000, editable"
+    },
+    "formSections": [
+      "Project Information",
+      "Client Information", 
+      "Property Details",
+      "ADU Configuration",
+      "Pricing Options",
+      "Custom Services",
+      "Proposal Metadata"
+    ],
+    "pdfIntegration": {
+      "templateVersion": "v1.1",
+      "variableMapping": "Complete mapping of all 32 template variables",
+      "dynamicContent": "HVAC system, utility connections, deposit amount"
+    }
+  },
+  "files": {
+    "component": "src/components/EnhancedProductionGrid.tsx",
+    "types": "src/types/proposal.ts",
+    "pdfGenerator": "src/lib/pdf-template-generator.ts",
+    "template": "public/anchor-proposal-compact.html"
+  },
+  "fieldList": [
+    "clientName",
+    "clientEmail",
+    "clientPhone",
+    "propertyAddress",
+    "city",
+    "state",
+    "zipCode",
+    "aduType",
+    "squareFootage",
+    "bedrooms",
+    "bathrooms",
+    "hvacType",
+    "designServices",
+    "extraBathroom",
+    "dedicatedDriveway",
+    "basicLandscaping",
+    "friendsAndFamilyDiscount",
+    "proposalNumber",
+    "proposalDate",
+    "proposalValidityDays",
+    "depositAmount",
+    "additionalNotes"
+  ]
+}

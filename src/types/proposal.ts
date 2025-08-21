@@ -43,10 +43,20 @@ export interface ProposalCalculation {
 }
 
 export interface AnchorProposalFormData {
+  id?: string;
+  proposalNumber?: string;  // Add missing proposalNumber field
   client: ClientInfo;
-  project: ProjectInfo;
+  project: any; // Using any temporarily for flexibility with project structure
+  pricing?: any; // Pricing calculation data
   additionalNotes: string;
   timeline: string;
+  proposalDate?: string;
+  proposalValidityDays?: number;
+  depositAmount?: number;
+  secondaryClientFirstName?: string;
+  secondaryClientLastName?: string;
+  secondaryClientEmail?: string;
+  secondaryClientPhone?: string;
 }
 
 export interface SavedProposal {

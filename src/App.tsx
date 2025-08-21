@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { logConfigStatus } from './lib/env-config';
 import { AnchorPricingEditorV2 } from './components/AnchorPricingEditorV2';
-import { useAnchorPricing } from './hooks/useAnchorPricing';
+// Removed unused import: useAnchorPricing
+// import { useAnchorPricing } from './hooks/useAnchorPricing';
 import { usePricingEditorSync } from './hooks/usePricingEditorSync';
 import {
   FileText,
@@ -83,7 +84,8 @@ function FullPageDebugTool({ onBack }: { onBack: () => void }) {
   const [__highlightMode, __setHighlightMode] = useState(false); // Pure color highlighting mode
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(0.7); // Start at better zoom for full page
-  const { pricing: anchorPricing } = useAnchorPricing();
+  // Remove unused pricing variable
+  // const { pricing: anchorPricing } = useAnchorPricing();
   
   // Sync pricing editor with calculation engine
   usePricingEditorSync();
@@ -1979,8 +1981,6 @@ function App() {
       month: 'long',
       day: 'numeric',
     }), // Auto-populated with today's date
-    createdAt: new Date().toISOString(),
-    lastModified: new Date().toISOString(),
   });
 
   // Load saved proposals on app start
@@ -2101,8 +2101,6 @@ function App() {
         const proposalToSave = {
           ...formData,
           id: proposalId,
-          createdAt: new Date().toISOString(),
-          lastModified: new Date().toISOString(),
         };
 
         const saved = JSON.parse(localStorage.getItem('anchorProposals') || '[]');
@@ -2123,7 +2121,7 @@ function App() {
       console.log('✅ PDF generation completed successfully');
     } catch (err) {
       console.error('❌ PDF generation failed:', err);
-      handleError(err, 'PDF Generation');
+      handleError(err instanceof Error ? err.message : String(err), 'error');
     } finally {
       setIsGeneratingPDF(false);
     }
@@ -2138,20 +2136,16 @@ function App() {
       {/* PDF Progress Indicator */}
       <PDFProgressIndicator
         isGenerating={isGeneratingPDF}
-        onComplete={() => setIsGeneratingPDF(false)}
-        onError={err => {
-          setIsGeneratingPDF(false);
-          handleError(err, 'PDF Generation');
-        }}
+        message="Generating PDF..."
       />
 
       {/* Success Notification */}
       {successMessage && (
-        <SuccessNotification message={successMessage} onDismiss={() => setSuccessMessage(null)} />
+        <SuccessNotification message={successMessage} onClose={() => setSuccessMessage(null)} />
       )}
 
       {/* Error Notification */}
-      {error && <ErrorNotification error={error} onDismiss={clearError} onRetry={generatePDF} />}
+      {error && <ErrorNotification message={error.message || 'An error occurred'} onClose={clearError} />}
     </>
   );
 
@@ -2255,6 +2249,11 @@ function App() {
               sewerMeter: pricingData.utilities?.sewerMeter || '',
               electricMeter: pricingData.utilities?.electricMeter || '',
             },
+            // Add proposal metadata fields
+            proposalNumber: formData.proposalNumber,
+            proposalDate: formData.proposalDate,
+            proposalValidityDays: formData.proposalValidityDays,
+            depositAmount: formData.depositAmount,
           }}
           pricingData={{
             designServices: pricingData.designServices || 0,
@@ -2262,7 +2261,6 @@ function App() {
               acc[key] = typeof value === 'number' ? value : 0;
               return acc;
             }, {} as Record<string, number>),
-            additionalServices: pricingData.addons || {},
             // HOL design features - mapped from correct properties
             extraBathroom: pricingData.addons?.bathroom || 0,
             dedicatedDriveway: pricingData.addons?.driveway || 0,
@@ -2320,7 +2318,18 @@ function App() {
               updateClientData({ zipCode: updates.zipCode });
             }
             
-            if (updates.aduType) updateProjectData({ aduType: updates.aduType });
+            if (updates.aduType) {
+              // Map ADU types from pricing system to project system
+              const aduTypeMapping: Record<string, 'studio' | 'one-bedroom' | 'two-bedroom' | 'custom'> = {
+                'detached': 'custom',
+                'attached': 'custom',
+                'studio': 'studio',
+                'one-bedroom': 'one-bedroom',  
+                'two-bedroom': 'two-bedroom'
+              };
+              const mappedType = aduTypeMapping[updates.aduType] || 'custom';
+              updateProjectData({ aduType: mappedType });
+            }
             if (updates.squareFootage !== undefined)
               setPricingData(prev => ({ ...prev, sqft: updates.squareFootage || prev.sqft }));
             if (updates.bedrooms !== undefined) {
@@ -2331,9 +2340,29 @@ function App() {
               console.log('🚿 Updating bathrooms in pricingData:', updates.bathrooms);
               setPricingData(prev => ({ ...prev, bathrooms: updates.bathrooms ?? prev.bathrooms }));
             }
-            if (updates.hvacType) updateProjectData({ hvacType: updates.hvacType as 'central-ac' | 'mini-split' });
-            if (updates.additionalNotes !== undefined)
-              updateProjectData({ additionalNotes: updates.additionalNotes });
+            
+            // Handle proposal metadata fields
+            if (updates.proposalNumber !== undefined) {
+              setFormData(prev => ({ ...prev, proposalNumber: updates.proposalNumber }));
+            }
+            if (updates.proposalDate !== undefined) {
+              setFormData(prev => ({ ...prev, proposalDate: updates.proposalDate }));
+            }
+            if (updates.proposalValidityDays !== undefined) {
+              setFormData(prev => ({ ...prev, proposalValidityDays: updates.proposalValidityDays }));
+            }
+            if (updates.depositAmount !== undefined) {
+              setFormData(prev => ({ ...prev, depositAmount: updates.depositAmount }));
+            }
+            // Handle HVAC type and custom price
+            if (updates.hvacType !== undefined) {
+              setFormData(prev => ({ ...prev, hvacType: updates.hvacType }));
+            }
+            if (updates.hvacCustomPrice !== undefined) {
+              setFormData(prev => ({ ...prev, hvacCustomPrice: updates.hvacCustomPrice }));
+            }
+            
+            // Note: hvacType and additionalNotes are stored in pricingData, not projectData
             
             // Handle utilities updates
             if (updates.utilities !== undefined) {
@@ -2425,8 +2454,6 @@ function App() {
       const duplicated = {
         ...proposal,
         id: Date.now().toString(),
-        createdAt: new Date().toISOString(),
-        lastModified: new Date().toISOString(),
         client: {
           ...proposal.client,
           firstName: proposal.client.firstName + ' (Copy)',
@@ -2504,7 +2531,7 @@ function App() {
                     </div>
 
                     <div className='text-xs text-slate-500 mb-4'>
-                      Created: {new Date(proposal.createdAt).toLocaleDateString()}
+                      Created: {proposal.proposalDate || 'Unknown'}
                     </div>
 
                     <div className='flex space-x-2'>
