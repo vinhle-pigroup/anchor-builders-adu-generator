@@ -15,7 +15,7 @@ export function createGoogleMapsService() {
 }
 
 export class GoogleMapsService {
-  constructor(apiKey: string) {
+  constructor(_apiKey: string) {
     console.warn('GoogleMapsService created but not functional without proper configuration');
   }
   

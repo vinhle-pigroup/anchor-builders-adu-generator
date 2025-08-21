@@ -2,7 +2,7 @@
 import { AnchorProposalFormData } from '../types/proposal';
 import { AnchorPricingEngine } from './pricing-engine';
 import { AnchorPDFTemplateGenerator } from './pdf-template-generator';
-import { ServerPDFService } from './server-pdf-service';
+// ServerPDFService import removed - using template-based generation
 
 export class AnchorPDFGenerator {
   // private doc: jsPDF; // Not needed - using server-side PDF

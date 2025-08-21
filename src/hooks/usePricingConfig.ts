@@ -5,8 +5,6 @@ import {
   SCHEMA_VERSION, 
   MIN_PRICE, 
   MAX_PRICE,
-  loadStoredPricing,
-  saveStoredPricing,
   type StoredPricing
 } from '../lib/pricing-storage';
 
