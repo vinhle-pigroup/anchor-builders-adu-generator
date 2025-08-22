@@ -97,6 +97,7 @@ type ProjectData = {
   proposalValidityDays?: number;
   depositAmount?: number;
   electricalPanel?: number;  // Electrical panel amperage (also in utilities for compatibility)
+  timeline?: string;  // Construction timeline
 };
 
 type PricingData = {
@@ -336,6 +337,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
         extraBathroom: pricingEditorBridge.getServicePrice('extraBathroom') || 8000,
         dedicatedDriveway: pricingEditorBridge.getServicePrice('dedicatedDriveway') || 5000,
         basicLandscaping: pricingEditorBridge.getServicePrice('basicLandscaping') || 10000,
+        solarReady: pricingEditorBridge.getServicePrice('solarReady') || 0,
       });
     };
     
@@ -994,7 +996,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
       squareFootage: !!projectData.squareFootage && projectData.squareFootage > 0,
       bedrooms: projectData.bedrooms !== undefined && projectData.bedrooms !== null,
       bathrooms: projectData.bathrooms !== undefined && projectData.bathrooms !== null,
-      hvacType: !!projectData.hvacType,
+      hvacType: !!projectData.hvacType && (projectData.hvacType !== 'custom' || !!projectData.hvacCustomPrice),
       
       // Utilities (must select shared or separate for each)
       waterMeter: !!(projectData.utilities?.waterMeter && projectData.utilities.waterMeter !== ''),
@@ -1923,7 +1925,7 @@ ${pricingData.friendsAndFamilyDiscount
           {/* Main Form */}
           <div className='space-y-2 lg:grid lg:grid-cols-[0.85fr,1.15fr] lg:grid-rows-[280px,auto,auto] lg:gap-3 lg:space-y-0' data-cards-container>
             {sections.map((section, index) => (
-              <div key={section.id} className={`bg-white rounded border flex flex-col mb-1 xl:mb-2 transition-all duration-300 hover:scale-105 cursor-pointer ${section.isComplete ? 'border-green-500 border-2' : 'border-gray-300'} ${index === 0 ? 'lg:h-[280px] lg:overflow-y-auto lg:col-start-1 lg:row-start-1' : ''} ${index === 1 ? 'lg:col-start-2 lg:row-start-1' : ''} ${index === 2 ? 'lg:h-[280px] lg:col-start-1 lg:row-start-2' : ''} ${index === 3 ? 'lg:col-start-1 lg:row-start-3' : ''}`} style={{padding: isMobile ? '8px' : '12px', boxShadow: section.isComplete ? '0 2px 8px rgba(34, 197, 94, 0.15)' : '0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02)', ...(index === 0 ? {gridColumn: 1, gridRow: 1, height: '280px', overflowY: 'auto'} : {}), ...(index === 1 ? {gridColumn: 2, gridRow: 1} : {}), ...(index === 2 ? {gridColumn: 1, gridRow: 2, height: '280px'} : {}), ...(index === 3 ? {gridColumn: 2, gridRow: 3} : {})}} {...(index === 0 ? {'data-first-card': true} : {})}>
+              <div key={section.id} className={`bg-white rounded border flex flex-col mb-1 xl:mb-2 transition-all duration-300 hover:scale-105 cursor-pointer ${section.isComplete ? 'border-green-500 border-2' : 'border-gray-300'} ${index === 0 ? 'lg:h-[280px] lg:overflow-y-auto lg:col-start-1 lg:row-start-1' : ''} ${index === 1 ? 'lg:col-start-2 lg:row-start-1' : ''} ${index === 2 ? 'lg:h-[280px] lg:col-start-1 lg:row-start-2' : ''} ${index === 3 ? 'lg:col-start-1 lg:row-start-3' : ''}`} style={{padding: isMobile ? '8px' : '12px', boxShadow: section.isComplete ? '0 2px 8px rgba(34, 197, 94, 0.15)' : '0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02)', ...(index === 0 ? {gridColumn: 1, gridRow: 1, height: '280px', overflowY: 'auto'} : {}), ...(index === 1 ? {gridColumn: 2, gridRow: 1} : {}), ...(index === 2 ? {gridColumn: 1, gridRow: 2, height: '280px'} : {}), ...(index === 3 ? {gridColumn: 1, gridRow: 3} : {})}} {...(index === 0 ? {'data-first-card': true} : {})}>
                 {/* Card Header with Navy Background - compact on mobile */}
                 <div 
                   className='flex items-center justify-between mb-1 xl:mb-2 cursor-pointer'
