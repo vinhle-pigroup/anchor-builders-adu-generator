@@ -11,7 +11,7 @@ export interface ClientInfo {
 
 export interface ProjectInfo {
   lotSize: string;
-  aduType: 'studio' | 'one-bedroom' | 'two-bedroom' | 'custom';
+  aduType: 'studio' | 'one-bedroom' | 'two-bedroom' | 'custom' | 'detached' | 'attached';
   squareFootage: number;
   foundationType: 'slab' | 'crawl-space' | 'basement';
   sitework: 'minimal' | 'moderate' | 'extensive';
@@ -25,6 +25,15 @@ export interface ProjectInfo {
   design: boolean;
   selectedAddOns?: string[]; // Array of selected add-on names
   priceOverrides?: any; // Price override configuration
+  stories?: number; // Number of stories (1 or 2)
+  bedrooms?: number; // Number of bedrooms
+  bathrooms?: number; // Number of bathrooms
+  needsDesign?: boolean; // Whether design services are needed
+  appliancesIncluded?: boolean; // Whether appliances are included
+  hvacType?: string; // HVAC system type
+  sewerConnection?: 'shared' | 'separate'; // Sewer connection type
+  solarDesign?: boolean; // Whether solar design is included
+  femaIncluded?: boolean; // Whether FEMA compliance is included
 }
 
 export interface PricingItem {
