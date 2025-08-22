@@ -1555,7 +1555,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
         try {
           const suggestedName = `Anchor-ADU-Proposal-${projectData.clientName?.replace(/\s+/g, '-') || 'Client'}-${new Date().toISOString().split('T')[0]}.pdf`;
           
-          const handle = await window.showSaveFilePicker({
+          const handle = await (window as any).showSaveFilePicker({
             suggestedName,
             types: [{
               description: 'PDF Files',
@@ -1920,7 +1920,7 @@ ${pricingData.friendsAndFamilyDiscount
       <div className='px-1 py-1 xl:px-2 xl:py-2' style={{paddingTop: '80px', transition: 'padding-top 0.3s ease'}}>
         <div className='grid xl:grid-cols-[1fr,260px] gap-3'>
           {/* Main Form */}
-          <div className='space-y-2 lg:grid lg:grid-cols-[0.85fr,1.15fr] lg:gap-3 lg:space-y-0' data-cards-container>
+          <div className='space-y-2 lg:grid lg:grid-cols-[0.85fr,1.15fr] lg:grid-rows-[280px,auto,auto] lg:gap-3 lg:space-y-0' data-cards-container>
             {sections.map((section, index) => (
               <div key={section.id} className={`bg-white rounded border flex flex-col mb-1 xl:mb-2 transition-all duration-300 hover:scale-105 cursor-pointer ${section.isComplete ? 'border-green-500 border-2' : 'border-gray-300'} ${index === 0 ? 'lg:h-[280px] lg:overflow-y-auto lg:col-start-1 lg:row-start-1' : ''} ${index === 1 ? 'lg:col-start-2 lg:row-start-1' : ''} ${index === 2 ? 'lg:h-[280px] lg:col-start-1 lg:row-start-2' : ''} ${index === 3 ? 'lg:col-start-2 lg:row-start-2' : ''}`} style={{padding: isMobile ? '8px' : '12px', boxShadow: section.isComplete ? '0 2px 8px rgba(34, 197, 94, 0.15)' : '0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02)', ...(index === 0 ? {gridColumn: 1, gridRow: 1, height: '280px', overflowY: 'auto'} : {}), ...(index === 1 ? {gridColumn: 2, gridRow: 1} : {}), ...(index === 2 ? {gridColumn: 1, gridRow: 2, height: '280px'} : {}), ...(index === 3 ? {gridColumn: 2, gridRow: 2} : {})}} {...(index === 0 ? {'data-first-card': true} : {})}>
                 {/* Card Header with Navy Background - compact on mobile */}
