@@ -2065,7 +2065,7 @@ function App() {
   // Template switching function
   // Removed unused _switchToTemplate function
 
-  const generatePDF = useCallback(async () => { // Generate PDF functionality
+  const _generatePDF = useCallback(async () => { // Generate PDF functionality (placeholder)
     try {
       setIsGeneratingPDF(true);
       console.log('🚀 Starting PDF generation process...');

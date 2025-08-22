@@ -11,7 +11,7 @@ export const PricingEditor: React.FC<PricingEditorProps> = ({ isAdminMode, onClo
   const [editingField, setEditingField] = useState<string | null>(null);
   const [tempValue, setTempValue] = useState<string>('');
   const [editorName, setEditorName] = useState<string>(localStorage.getItem('pricingEditorName') || '');
-  const [showAuditLog, setShowAuditLog] = useState<boolean>(false);
+  const [, setShowAuditLog] = useState<boolean>(false);
 
   // Save editor name to localStorage when it changes
   useEffect(() => {
