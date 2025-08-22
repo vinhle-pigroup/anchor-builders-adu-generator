@@ -1029,7 +1029,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
       squareFootage: 'Square Footage',
       bedrooms: 'Bedrooms',
       bathrooms: 'Bathrooms',
-      hvacType: 'HVAC Type',
+      hvacType: projectData.hvacType === 'custom' && !projectData.hvacCustomPrice ? 'HVAC Custom Price' : 'HVAC Type',
       waterMeter: 'Water Meter (Shared/Separate)',
       gasMeter: 'Gas Meter (Shared/Separate)',
       electricMeter: 'Electric Meter (Shared/Separate)',
