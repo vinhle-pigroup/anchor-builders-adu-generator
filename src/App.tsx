@@ -1975,6 +1975,7 @@ function App() {
       selectedAddOns: [],
     },
     additionalNotes: '',
+    hvacCustomPrice: 0,
     timeline: '6-8 months',
     proposalDate: new Date().toLocaleDateString('en-US', {
       year: 'numeric',
@@ -2065,67 +2066,7 @@ function App() {
   // Template switching function
   // Removed unused _switchToTemplate function
 
-  const _generatePDF = useCallback(async () => { // Generate PDF functionality (placeholder)
-    try {
-      setIsGeneratingPDF(true);
-      console.log('🚀 Starting PDF generation process...');
-      console.log(`🎨 [PDF GENERATION] Using template: ${selectedTemplate}`);
-
-      // Skip strict validation - allow PDF generation with minimal data
-      console.log('📋 Generating PDF with current form data...');
-
-      // Sync electrical panel data from pricingData to formData before PDF generation
-      const syncedFormData = {
-        ...formData,
-        project: {
-          ...formData.project,
-          utilities: {
-            ...formData.project.utilities,
-            // Pass the numeric cost value directly - PDF generator will convert to display text
-            electricalPanel: pricingData.utilities.electricalPanel,
-          },
-        },
-      };
-
-      console.log('🔧 [DEBUG] Synced electrical panel:', {
-        pricingDataValue: pricingData.utilities.electricalPanel,
-        formDataValue: syncedFormData.project.utilities.electricalPanel,
-      });
-
-      const pdfGenerator = new AnchorPDFGenerator();
-      await pdfGenerator.generateProposal(syncedFormData, selectedTemplate);
-
-      // Save proposal to local storage for future editing
-      try {
-        const proposalId = Date.now().toString();
-        const proposalToSave = {
-          ...formData,
-          id: proposalId,
-        };
-
-        const saved = JSON.parse(localStorage.getItem('anchorProposals') || '[]');
-        saved.push(proposalToSave);
-        localStorage.setItem('anchorProposals', JSON.stringify(saved));
-        setSavedProposals(saved);
-
-        console.log('✅ Proposal saved to local storage successfully');
-      } catch (storageError) {
-        console.warn('⚠️ Failed to save to local storage:', storageError);
-        // Don't fail the PDF generation if storage fails
-      }
-
-      // Show success message
-      setSuccessMessage(
-        'Proposal generated successfully! Check your downloads or the new browser window.'
-      );
-      console.log('✅ PDF generation completed successfully');
-    } catch (err) {
-      console.error('❌ PDF generation failed:', err);
-      handleError(err instanceof Error ? err.message : String(err), 'error');
-    } finally {
-      setIsGeneratingPDF(false);
-    }
-  }, [formData, handleError, selectedTemplate, pricingData]);
+  // PDF generation functionality moved to components
 
   // Calculate live pricing
   // Removed unused _liveCalculation function
@@ -2241,6 +2182,7 @@ function App() {
             bedrooms: pricingData.bedrooms,
             bathrooms: pricingData.bathrooms,
             hvacType: formData.project.hvacType,
+            hvacCustomPrice: formData.hvacCustomPrice,
             additionalNotes: formData.project.additionalNotes,
             // Add utilities with correct property names
             utilities: {
@@ -2356,7 +2298,10 @@ function App() {
             }
             // Handle HVAC type and custom price
             if (updates.hvacType !== undefined) {
-              setFormData(prev => ({ ...prev, hvacType: updates.hvacType }));
+              setFormData(prev => ({ 
+                ...prev, 
+                project: { ...prev.project, hvacType: updates.hvacType }
+              }));
             }
             if (updates.hvacCustomPrice !== undefined) {
               setFormData(prev => ({ ...prev, hvacCustomPrice: updates.hvacCustomPrice }));

@@ -20,6 +20,9 @@ export interface ProjectInfo {
     plumbing: boolean;
     gas: boolean;
     sewer: boolean;
+    waterMeter?: 'shared' | 'separate';
+    gasMeter?: 'shared' | 'separate';
+    electricMeter?: 'shared' | 'separate';
   };
   permits: boolean;
   design: boolean;
@@ -69,6 +72,7 @@ export interface AnchorProposalFormData {
   secondaryClientEmail?: string;
   secondaryClientPhone?: string;
   customServicesCount?: number; // Number of custom services
+  hvacCustomPrice?: number; // HVAC custom price
 }
 
 export interface SavedProposal {
