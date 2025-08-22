@@ -3524,13 +3524,12 @@ ${pricingData.friendsAndFamilyDiscount
                 <button
                   onClick={() => {
                     updateProjectData({ 
-                      aduType: pendingAduTypeSelection
+                      aduType: pendingAduTypeSelection || 'detached'
                     });
                     onPricingDataUpdate({ 
                       basePricePerSqft: tempBasePricePerSqft
                     });
                     setShowAduTypePopup(false);
-                    setPendingAduTypeSelection(null);
                   }}
                   className='px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors'
                 >
@@ -3571,7 +3570,7 @@ ${pricingData.friendsAndFamilyDiscount
                     });
                     onPricingDataUpdate({ twoStoryPrice: 0 });
                     setShowStoryPopup(false);
-                    setPendingAduType(null);
+                    setPendingAduTypeSelection(null);
                   }}
                   className='p-4 border-2 border-blue-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer'
                 >
@@ -3619,7 +3618,7 @@ ${pricingData.friendsAndFamilyDiscount
                           stories: 2
                         });
                         setShowStoryPopup(false);
-                        setPendingAduType(null);
+                        setPendingAduTypeSelection(null);
                       }}
                       className='ml-auto px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium'
                     >
@@ -3632,7 +3631,7 @@ ${pricingData.friendsAndFamilyDiscount
               <button
                 onClick={() => {
                   setShowStoryPopup(false);
-                  setPendingAduType(null);
+                  setPendingAduTypeSelection(null);
                 }}
                 className='px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors'
               >
