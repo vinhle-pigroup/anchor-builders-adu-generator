@@ -2904,7 +2904,7 @@ ${pricingData.friendsAndFamilyDiscount
                       <div>
                         <div className='text-[11px] font-medium text-gray-900 mb-1'>ADU Design Services</div>
                         <label className={`cursor-pointer flex items-start gap-2 px-3 py-1 rounded border transition-all focus-within:ring-2 focus-within:ring-1 focus-within:ring-anchor-blue focus-within:border-anchor-blue ${
-                          pricingData.designServices > 0
+                          (pricingData.designServices || 0) > 0
                             ? 'border-anchor-blue bg-anchor-blue-light hover:border-anchor-blue-hover hover:bg-gray-100'
                             : 'border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50'
                         }`}>
@@ -3138,10 +3138,10 @@ ${pricingData.friendsAndFamilyDiscount
                       <span className='font-medium text-green-600'>${pricingData.electricalPanelUpgrade.toLocaleString()}</span>
                     </div>
                   )}
-                  {projectData.hvacType === 'custom' && projectData.hvacCustomPrice > 0 && (
+                  {projectData.hvacType === 'custom' && (projectData.hvacCustomPrice || 0) > 0 && (
                     <div className='flex justify-between'>
                       <span className='text-slate-600'>Custom HVAC System:</span>
-                      <span className='font-medium text-green-600'>${projectData.hvacCustomPrice.toLocaleString()}</span>
+                      <span className='font-medium text-green-600'>${(projectData.hvacCustomPrice || 0).toLocaleString()}</span>
                     </div>
                   )}
                   <div className='flex justify-between border-t pt-1 mt-1'>
