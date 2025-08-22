@@ -23,6 +23,8 @@ export interface ProjectInfo {
   };
   permits: boolean;
   design: boolean;
+  selectedAddOns?: string[]; // Array of selected add-on names
+  priceOverrides?: any; // Price override configuration
 }
 
 export interface PricingItem {

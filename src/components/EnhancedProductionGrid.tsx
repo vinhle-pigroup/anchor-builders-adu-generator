@@ -325,6 +325,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
     extraBathroom: 8000,
     dedicatedDriveway: 5000,
     basicLandscaping: 10000,
+    solarReady: 0, // Add solar ready pricing
   });
   
   useEffect(() => {
