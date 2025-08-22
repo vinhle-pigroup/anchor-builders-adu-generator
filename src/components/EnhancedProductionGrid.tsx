@@ -1629,13 +1629,14 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
               electricalPanelUpgrade: pricingData.electricalPanelUpgrade || 0,
               customMilestones: customMilestones || undefined
             },
-            additionalNotes: projectData.additionalNotes || ''
+            additionalNotes: projectData.additionalNotes || '',
+            timeline: projectData.timeline || 'Standard 12-week construction timeline'
           };
           
           const html = await pdfGenerator.generateProposal(mappedFormData);
           
           // Create blob from HTML
-          const blob = new Blob([html as string], { type: 'text/html' });
+          const blob = new Blob([html as unknown as string], { type: 'text/html' });
           
           // Write to the selected file
           const writable = await handle.createWritable();
@@ -1645,7 +1646,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
           // Show success message
           alert('PDF saved successfully!');
         } catch (err) {
-          if (err.name !== 'AbortError') {
+          if ((err as any).name !== 'AbortError') {
             console.error('Save As failed:', err);
             // Fall back to regular download
             await handleGenerateProposal();
