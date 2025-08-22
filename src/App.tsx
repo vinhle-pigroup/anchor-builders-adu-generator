@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { logConfigStatus } from './lib/env-config';
 import { AnchorPricingEditorV2 } from './components/AnchorPricingEditorV2';
 // Removed unused import: useAnchorPricing
@@ -34,7 +34,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import type { AnchorProposalFormData, ClientInfo, ProjectInfo } from './types/proposal';
-import { AnchorPDFGenerator } from './lib/pdf-generator';
+// import { AnchorPDFGenerator } from './lib/pdf-generator'; // Moved to components
 import { useFormValidation } from './hooks/useFormValidation';
 import { useErrorHandler } from './hooks/useErrorHandler';
 // import { ValidatedInput } from './components/ValidatedInput';
@@ -1920,7 +1920,7 @@ function App() {
   const [showPricingEditor, setShowPricingEditor] = useState(false);
 
   // Error Handling
-  const { error, clearError, handleError } = useErrorHandler();
+  const { error, clearError } = useErrorHandler();
 
   // Form Validation
   const {} = useFormValidation();
@@ -1936,7 +1936,7 @@ function App() {
   }, []);
 
   // UI State
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isGeneratingPDF] = useState(false); // PDF generation moved to components
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [selectedTemplate] = useState<
     'historical' | 'modern' | 'premium' | 'classic' | 'enhanced'
