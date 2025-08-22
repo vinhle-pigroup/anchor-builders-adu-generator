@@ -149,6 +149,7 @@ interface EnhancedProductionGridProps {
   onPricingDataUpdate: (data: Partial<PricingData>) => void;
   onNavigateToAdmin?: () => void;
   onOpenPricingEditor?: () => void;
+  setPricingData: (data: any) => void;
 }
 
 export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
@@ -157,6 +158,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
   onProjectDataUpdate,
   onPricingDataUpdate,
   onOpenPricingEditor,
+  setPricingData,
 }) => {
   // Generate stable default values for proposal metadata (only once on mount)
   const [defaultProposalNumber] = useState(() => `AB-2025-TEST`);
@@ -1000,7 +1002,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
       squareFootage: !!projectData.squareFootage && projectData.squareFootage > 0,
       bedrooms: projectData.bedrooms !== undefined && projectData.bedrooms !== null,
       bathrooms: projectData.bathrooms !== undefined && projectData.bathrooms !== null,
-      hvacType: !!projectData.hvacType && (projectData.hvacType !== 'custom' || !!projectData.hvacCustomPrice),
+      hvacType: !!projectData.hvacType && ['central-ac', 'mini-split', 'custom'].includes(projectData.hvacType),
       
       // Utilities (must select shared or separate for each)
       waterMeter: !!(projectData.utilities?.waterMeter && projectData.utilities.waterMeter !== ''),
@@ -1033,7 +1035,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
       squareFootage: 'Square Footage',
       bedrooms: 'Bedrooms',
       bathrooms: 'Bathrooms',
-      hvacType: projectData.hvacType === 'custom' && !projectData.hvacCustomPrice ? 'HVAC Custom Price' : 'HVAC Type',
+      hvacType: 'HVAC Type',
       waterMeter: 'Water Meter (Shared/Separate)',
       gasMeter: 'Gas Meter (Shared/Separate)',
       electricMeter: 'Electric Meter (Shared/Separate)',
@@ -1066,7 +1068,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
     if (window.confirm('Are you sure you want to clear all form data? This cannot be undone.')) {
       console.log('🗑️ Clearing all form data...');
       
-      // Clear all project data at once
+      // Clear all project data at once - matching the initial formData structure from App.tsx
       onProjectDataUpdate({
         clientName: '',
         clientEmail: '',
@@ -1075,17 +1077,29 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
         city: '',
         state: '',
         zipCode: '',
-        aduType: '',
-        squareFootage: undefined,
-        bedrooms: undefined,
-        bathrooms: undefined,
-        hvacType: '',
-        additionalNotes: '',
+        aduType: '' as any,
+        squareFootage: 0,
+        bedrooms: null as any,
+        bathrooms: null as any,
+        appliancesIncluded: false,
+        hvacType: '' as any,
+        hvacCustomPrice: 0,
+        finishLevel: '' as any,
         utilities: {
-          waterMeter: '',
-          gasMeter: '',
-          electricMeter: '',
+          waterMeter: '' as any,
+          gasMeter: '' as any,
+          sewerMeter: '' as any,
+          electricMeter: '' as any,
+          electricalPanel: 200, // Reset to default 200A panel
         },
+        electricalPanel: 200, // Also reset the standalone electricalPanel field
+        sewerConnection: '' as any,
+        needsDesign: false,
+        solarDesign: false,
+        femaIncluded: false,
+        selectedAddOns: [],
+        additionalNotes: '',
+        timeline: '6-8 months',
         proposalNumber: defaultProposalNumber,
         proposalDate: defaultProposalDate,
         proposalValidityDays: 30,
@@ -1096,10 +1110,32 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
         secondaryClientPhone: ''
       });
       
-      // Clear pricing data
-      onPricingDataUpdate({
-        sqft: 800,
-        designServices: 12500, // Always included by default
+      // Clear pricing data - reset to initial state using direct setPricingData
+      setPricingData({
+        aduType: '' as any,
+        pricePerSqFt: 220,
+        sqft: 0,
+        bedrooms: null as any,  // Start with no selection
+        bathrooms: null as any, // Start with no selection
+        hvacType: '' as any,
+        utilities: {
+          waterMeter: '' as any,  // No default selection
+          gasMeter: '' as any,
+          sewerMeter: '' as any,
+          electricMeter: '' as any,
+          electricalPanel: 0, // Default 200-amp panel has 0 cost
+        },
+        services: {
+          design: 0,  // No pre-selected services
+          solar: 0,
+          fema: 0,
+        },
+        addons: {
+          bathroom: 0,
+          driveway: 0,
+          landscaping: 0,
+        },
+        designServices: 0,
         extraBathroom: 0,
         dedicatedDriveway: 0,
         basicLandscaping: 0,
@@ -1109,16 +1145,18 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
         solarReady: false,
         femaCompliance: false,
         femaAmount: 0,
-        utilities: {
-          waterMeter: false,
-          gasMeter: false,
-          sewerMeter: false,
-          electricMeter: false
-        }
+        electricalPanelUpgrade: 0, // Clear electrical panel upgrade cost
+        manualAddons: [] as number[],
       });
       
       // Clear custom services
       setCustomServices([]);
+      
+      // Reset HVAC custom pricing states
+      setCentralACPrice(0);
+      setMiniSplitPrice(0);
+      setShowCentralACPopup(false);
+      setShowMiniSplitPopup(false);
       
       // Reset UI states
       setShowMissingFields(false);
@@ -2525,7 +2563,7 @@ ${pricingData.friendsAndFamilyDiscount
                               data-navigation
                               onClick={() => {
                                 console.log('🎯 Mini-Split selected');
-                                updateProjectData({ hvacType: 'mini-split' });
+                                setShowMiniSplitPopup(true);
                               }}
                               className={`
                                 ${isMobile ? 'px-1 py-0.5 h-6 text-[9px]' : 'px-3 py-1.5 h-10 text-[11px]'} rounded border transition-all flex flex-col items-center justify-center
@@ -3765,6 +3803,110 @@ ${pricingData.friendsAndFamilyDiscount
             <button
               onClick={() => {
                 setShowHvacPopup(false);
+              }}
+              className='w-full px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors'
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Central AC Custom Pricing Popup */}
+      {showCentralACPopup && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+          <div className='bg-white rounded-lg p-6 shadow-xl max-w-md w-full mx-4'>
+            <h3 className='text-lg font-semibold text-gray-900 mb-3'>Central AC Pricing</h3>
+            <p className='text-sm text-gray-600 mb-4'>
+              Enter the custom price for the Central AC system (defaults to $0)
+            </p>
+            
+            <div className='space-y-3 mb-4'>
+              <div className='p-3 border-2 border-gray-200 rounded-lg'>
+                <div className='font-medium text-gray-900 mb-2'>Central AC Price</div>
+                <input
+                  type='number'
+                  min='0'
+                  max='50000'
+                  step='100'
+                  value={centralACPrice || ''}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    setCentralACPrice(value);
+                  }}
+                  className='w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+                  placeholder='Enter amount (default: $0)'
+                />
+                <button
+                  onClick={() => {
+                    updateProjectData({ 
+                      hvacType: 'central-ac',
+                      hvacCustomPrice: centralACPrice
+                    });
+                    setShowCentralACPopup(false);
+                  }}
+                  className='mt-2 w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm'
+                >
+                  Use Central AC (${centralACPrice.toLocaleString()})
+                </button>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => {
+                setShowCentralACPopup(false);
+              }}
+              className='w-full px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors'
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Mini-Split Custom Pricing Popup */}
+      {showMiniSplitPopup && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+          <div className='bg-white rounded-lg p-6 shadow-xl max-w-md w-full mx-4'>
+            <h3 className='text-lg font-semibold text-gray-900 mb-3'>Mini-Split Pricing</h3>
+            <p className='text-sm text-gray-600 mb-4'>
+              Enter the custom price for the Mini-Split system (defaults to $0)
+            </p>
+            
+            <div className='space-y-3 mb-4'>
+              <div className='p-3 border-2 border-gray-200 rounded-lg'>
+                <div className='font-medium text-gray-900 mb-2'>Mini-Split Price</div>
+                <input
+                  type='number'
+                  min='0'
+                  max='50000'
+                  step='100'
+                  value={miniSplitPrice || ''}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    setMiniSplitPrice(value);
+                  }}
+                  className='w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+                  placeholder='Enter amount (default: $0)'
+                />
+                <button
+                  onClick={() => {
+                    updateProjectData({ 
+                      hvacType: 'mini-split',
+                      hvacCustomPrice: miniSplitPrice
+                    });
+                    setShowMiniSplitPopup(false);
+                  }}
+                  className='mt-2 w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm'
+                >
+                  Use Mini-Split (${miniSplitPrice.toLocaleString()})
+                </button>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => {
+                setShowMiniSplitPopup(false);
               }}
               className='w-full px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors'
             >

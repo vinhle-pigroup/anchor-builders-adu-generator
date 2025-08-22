@@ -1,18 +1,19 @@
 /**
  * Server-side PDF Service Client
- * Connects to the Railway-deployed PDF service for professional PDF generation
+ * Uses local proxy endpoint to protect API key from client exposure
+ * The proxy endpoint in server.js handles the actual PDF service communication
  */
 
 import { AnchorProposalFormData } from '../types/proposal';
 
 export class ServerPDFService {
-  private readonly serviceUrl = 'https://anchor-pdf-service-production.up.railway.app';
-  // Generated API key - make sure this matches Railway environment variable
-  private readonly apiKey = 'ed4d39521ec3544888eb604721ed6b5ea1581d18aa49aed0f9041d59c7c1b5d2';
+  // Use local proxy endpoint instead of direct service URL
+  // This protects the API key by keeping it server-side only
+  private readonly proxyUrl = '/api/generate-pdf';
 
   async generateProposal(formData: AnchorProposalFormData, template: string = 'anchor-proposal'): Promise<void> {
     try {
-      console.log('🚀 Sending to Railway PDF service:', this.serviceUrl);
+      console.log('🚀 Sending to PDF proxy endpoint');
       
       // Flatten the form data to match template variables like {{CLIENT_NAME}}
       const flattenedData = {
@@ -54,12 +55,12 @@ export class ServerPDFService {
         }
       };
 
-      // Send request to Railway PDF service
-      const response = await fetch(`${this.serviceUrl}/pdf/generate`, {
+      // Send request to local proxy endpoint (no API key needed here)
+      const response = await fetch(this.proxyUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': this.apiKey
+          'Content-Type': 'application/json'
+          // No x-api-key needed - proxy handles authentication
         },
         body: JSON.stringify(payload)
       });
@@ -131,10 +132,15 @@ export class ServerPDFService {
 
   async checkHealth(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.serviceUrl}/healthz`);
-      return response.ok;
+      // Check our local health endpoint which includes PDF service status
+      const response = await fetch('/health');
+      if (response.ok) {
+        const data = await response.json();
+        return data.security?.apiKeyConfigured === true;
+      }
+      return false;
     } catch (error) {
-      console.error('PDF service health check failed:', error);
+      console.error('Health check failed:', error);
       return false;
     }
   }

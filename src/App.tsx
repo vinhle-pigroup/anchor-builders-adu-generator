@@ -44,6 +44,7 @@ import { ErrorNotification } from './components/ErrorNotification';
 import { PDFProgressIndicator } from './components/PDFProgressIndicator';
 // import { LoadingSpinner } from './components/LoadingSpinner';
 import { EnhancedProductionGrid } from './components/EnhancedProductionGrid';
+import { DebugProfiler } from './components/DebugProfiler';
 
 // Proposal management utility functions
 function generateNewProposalNumber(): string {
@@ -2162,7 +2163,8 @@ function App() {
     return (
       <>
         <GlobalUI />
-        <EnhancedProductionGrid
+        <DebugProfiler id="EnhancedProductionGrid">
+          <EnhancedProductionGrid
           projectData={{
             clientName: `${formData.client.firstName} ${formData.client.lastName}`.trim(),
             clientEmail: formData.client.email,
@@ -2212,13 +2214,13 @@ function App() {
             femaCompliance: pricingData.services?.fema > 0 || false,
           }}
           onProjectDataUpdate={updates => {
-            if (updates.clientName) {
+            if (updates.clientName !== undefined) {
               const [firstName = '', ...lastNameParts] = updates.clientName.split(' ');
               const lastName = lastNameParts.join(' ');
               updateClientData({ firstName, lastName });
             }
-            if (updates.clientEmail) updateClientData({ email: updates.clientEmail });
-            if (updates.clientPhone) updateClientData({ phone: updates.clientPhone });
+            if (updates.clientEmail !== undefined) updateClientData({ email: updates.clientEmail });
+            if (updates.clientPhone !== undefined) updateClientData({ phone: updates.clientPhone });
             
             // Handle secondary client fields (HOL design)
             if (updates.secondaryClientFirstName !== undefined) {
@@ -2260,7 +2262,7 @@ function App() {
               updateClientData({ zipCode: updates.zipCode });
             }
             
-            if (updates.aduType) {
+            if (updates.aduType !== undefined) {
               // Map ADU types from pricing system to project system
               const aduTypeMapping: Record<string, 'studio' | 'one-bedroom' | 'two-bedroom' | 'custom'> = {
                 'detached': 'custom',
@@ -2320,6 +2322,35 @@ function App() {
                 } 
               }));
             }
+            
+            // Handle missing field handlers for Clear Data functionality
+            if (updates.additionalNotes !== undefined) {
+              setFormData(prev => ({ ...prev, additionalNotes: updates.additionalNotes }));
+            }
+            if (updates.appliancesIncluded !== undefined) {
+              updateProjectData({ appliancesIncluded: updates.appliancesIncluded });
+            }
+            if (updates.finishLevel !== undefined) {
+              updateProjectData({ finishLevel: updates.finishLevel });
+            }
+            if (updates.needsDesign !== undefined) {
+              updateProjectData({ needsDesign: updates.needsDesign });
+            }
+            if (updates.solarDesign !== undefined) {
+              updateProjectData({ solarDesign: updates.solarDesign });
+            }
+            if (updates.femaIncluded !== undefined) {
+              updateProjectData({ femaIncluded: updates.femaIncluded });
+            }
+            if (updates.selectedAddOns !== undefined) {
+              updateProjectData({ selectedAddOns: updates.selectedAddOns });
+            }
+            if (updates.timeline !== undefined) {
+              setFormData(prev => ({ ...prev, timeline: updates.timeline }));
+            }
+            if (updates.sewerConnection !== undefined) {
+              updateProjectData({ sewerConnection: updates.sewerConnection });
+            }
           }}
           onOpenPricingEditor={() => setShowPricingEditor(true)}
           onPricingDataUpdate={(updates: any) => {
@@ -2370,7 +2401,9 @@ function App() {
             setCurrentPage('admin');
             setAdminSection('templates'); // Go directly to pricing admin
           }}
-        />
+          setPricingData={setPricingData}
+          />
+        </DebugProfiler>
         {/* Render the Anchor Pricing Editor V2 controlled by state */}
         {showPricingEditor && (
           <AnchorPricingEditorV2 
@@ -3837,4 +3870,13 @@ function App() {
 //   );
 // }
 // 
-export default App;
+// Wrap App with Debug Profiler for complete performance monitoring
+function ProfiledApp() {
+  return (
+    <DebugProfiler id="App">
+      <App />
+    </DebugProfiler>
+  );
+}
+
+export default ProfiledApp;
