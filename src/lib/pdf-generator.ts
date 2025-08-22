@@ -5,7 +5,7 @@ import { AnchorPDFTemplateGenerator } from './pdf-template-generator';
 // ServerPDFService import removed - using template-based generation
 
 export class AnchorPDFGenerator {
-  // private doc: jsPDF; // Not needed - using server-side PDF
+  private doc: any; // Placeholder for legacy jsPDF methods (not used in server-side generation)
   private currentY: number = 20;
   private pageHeight: number = 280;
   private leftMargin: number = 20;
@@ -13,7 +13,8 @@ export class AnchorPDFGenerator {
   private pageWidth: number = 210;
 
   constructor() {
-    // this.doc = new jsPDF(); // Not needed - using server-side PDF
+    // Initialize doc as empty object for legacy method compatibility
+    this.doc = {}; // Not used in server-side PDF generation
     // Add some custom fonts if available
   }
 
@@ -98,20 +99,20 @@ export class AnchorPDFGenerator {
     return;
 
     // Company name
-    this.doc.setTextColor(255, 255, 255); // White text
-    this.doc.setFontSize(28);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text('ANCHOR BUILDERS', this.leftMargin, 25);
+    // this.doc.setTextColor(255, 255, 255); // White text
+    // this.doc.setFontSize(28);
+    // this.doc.setFont('helvetica', 'bold');
+    // this.doc.text('ANCHOR BUILDERS', this.leftMargin, 25);
 
     // Tagline
-    this.doc.setFontSize(12);
-    this.doc.setFont('helvetica', 'normal');
-    this.doc.text('Professional ADU Construction & Design', this.leftMargin, 35);
+    // this.doc.setFontSize(12);
+    // this.doc.setFont('helvetica', 'normal');
+    // this.doc.text('Professional ADU Construction & Design', this.leftMargin, 35);
 
     // Proposal title
-    this.currentY = 60;
-    this.doc.setTextColor(31, 41, 55); // Dark gray
-    this.doc.setFontSize(20);
+    // this.currentY = 60;
+    // this.doc.setTextColor(31, 41, 55); // Dark gray
+    // this.doc.setFontSize(20);
     this.doc.setFont('helvetica', 'bold');
     this.doc.text('ADU CONSTRUCTION PROPOSAL', this.leftMargin, this.currentY);
 
