@@ -80,6 +80,7 @@ type ProjectData = {
   bathrooms?: number;
   hvacType?: string;
   hvacCustomPrice?: number;  // Custom HVAC price
+  electricalPanelCustomPrice?: number;  // Custom electrical panel price
   additionalNotes?: string;
   
   // Utilities
@@ -911,6 +912,9 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
   const [showMiniSplitPopup, setShowMiniSplitPopup] = useState(false);
   const [centralACPrice, setCentralACPrice] = useState(0);
   const [miniSplitPrice, setMiniSplitPrice] = useState(0);
+  const [showElectricalPanelPopup, setShowElectricalPanelPopup] = useState(false);
+  const [selectedElectricalPanel, setSelectedElectricalPanel] = useState<{value: number; label: string; cost: number} | null>(null);
+  const [electricalPanelCustomPrice, setElectricalPanelCustomPrice] = useState(0);
   const [showUtilitiesPopup, setShowUtilitiesPopup] = useState(false);
   const [utilityType, setUtilityType] = useState<'waterMeter' | 'gasMeter' | 'electricMeter' | 'sewerMeter' | null>(null);
   const [showAduTypePopup, setShowAduTypePopup] = useState(false);
@@ -1084,15 +1088,16 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
         appliancesIncluded: false,
         hvacType: '' as any,
         hvacCustomPrice: 0,
+        electricalPanelCustomPrice: 0,
         finishLevel: '' as any,
         utilities: {
           waterMeter: '' as any,
           gasMeter: '' as any,
           sewerMeter: '' as any,
           electricMeter: '' as any,
-          electricalPanel: 200, // Reset to default 200A panel
+          electricalPanel: null, // Clear panel selection (null = no selection)
         },
-        electricalPanel: 200, // Also reset the standalone electricalPanel field
+        electricalPanel: null, // Clear panel selection (null = no selection)
         sewerConnection: '' as any,
         needsDesign: false,
         solarDesign: false,
@@ -1157,6 +1162,11 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
       setMiniSplitPrice(0);
       setShowCentralACPopup(false);
       setShowMiniSplitPopup(false);
+      
+      // Reset electrical panel custom pricing states
+      setElectricalPanelCustomPrice(0);
+      setSelectedElectricalPanel(null);
+      setShowElectricalPanelPopup(false);
       
       // Reset UI states
       setShowMissingFields(false);
@@ -2807,32 +2817,28 @@ ${pricingData.friendsAndFamilyDiscount
                               key={option.value}
                               type='button'
                               onClick={() => {
-                                updateProjectData({ electricalPanel: option.value });
-                                if (option.cost > 0) {
-                                  updatePricingData({ 
-                                    electricalPanelUpgrade: option.cost 
-                                  });
-                                } else {
-                                  updatePricingData({ 
-                                    electricalPanelUpgrade: 0 
-                                  });
-                                }
+                                console.log(`🔌 ${option.label} Electrical Panel selected`);
+                                setSelectedElectricalPanel(option);
+                                setElectricalPanelCustomPrice(option.cost);
+                                setShowElectricalPanelPopup(true);
                               }}
                               className={`
                                 ${isMobile ? 'h-7 px-1 text-[8px]' : 'h-10 px-2 text-[11px]'} rounded border text-center font-medium inline-flex flex-col items-center justify-center transition-all
-                                ${(projectData.electricalPanel || 200) === option.value
+                                ${projectData.electricalPanel === option.value || (selectedElectricalPanel && selectedElectricalPanel.value === option.value)
                                   ? 'bg-anchor-blue border-anchor-blue text-white shadow-sm'
-                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue'
+                                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:text-anchor-blue focus:border-anchor-blue focus:ring-1 focus:ring-anchor-blue focus:outline-none'
                                 }
                               `}
                             >
                               <div className='font-medium'>{option.label}</div>
-                              {option.cost > 0 && (
-                                <div className='text-[7px] opacity-75'>+${option.cost.toLocaleString()}</div>
-                              )}
-                              {option.value === 200 && (
-                                <div className='text-[7px] opacity-75'>Included</div>
-                              )}
+                              {projectData.electricalPanel === option.value && (() => {
+                                const price = projectData.electricalPanelCustomPrice ?? option.cost;
+                                return price > 0 ? (
+                                  <div className='text-green-300 text-[8px] font-medium'>+${price.toLocaleString()}</div>
+                                ) : option.value === 200 ? (
+                                  <div className='text-green-300 text-[8px] font-medium'>Included</div>
+                                ) : null;
+                              })()}
                             </button>
                           ))}
                         </div>
@@ -3907,6 +3913,61 @@ ${pricingData.friendsAndFamilyDiscount
             <button
               onClick={() => {
                 setShowMiniSplitPopup(false);
+              }}
+              className='w-full px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors'
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Electrical Panel Custom Pricing Popup */}
+      {showElectricalPanelPopup && selectedElectricalPanel && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+          <div className='bg-white rounded-lg p-6 shadow-xl max-w-md w-full mx-4'>
+            <h3 className='text-lg font-semibold text-gray-900 mb-3'>{selectedElectricalPanel.label} Electrical Panel Pricing</h3>
+            <p className='text-sm text-gray-600 mb-4'>
+              Enter the custom price for the {selectedElectricalPanel.label} electrical panel (default: ${selectedElectricalPanel.cost.toLocaleString()})
+            </p>
+            
+            <div className='space-y-3 mb-4'>
+              <div className='p-3 border-2 border-gray-200 rounded-lg'>
+                <div className='font-medium text-gray-900 mb-2'>{selectedElectricalPanel.label} Panel Price</div>
+                <input
+                  type='number'
+                  min='0'
+                  max='50000'
+                  step='100'
+                  value={electricalPanelCustomPrice || ''}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    setElectricalPanelCustomPrice(value);
+                  }}
+                  className='w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+                  placeholder={`Enter amount (default: $${selectedElectricalPanel.cost.toLocaleString()})`}
+                />
+                <button
+                  onClick={() => {
+                    updateProjectData({ 
+                      electricalPanel: selectedElectricalPanel.value,
+                      electricalPanelCustomPrice: electricalPanelCustomPrice
+                    });
+                    updatePricingData({
+                      electricalPanelUpgrade: electricalPanelCustomPrice
+                    });
+                    setShowElectricalPanelPopup(false);
+                  }}
+                  className='mt-2 w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm'
+                >
+                  Use {selectedElectricalPanel.label} Panel (${electricalPanelCustomPrice.toLocaleString()})
+                </button>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => {
+                setShowElectricalPanelPopup(false);
               }}
               className='w-full px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors'
             >

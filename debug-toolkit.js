@@ -607,6 +607,119 @@ window.debug = {
     });
     
     return emergency;
+  },
+
+  // 🎯 ULTIMATE EVERYTHING COMMAND
+  everything: () => {
+    console.log('🎯 ULTIMATE DEBUG - CAPTURING ABSOLUTELY EVERYTHING...');
+    
+    const ultimate = {
+      timestamp: new Date().toISOString(),
+      url: window.location.href,
+      
+      // Basic captures
+      everything: captureEverything(),
+      
+      // React profiling
+      reactProfile: window.reactProfileData || [],
+      
+      // System analysis
+      systemScan: debugHelpers.fullSystemScan(),
+      performance: debugHelpers.performanceBenchmark(),
+      
+      // Form state deep dive
+      formDeepDive: {
+        allInputs: Array.from(document.querySelectorAll('input, select, textarea, button')).map(el => ({
+          tag: el.tagName,
+          name: el.name || el.id || 'unnamed',
+          type: el.type,
+          value: el.value,
+          checked: el.checked,
+          disabled: el.disabled,
+          className: el.className,
+          textContent: el.textContent?.substring(0, 50),
+          dataset: Object.fromEntries(Object.entries(el.dataset))
+        })),
+        
+        reactForms: Array.from(document.querySelectorAll('[data-testid], [class*="form"], [class*="input"], [class*="button"]')).map(el => ({
+          selector: el.tagName + (el.className ? '.' + el.className.split(' ').join('.') : ''),
+          text: el.textContent?.substring(0, 30),
+          attributes: Array.from(el.attributes).map(attr => `${attr.name}="${attr.value.substring(0, 50)}"`),
+        }))
+      },
+      
+      // Clear Data specific investigation
+      clearDataInvestigation: {
+        clearButton: document.querySelector('button:contains("Clear"), [data-testid*="clear"], .clear-btn, #clear-btn'),
+        clearButtonText: Array.from(document.querySelectorAll('button')).find(btn => 
+          btn.textContent?.toLowerCase().includes('clear')
+        )?.textContent,
+        clearButtonCount: Array.from(document.querySelectorAll('button')).filter(btn => 
+          btn.textContent?.toLowerCase().includes('clear')
+        ).length,
+        allButtons: Array.from(document.querySelectorAll('button')).map(btn => ({
+          text: btn.textContent?.trim().substring(0, 30),
+          className: btn.className,
+          id: btn.id,
+          onClick: btn.onclick ? 'has onclick' : 'no onclick',
+          disabled: btn.disabled
+        }))
+      },
+      
+      // Console logs with Clear Data focus
+      clearDataLogs: window.debugLogs?.filter(log => 
+        JSON.stringify(log.args).toLowerCase().includes('clear')
+      ) || [],
+      
+      // Local storage investigation
+      storageInvestigation: {
+        localStorage: Object.fromEntries(Object.entries(localStorage)),
+        sessionStorage: Object.fromEntries(Object.entries(sessionStorage)),
+        cookies: document.cookie,
+        reactDevTools: typeof window.__REACT_DEVTOOLS_GLOBAL_HOOK__ !== 'undefined'
+      },
+      
+      // Network requests
+      networkRequests: performance.getEntriesByType('resource').slice(-20),
+      
+      // Error investigation
+      errorInvestigation: {
+        jsErrors: window.capturedErrors || [],
+        consoleErrors: window.debugLogs?.filter(log => log.type === 'error') || [],
+        reactErrors: window.__REACT_DEVTOOLS_GLOBAL_HOOK__?.onCommitFiberRoot || 'No React DevTools'
+      }
+    };
+    
+    // Multiple output methods
+    const data = JSON.stringify(ultimate, null, 2);
+    
+    // Try clipboard
+    navigator.clipboard.writeText(data).then(() => {
+      console.log('✅ ULTIMATE DEBUG DATA COPIED TO CLIPBOARD!');
+      console.log('📊 Data size:', (data.length / 1024).toFixed(1), 'KB');
+    }).catch(() => {
+      console.log('📋 Clipboard failed, data in console below');
+    });
+    
+    // Always log to console
+    console.group('🎯 ULTIMATE DEBUG DATA');
+    console.log(ultimate);
+    console.groupEnd();
+    
+    // Also create downloadable file
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ultimate-debug-${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    console.log('💾 Debug data also saved as file download');
+    
+    return ultimate;
   }
 };
 

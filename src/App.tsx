@@ -4,6 +4,11 @@ import { AnchorPricingEditorV2 } from './components/AnchorPricingEditorV2';
 // Removed unused import: useAnchorPricing
 // import { useAnchorPricing } from './hooks/useAnchorPricing';
 import { usePricingEditorSync } from './hooks/usePricingEditorSync';
+import { isAuthEnabled, isAdmin } from './auth/msal-config';
+import { AuthGuard } from './components/auth/AuthGuard';
+import { UserProfile } from './components/auth/UserProfile';
+import { LoginButton } from './components/auth/LoginButton';
+import { useMsal } from '@azure/msal-react';
 import {
   FileText,
   Users,
@@ -1920,6 +1925,14 @@ function App() {
   const [adminSection, setAdminSection] = useState<'data' | 'templates' | 'debug'>('data');
   const [showPricingEditor, setShowPricingEditor] = useState(false);
 
+  // Authentication state (only used if auth is enabled)
+  const authEnabled = isAuthEnabled();
+  // Only call useMsal if we're inside MsalProvider (auth is enabled)
+  const msalHook = authEnabled ? useMsal : () => ({ accounts: [] });
+  const { accounts } = msalHook();
+  const isAuthenticated = authEnabled && accounts.length > 0;
+  const userIsAdmin = authEnabled && isAdmin();
+
   // Error Handling
   const { error, clearError } = useErrorHandler();
 
@@ -2095,7 +2108,14 @@ function App() {
     return (
       <>
         <GlobalUI />
-        <div className='min-h-screen bg-gradient-to-br from-stone-100 to-blue-50 flex items-center justify-center'>
+        <div className='min-h-screen bg-gradient-to-br from-stone-100 to-blue-50 flex items-center justify-center relative'>
+          {/* User Profile in top-right corner if authenticated */}
+          {authEnabled && isAuthenticated && (
+            <div className='absolute top-4 right-4'>
+              <UserProfile />
+            </div>
+          )}
+          
           <div className='text-center max-w-md mx-auto px-6'>
             {/* Large Logo Container */}
             <div className='inline-flex items-center justify-center w-52 h-52 bg-white rounded-2xl mb-8 shadow-lg'>
@@ -2137,14 +2157,37 @@ function App() {
                 View & Edit Proposals
               </button>
 
-              {/* Admin Settings */}
-              <button
-                onClick={() => setCurrentPage('admin')}
-                className='w-full bg-slate-600 text-white px-6 py-3 rounded-xl text-base font-semibold hover:bg-slate-700 transition-all shadow-lg flex items-center justify-center'
-              >
-                <Users className='w-4 h-4 mr-2' />
-                Admin Settings
-              </button>
+              {/* Admin Settings - Conditionally rendered based on auth */}
+              {!authEnabled ? (
+                // No auth required - show admin button directly
+                <button
+                  onClick={() => setCurrentPage('admin')}
+                  className='w-full bg-slate-600 text-white px-6 py-3 rounded-xl text-base font-semibold hover:bg-slate-700 transition-all shadow-lg flex items-center justify-center'
+                >
+                  <Users className='w-4 h-4 mr-2' />
+                  Admin Settings
+                </button>
+              ) : userIsAdmin ? (
+                // Auth enabled and user is admin - show admin button
+                <button
+                  onClick={() => setCurrentPage('admin')}
+                  className='w-full bg-slate-600 text-white px-6 py-3 rounded-xl text-base font-semibold hover:bg-slate-700 transition-all shadow-lg flex items-center justify-center'
+                >
+                  <Users className='w-4 h-4 mr-2' />
+                  Admin Settings
+                </button>
+              ) : !isAuthenticated ? (
+                // Auth enabled but not logged in - show login button
+                <div className='w-full'>
+                  <LoginButton />
+                </div>
+              ) : (
+                // Auth enabled, logged in, but not admin - show disabled message
+                <div className='w-full bg-gray-100 text-gray-500 px-6 py-3 rounded-xl text-base font-medium border border-gray-200'>
+                  <Users className='w-4 h-4 mr-2 inline' />
+                  Admin Access Required
+                </div>
+              )}
             </div>
 
             {/* Footer Info */}
@@ -2406,10 +2449,19 @@ function App() {
         </DebugProfiler>
         {/* Render the Anchor Pricing Editor V2 controlled by state */}
         {showPricingEditor && (
-          <AnchorPricingEditorV2 
-            isOpen={showPricingEditor}
-            onClose={() => setShowPricingEditor(false)}
-          />
+          authEnabled ? (
+            <AuthGuard requireAdmin={true}>
+              <AnchorPricingEditorV2 
+                isOpen={showPricingEditor}
+                onClose={() => setShowPricingEditor(false)}
+              />
+            </AuthGuard>
+          ) : (
+            <AnchorPricingEditorV2 
+              isOpen={showPricingEditor}
+              onClose={() => setShowPricingEditor(false)}
+            />
+          )
         )}
       </>
     );
@@ -2589,7 +2641,8 @@ function App() {
       }
     };
 
-    return (
+    // Only protect with AuthGuard if auth is enabled
+    const adminContent = (
       <div className='min-h-screen bg-slate-50 p-8'>
         <div className='max-w-4xl mx-auto'>
           <div className='flex items-center justify-between mb-6'>
@@ -2749,6 +2802,13 @@ function App() {
         </div>
       </div>
     );
+
+    // Wrap with AuthGuard if auth is enabled
+    if (authEnabled) {
+      return <AuthGuard requireAdmin={true}>{adminContent}</AuthGuard>;
+    }
+    
+    return adminContent;
   }
 
   if (currentPage === 'debug-fullscreen') {

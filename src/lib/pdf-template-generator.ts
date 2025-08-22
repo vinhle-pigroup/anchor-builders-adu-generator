@@ -975,39 +975,324 @@ export class AnchorPDFTemplateGenerator {
       const templateResult = getActiveTemplate();
       logTemplateSelection(templateResult);
       
-      // FORCE USE OF OUR UPDATED ENHANCED-DESIGN.html TEMPLATE
-      const templatePath = '/anchor-proposal-compact.html';  // Server-side compact template
+      // Load both cover page and main template
+      const coverPagePath = '/pdf-cover-page.html';
+      const mainTemplatePath = '/anchor-proposal-compact.html';  // Server-side compact template
 
       console.log(
-        `🎨 [DEBUG] Template switching - Selected: ${selectedTemplate}, Path: ${templatePath}`
+        `🎨 [DEBUG] Loading templates - Cover: ${coverPagePath}, Main: ${mainTemplatePath}`
       );
 
-      // Try to load the selected template file with cache busting
+      // Try to load both templates with cache busting
       const cacheBuster = `?v=${Date.now()}`;
-      const fullUrl = templatePath + cacheBuster;
-      console.log(`🔗 [DEBUG] Fetching template from: ${fullUrl}`);
+      
+      const [coverResponse, mainResponse] = await Promise.all([
+        fetch(coverPagePath + cacheBuster),
+        fetch(mainTemplatePath + cacheBuster)
+      ]);
 
-      const response = await fetch(fullUrl);
-      console.log(`📡 [DEBUG] Fetch response - Status: ${response.status}, OK: ${response.ok}`);
+      console.log(`📡 [DEBUG] Fetch responses - Cover: ${coverResponse.status}, Main: ${mainResponse.status}`);
 
-      if (response.ok) {
-        let template = await response.text();
+      if (coverResponse.ok && mainResponse.ok) {
+        const [coverTemplate, mainTemplate] = await Promise.all([
+          coverResponse.text(),
+          mainResponse.text()
+        ]);
+        
         console.log(
-          `✅ [DEBUG] Template loaded successfully - Length: ${template.length}, Type: ${selectedTemplate}`
+          `✅ [DEBUG] Templates loaded - Cover: ${coverTemplate.length} chars, Main: ${mainTemplate.length} chars`
         );
 
-        // Add a debug indicator to the template so we can verify it's the right one
-        const debugComment = `<!-- TEMPLATE: ${selectedTemplate?.toUpperCase() || 'DEFAULT'} - Generated: ${new Date().toISOString()} -->`;
-        template = template.replace('</head>', `${debugComment}\n</head>`);
+        // Extract the cover page body content (everything inside <body> tags)
+        const coverBodyMatch = coverTemplate.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+        const coverBodyContent = coverBodyMatch ? coverBodyMatch[1] : '';
 
-        // Also add a visible indicator in the PDF for debugging
-        const visibleDebug = `<div style="position: fixed; top: 0; right: 0; background: red; color: white; padding: 2px 8px; font-size: 10px; z-index: 9999;">TEMPLATE: ${selectedTemplate?.toUpperCase()}</div>`;
-        template = template.replace('<body>', `<body>${visibleDebug}`);
+        // Extract the main template head and body content
+        const mainHeadMatch = mainTemplate.match(/<head[^>]*>([\s\S]*)<\/head>/i);
+        const mainBodyMatch = mainTemplate.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+        
+        const mainHeadContent = mainHeadMatch ? mainHeadMatch[1] : '';
+        const mainBodyContent = mainBodyMatch ? mainBodyMatch[1] : '';
 
-        return template;
+        // Combine templates: cover page + main template
+        const combinedTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADU Construction Proposal</title>
+    ${mainHeadContent}
+    <!-- Cover Page Styles -->
+    <style>
+        /* Cover Page Styles */
+        .cover-page {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            page-break-after: always;
+        }
+        
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 30px 40px 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .company-info {
+            text-align: left;
+        }
+        
+        .proposal-date {
+            font-size: 16px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        .company-details {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+        
+        .company-details .company-name {
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        
+        .company-details .license {
+            font-weight: 600;
+            color: #374151;
+            margin-top: 4px;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+        }
+        
+        .logo-title-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        
+        .anchor-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .anchor-icon {
+            width: 50px;
+            height: 50px;
+            background: #1e40af;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .anchor-text {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1e40af;
+            letter-spacing: 0.05em;
+        }
+        
+        .anchor-text .builders {
+            font-size: 14px;
+            font-weight: 400;
+            color: #6b7280;
+            letter-spacing: 0.2em;
+            display: block;
+            margin-top: -2px;
+        }
+        
+        .proposal-title {
+            text-align: right;
+        }
+        
+        .proposal-title h1 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #374151;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+        
+        .proposal-date-main {
+            font-size: 18px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .hero-image {
+            flex: 1;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400"><rect width="800" height="400" fill="%23f3f4f6"/><text x="400" y="200" font-family="Arial" font-size="20" text-anchor="middle" fill="%236b7280">ADU Interior Photo Placeholder</text></svg>') center/cover;
+            border-radius: 12px;
+            margin: 20px 0;
+            min-height: 300px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .footer-section {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: white;
+            padding: 30px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .client-info, .project-info {
+            flex: 1;
+        }
+        
+        .footer-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: white;
+        }
+        
+        .client-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 8px;
+        }
+        
+        .client-details {
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .project-address {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 4px;
+        }
+        
+        .project-location {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .bottom-company-info {
+            background: #f9fafb;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .website {
+            font-weight: 600;
+            color: #1e40af;
+        }
+        
+        .company-footer {
+            text-align: right;
+        }
+        
+        .company-footer .license {
+            font-weight: 600;
+            color: #374151;
+        }
+    </style>
+</head>
+<body>
+    <!-- Cover Page -->
+    <div class="cover-page">
+        <div class="header-section">
+            <div class="company-info">
+                <div class="proposal-date">{{PROPOSAL_DATE}}</div>
+                <div class="company-details">
+                    <div class="company-name">Anchor Builders</div>
+                    <div>12962 Main Street, Garden Grove, CA 92840</div>
+                    <div class="license">CSLB# 1029392</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="logo-title-section">
+                <div class="anchor-logo">
+                    <div class="anchor-icon">⚓</div>
+                    <div class="anchor-text">
+                        ANCHOR
+                        <span class="builders">BUILDERS</span>
+                    </div>
+                </div>
+                
+                <div class="proposal-title">
+                    <h1>ADU CONSTRUCTION<br>PROPOSAL</h1>
+                    <div class="proposal-date-main">{{PROPOSAL_DATE}}</div>
+                </div>
+            </div>
+
+            <div class="hero-image"></div>
+        </div>
+
+        <div class="footer-section">
+            <div class="client-info">
+                <div class="footer-title">Prepared for:</div>
+                <div class="client-name">{{CLIENT_FIRST_NAME}} {{CLIENT_LAST_NAME}}</div>
+                <div class="client-details">
+                    {{CLIENT_PHONE}}<br>
+                    {{CLIENT_EMAIL}}
+                </div>
+            </div>
+            
+            <div class="project-info">
+                <div class="footer-title">Project Address:</div>
+                <div class="project-address">{{PROJECT_ADDRESS}}</div>
+                <div class="project-location">{{PROJECT_CITY}}, {{PROJECT_STATE}} {{PROJECT_ZIP}}</div>
+            </div>
+        </div>
+
+        <div class="bottom-company-info">
+            <div class="website">Visit our website at www.AnchorBuilders.io</div>
+            <div class="company-footer">
+                <div>Anchor Builders</div>
+                <div>12962 Main Street, Garden Grove, CA 92840</div>
+                <div class="license">CSLB# 1029392</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Proposal Content -->
+    ${mainBodyContent}
+</body>
+</html>`;
+
+        // Add debug indicator
+        const debugComment = `<!-- COMBINED TEMPLATE: Cover + ${selectedTemplate?.toUpperCase() || 'DEFAULT'} - Generated: ${new Date().toISOString()} -->`;
+        const finalTemplate = combinedTemplate.replace('</head>', `${debugComment}\n</head>`);
+
+        console.log(`✨ [DEBUG] Combined template created - Total length: ${finalTemplate.length} chars`);
+        
+        return finalTemplate;
       } else {
         console.error(
-          `❌ [DEBUG] Failed to fetch template - Status: ${response.status}, StatusText: ${response.statusText}`
+          `❌ [DEBUG] Failed to fetch templates - Cover: ${coverResponse.status}, Main: ${mainResponse.status}`
         );
       }
     } catch (error) {
