@@ -593,8 +593,8 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
           designServices: editorPrices.designServices,
           solarReady: true,
           extraBathroom: 8000,
-          dedicatedDriveway: true,
-          basicLandscaping: true,
+          dedicatedDriveway: editorPrices.dedicatedDriveway,
+          basicLandscaping: editorPrices.basicLandscaping,
           friendsAndFamilyDiscount: false,
         }
       }
@@ -628,7 +628,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
           designServices: editorPrices.designServices,
           solarReady: false,
           extraBathroom: 0,
-          dedicatedDriveway: true,
+          dedicatedDriveway: editorPrices.dedicatedDriveway,
           basicLandscaping: 0,
           friendsAndFamilyDiscount: true,
           friendsAndFamilyDiscountType: '10%',
@@ -668,8 +668,8 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
           designServices: editorPrices.designServices,
           solarReady: true,
           extraBathroom: 8000,
-          dedicatedDriveway: true,
-          basicLandscaping: true,
+          dedicatedDriveway: editorPrices.dedicatedDriveway,
+          basicLandscaping: editorPrices.basicLandscaping,
           friendsAndFamilyDiscount: false,
         }
       }
@@ -740,8 +740,8 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
           designServices: editorPrices.designServices,
           solarReady: true,
           extraBathroom: 0,
-          dedicatedDriveway: true,
-          basicLandscaping: true,
+          dedicatedDriveway: editorPrices.dedicatedDriveway,
+          basicLandscaping: editorPrices.basicLandscaping,
           friendsAndFamilyDiscount: false,
         }
       }
@@ -780,7 +780,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
           solarReady: true,
           extraBathroom: 0,
           dedicatedDriveway: 0,
-          basicLandscaping: true,
+          basicLandscaping: editorPrices.basicLandscaping,
           friendsAndFamilyDiscount: false,
         }
       }
@@ -814,7 +814,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
           designServices: editorPrices.designServices,
           solarReady: true,
           extraBathroom: 8000,
-          dedicatedDriveway: true,
+          dedicatedDriveway: editorPrices.dedicatedDriveway,
           basicLandscaping: 0,
           friendsAndFamilyDiscount: false,
         }
@@ -849,8 +849,8 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
           designServices: editorPrices.designServices,
           solarReady: true,
           extraBathroom: 8000,
-          dedicatedDriveway: true,
-          basicLandscaping: true,
+          dedicatedDriveway: editorPrices.dedicatedDriveway,
+          basicLandscaping: editorPrices.basicLandscaping,
           friendsAndFamilyDiscount: false,
         }
       }
