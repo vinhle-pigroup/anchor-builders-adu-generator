@@ -57,6 +57,7 @@ export interface AnchorProposalFormData {
   secondaryClientLastName?: string;
   secondaryClientEmail?: string;
   secondaryClientPhone?: string;
+  customServicesCount?: number; // Number of custom services
 }
 
 export interface SavedProposal {

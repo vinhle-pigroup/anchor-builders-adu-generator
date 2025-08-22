@@ -96,6 +96,7 @@ type ProjectData = {
   proposalDate?: string;
   proposalValidityDays?: number;
   depositAmount?: number;
+  electricalPanel?: number;  // Electrical panel amperage (also in utilities for compatibility)
 };
 
 type PricingData = {
@@ -104,6 +105,7 @@ type PricingData = {
   dedicatedDriveway?: number;
   basicLandscaping?: number;
   utilities?: any;
+  sqft?: number;  // Square footage
   solarReady?: boolean;
   femaCompliance?: boolean;
   femaAmount?: number;
@@ -1615,10 +1617,10 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
               stories: projectData.stories || 1
             },
             pricing: {
-              basePrice: liveCalculation.subtotal,
+              basePrice: liveCalculation.basePrice,
               totalPrice: liveCalculation.finalTotal,
               designServicesCost: pricingData.designServices || 0,
-              solarReadyCost: pricingData.solarReady ? editorPrices.solarReady : 0,
+              solarReadyCost: pricingData.solarReady ? (editorPrices.solarReady || 0) : 0,
               femaComplianceCost: pricingData.femaAmount || 0,
               utilitiesCustomPrice: pricingData.utilitiesCustomPrice,
               twoStoryPrice: pricingData.twoStoryPrice,
@@ -1656,7 +1658,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
     } catch (error) {
       console.error('❌ PDF save failed:', error);
     }
-  }, [handleGenerateProposal, projectData, pricingData, liveCalculation, customServices, defaultProposalNumber, customMilestones, editorPrices.solarReady]);
+  }, [handleGenerateProposal, projectData, pricingData, liveCalculation, customServices, defaultProposalNumber, customMilestones]);
 
   const handlePrintPDF = useCallback(() => {
     try {
