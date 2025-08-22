@@ -3242,7 +3242,7 @@ ${pricingData.friendsAndFamilyDiscount
                     {/* Edit Milestones Button */}
                     <button
                       onClick={() => {
-                        const defaultMilestones = calculateMilestones(liveCalculation.finalTotal, selectedMilestoneType);
+                        const defaultMilestones = calculateMilestones(liveCalculation.finalTotal);
                         const milestonesWithPercentages = defaultMilestones.map((m, i) => ({
                           ...m,
                           percentage: i === 0 ? 0 : i === 1 ? 0 : (m.amount / (liveCalculation.finalTotal - 13500)) * 100 // D1 and D2 are fixed
@@ -3257,7 +3257,7 @@ ${pricingData.friendsAndFamilyDiscount
                     
                     {/* Milestone List - 9 Total: D1, D2, M1-M7 */}
                     <div className='space-y-1'>
-                      {(customMilestones || calculateMilestones(liveCalculation.finalTotal, selectedMilestoneType)).map((milestone, index) => {
+                      {(customMilestones || calculateMilestones(liveCalculation.finalTotal)).map((milestone, index) => {
                         // Style based on milestone type
                         const isDesignPhase = milestone.type === 'design' || index < 2; // D1 and D2
                         const bgColor = isDesignPhase ? 'hover:bg-amber-50' : 'hover:bg-blue-50';
@@ -3286,7 +3286,7 @@ ${pricingData.friendsAndFamilyDiscount
                     <div className='border-t pt-2 mt-2'>
                       <div className='flex justify-between text-[10px] font-medium text-slate-700'>
                         <span>Total Milestones:</span>
-                        <span>${(customMilestones || calculateMilestones(liveCalculation.finalTotal, selectedMilestoneType)).reduce((sum, m) => sum + m.amount, 0).toLocaleString()}</span>
+                        <span>${(customMilestones || calculateMilestones(liveCalculation.finalTotal)).reduce((sum, m) => sum + m.amount, 0).toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
