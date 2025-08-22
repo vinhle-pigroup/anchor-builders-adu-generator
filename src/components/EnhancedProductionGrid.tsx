@@ -501,7 +501,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
         pricePerSqFt: 200,
       };
     }
-  }, [projectData.squareFootage, projectData.aduType, projectData.bedrooms, projectData.bathrooms, projectData.hvacType, projectData.stories, projectData.utilities, pricingData, customServices, pricingVersion]);
+  }, [projectData.squareFootage, projectData.aduType, projectData.bedrooms, projectData.bathrooms, projectData.hvacType, projectData.hvacCustomPrice, projectData.stories, projectData.utilities, pricingData, customServices, pricingVersion]);
 
   // Define form sections
   const sections: FormSection[] = [
@@ -905,6 +905,10 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
   // Custom pricing popups
   const [showFemaPopup, setShowFemaPopup] = useState(false);
   const [showHvacPopup, setShowHvacPopup] = useState(false);
+  const [showCentralACPopup, setShowCentralACPopup] = useState(false);
+  const [showMiniSplitPopup, setShowMiniSplitPopup] = useState(false);
+  const [centralACPrice, setCentralACPrice] = useState(0);
+  const [miniSplitPrice, setMiniSplitPrice] = useState(0);
   const [showUtilitiesPopup, setShowUtilitiesPopup] = useState(false);
   const [utilityType, setUtilityType] = useState<'waterMeter' | 'gasMeter' | 'electricMeter' | 'sewerMeter' | null>(null);
   const [showAduTypePopup, setShowAduTypePopup] = useState(false);
@@ -1662,7 +1666,7 @@ export const EnhancedProductionGrid: React.FC<EnhancedProductionGridProps> = ({
     } catch (error) {
       console.error('❌ PDF save failed:', error);
     }
-  }, [handleGenerateProposal, projectData, pricingData, liveCalculation, customServices, defaultProposalNumber, customMilestones]);
+  }, [handleGenerateProposal, projectData, pricingData, liveCalculation, customServices, defaultProposalNumber, customMilestones, editorPrices.solarReady]);
 
   const handlePrintPDF = useCallback(() => {
     try {
@@ -2498,7 +2502,7 @@ ${pricingData.friendsAndFamilyDiscount
                               data-navigation
                               onClick={() => {
                                 console.log('🎯 Central AC selected');
-                                updateProjectData({ hvacType: 'central-ac' });
+                                setShowCentralACPopup(true);
                               }}
                               className={`
                                 ${isMobile ? 'px-1 py-0.5 h-6 text-[9px]' : 'px-3 py-1.5 h-10 text-[11px]'} rounded border transition-all flex flex-col items-center justify-center
