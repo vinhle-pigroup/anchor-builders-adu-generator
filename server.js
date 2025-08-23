@@ -50,15 +50,8 @@ app.use(helmet({
         "blob:",
         "https://*.googleusercontent.com"
       ],
-      connectSrc: [
-        "'self'",
-        "https://login.microsoftonline.com", // MSAL authentication
-        "https://graph.microsoft.com" // Optional: Graph API if needed
-      ],
-      frameSrc: [
-        "'self'",
-        "https://login.microsoftonline.com" // MSAL popup/redirect
-      ],
+      connectSrc: ["'self'"], // Client never calls upstream directly
+      frameSrc: ["'self'"], // Add MSAL endpoints when actually implemented
       formAction: ["'self'"],
       upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null
     }
